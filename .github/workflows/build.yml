@@ -52,18 +52,23 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Qt MinGW
-        uses: jurplel/install-qt-action@v4
+      - name: Setup MSYS2 MinGW64
+        uses: msys2/setup-msys2@v2
         with:
-          version: "5.15.2"
-          host: windows
-          target: desktop
-          arch: win64_mingw81
-          tools: tools_mingw81
+          msystem: MINGW64
+          update: true
+          install: git
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            make:p
 
       - name: Cache Cap'n Proto
         uses: actions/cache@v4
@@ -76,21 +81,12 @@ jobs:
             capnp-windows-
 
       - name: Configure
-        shell: pwsh
-        run: |
-          $mingw = "C:\Qt\Tools\mingw810_64"
-          cmake -S . -B build -G "MinGW Makefiles" `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_C_COMPILER="$mingw\bin\gcc.exe" `
-            -DCMAKE_CXX_COMPILER="$mingw\bin\g++.exe" `
-            -DCMAKE_MAKE_PROGRAM="$mingw\bin\mingw32-make.exe"
+        run: cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        shell: pwsh
-        run: cmake --build build -j 4
+        run: cmake --build build -j"$(nproc)"
 
       - name: Smoke test (GDS import)
-        shell: pwsh
         run: |
-          .\build\make_sample_gds.exe testdata\sample.gds
-          .\build\gds_to_cdb.exe testdata\sample.gds build\smoke.cdb build\smoke.txt
+          ./build/make_sample_gds.exe testdata/sample.gds
+          ./build/gds_to_cdb.exe testdata/sample.gds build/smoke.cdb build/smoke.txt
