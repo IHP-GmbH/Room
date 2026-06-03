@@ -27,6 +27,8 @@ endif()
 
 find_program(CAPNP_EXECUTABLE capnp PATHS "${CAPNP_BIN}" NO_DEFAULT_PATH REQUIRED)
 find_program(CAPNPC_CXX_EXECUTABLE capnpc-c++ PATHS "${CAPNP_BIN}" NO_DEFAULT_PATH REQUIRED)
+find_library(CAPNP_LIBRARY capnp PATHS "${CAPNP_LIB}" NO_DEFAULT_PATH REQUIRED)
+find_library(KJ_LIBRARY kj PATHS "${CAPNP_LIB}" NO_DEFAULT_PATH REQUIRED)
 
 set(SCHEMA_DIR "${CMAKE_SOURCE_DIR}/schema")
 set(GEN_DIR "${CMAKE_BINARY_DIR}/generated")
@@ -82,10 +84,7 @@ target_include_directories(cdb_core PUBLIC
     "$<INSTALL_INTERFACE:include/CommonDB/generated>"
 )
 
-if(WIN32)
-    target_link_directories(cdb_core PUBLIC "$<BUILD_INTERFACE:${CAPNP_LIB}>")
-endif()
-target_link_libraries(cdb_core PUBLIC capnp kj)
+target_link_libraries(cdb_core PUBLIC ${CAPNP_LIBRARY} ${KJ_LIBRARY})
 
 add_library(cdb_utils STATIC
     utils/gds_importer.cpp
