@@ -126,11 +126,12 @@ build\gds_to_cdb.exe testdata\sample.gds output\sample.cdb
 
 ## Documentation
 
-HTML API reference (open in a browser):
+HTML API reference:
 
-**[docs/html/index.html](docs/html/index.html)**
+- **Online (GitHub Pages):** https://ihp-gmbh.github.io/CommonDB/
+- **In the repo:** GitHub shows HTML as source — use the link above, or open [`docs/html/index.html`](docs/html/index.html) locally in a browser (double-click / drag into Chrome or Edge).
 
-Class pages, GDS/Qucs examples, and Cap'n Proto schema notes live under `docs/html/`.
+Pages deploy automatically from `docs/html/` on each push to `main` (workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml)). First time: in the repo go to **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
 ## Project layout
 
