@@ -1,0 +1,21 @@
+=== CommonDB text dump ===
+version: 0.1
+generator: CommonDB GdsImporter
+technology: 
+lib: gds_import
+cells: 2
+
+cell "INV"
+  type layout dbuPerMicron=1000.000 layers=1
+  bbox=(0,0)-(1000,500)
+  shapes=1 instances=0 nets=0
+    shape polygon layer=L0/D0 points=4
+
+cell "TOP"
+  type layout dbuPerMicron=1000.000 layers=1
+  bbox=(0,0)-(5000,5000)
+  shapes=2 instances=1 nets=0
+    shape path layer=L0/D0 width=0 points=2
+    shape text layer=L0/D0 "TOPCELL" at (100,100)
+    instance -> "INV" at (2000,2000)
+

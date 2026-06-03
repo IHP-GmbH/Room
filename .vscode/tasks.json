@@ -1,0 +1,140 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: Configure Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-S", ".",
+        "-B", "build",
+        "-G", "MinGW Makefiles",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_C_COMPILER=C:/Qt/Tools/mingw810_64/bin/gcc.exe",
+        "-DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingw810_64/bin/g++.exe",
+        "-DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/mingw810_64/bin/mingw32-make.exe"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": false },
+      "problemMatcher": "$cmake",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "CMake: Configure Release",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-S", ".",
+        "-B", "build",
+        "-G", "MinGW Makefiles",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_C_COMPILER=C:/Qt/Tools/mingw810_64/bin/gcc.exe",
+        "-DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingw810_64/bin/g++.exe",
+        "-DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/mingw810_64/bin/mingw32-make.exe"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": false },
+      "problemMatcher": "$cmake",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Build: Static Libraries (.a)",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build", "build", "-j4",
+        "--target", "cdb_core", "cdb_utils"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: Configure Debug"],
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": "$gcc",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Build: Release Libraries (.a)",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build", "build", "-j4",
+        "--target", "cdb_core", "cdb_utils"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: Configure Release"],
+      "group": { "kind": "build", "isDefault": false },
+      "problemMatcher": "$gcc",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Build: All Targets",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build", "-j4"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: Configure Debug"],
+      "problemMatcher": "$gcc",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Install: Libraries + Headers",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--install", "build",
+        "--prefix", "${workspaceFolder}/install"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["Build: All Targets"],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Example: Make Sample GDS",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "if not exist testdata mkdir testdata && build\\make_sample_gds.exe testdata\\sample.gds"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["Build: All Targets"],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Example: GDS to CommonDB",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "if not exist examples\\gds_to_cdb\\output mkdir examples\\gds_to_cdb\\output && build\\gds_to_cdb.exe"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["Build: All Targets"],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Example: Qucs to CommonDB",
+      "type": "shell",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "if not exist examples\\qucs_to_cdb\\output mkdir examples\\qucs_to_cdb\\output && build\\qucs_to_cdb.exe"
+      ],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["Build: All Targets"],
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build: All Targets",
+        "Example: GDS to CommonDB"
+      ],
+      "problemMatcher": [],
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared" }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug gds_to_cdb",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/gds_to_cdb.exe",
+      "args": [
+        "${workspaceFolder}/examples/gds_to_cdb/data/sg13g2_stdcell.gds",
+        "${workspaceFolder}/examples/gds_to_cdb/output/layout.cdb",
+        "${workspaceFolder}/examples/gds_to_cdb/output/layout.txt"
+      ],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Build: All Targets",
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:/Qt/Tools/mingw810_64/bin/gdb.exe"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+/build/
+/install/
+/third_party/capnproto/
+/third_party/capnp-install/
+.cache/
+
+# Example outputs
+examples/**/output/
+output/
+*.cdb
