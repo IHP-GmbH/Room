@@ -1,0 +1,96 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CAPNP_SKIP_CHECK: 1
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Cap'n Proto
+        uses: actions/cache@v4
+        with:
+          path: |
+            third_party/capnproto
+            third_party/capnp-install
+          key: capnp-linux-${{ hashFiles('scripts/build_capnp_linux.sh', 'scripts/mkcapnp.sh') }}
+          restore-keys: |
+            capnp-linux-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config
+          chmod +x scripts/mkcapnp.sh scripts/build_capnp_linux.sh
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build -j"$(nproc)"
+
+      - name: Smoke test (GDS import)
+        run: |
+          ./build/make_sample_gds testdata/sample.gds
+          ./build/gds_to_cdb testdata/sample.gds build/smoke.cdb build/smoke.txt
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt MinGW
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "5.15.2"
+          host: windows
+          target: desktop
+          arch: win64_mingw81
+          tools: tools_mingw81
+
+      - name: Cache Cap'n Proto
+        uses: actions/cache@v4
+        with:
+          path: |
+            third_party/capnproto
+            third_party/capnp-install
+          key: capnp-windows-${{ hashFiles('scripts/build_capnp_windows.bat', 'scripts/mkcapnp.cmd') }}
+          restore-keys: |
+            capnp-windows-
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          $mingw = "C:\Qt\Tools\mingw810_64"
+          cmake -S . -B build -G "MinGW Makefiles" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_C_COMPILER="$mingw\bin\gcc.exe" `
+            -DCMAKE_CXX_COMPILER="$mingw\bin\g++.exe" `
+            -DCMAKE_MAKE_PROGRAM="$mingw\bin\mingw32-make.exe"
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build -j 4
+
+      - name: Smoke test (GDS import)
+        shell: pwsh
+        run: |
+          .\build\make_sample_gds.exe testdata\sample.gds
+          .\build\gds_to_cdb.exe testdata\sample.gds build\smoke.cdb build\smoke.txt
