@@ -126,16 +126,16 @@ build\gds_to_cdb.exe testdata\sample.gds output\sample.cdb
 
 ## Documentation
 
-HTML API reference:
+HTML API reference lives in [`docs/html/`](docs/html/) (start at [`index.html`](docs/html/index.html)).
 
-- **Online (GitHub Pages):** https://ihp-gmbh.github.io/CommonDB/
-- **In the repo:** GitHub shows HTML as source — use the link above, or open [`docs/html/index.html`](docs/html/index.html) locally in a browser (double-click / drag into Chrome or Edge).
+| How to view | Notes |
+|-------------|--------|
+| **Local** | Clone the repo and open `docs/html/index.html` in a browser. |
+| **GitHub Pages** | Only if the repo is **public**, or the org has **GitHub Team / Enterprise** (private Pages). The workflow publishes to the [`gh-pages`](https://github.com/IHP-GmbH/CommonDB/tree/gh-pages) branch. |
 
-Pages: workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) copies `docs/html/` to the **`gh-pages`** branch.
+**This repository is private.** On GitHub Free, Pages is not available for private repos — `Settings → Pages` may show **404**, and https://ihp-gmbh.github.io/CommonDB/ will not work until an org admin enables Pages (paid plan) or makes the repo public.
 
-**One-time setup (repo admin):** [Settings → Pages](https://github.com/IHP-GmbH/CommonDB/settings/pages) → **Build and deployment → Source:** **Deploy from a branch** → Branch **`gh-pages`** → folder **`/ (root)`** → Save. Then open https://ihp-gmbh.github.io/CommonDB/
-
-If the workflow fails with *Resource not accessible by integration*, enable **Settings → Actions → General → Workflow permissions: Read and write**.
+Workflow: [`.github/workflows/pages.yml`](.github/workflows/pages.yml) updates `gh-pages` on each push to `main`. When Pages is allowed: **Settings → Pages → Deploy from branch → `gh-pages` / (root)**.
 
 ## Project layout
 
