@@ -131,7 +131,9 @@ HTML API reference:
 - **Online (GitHub Pages):** https://ihp-gmbh.github.io/CommonDB/
 - **In the repo:** GitHub shows HTML as source — use the link above, or open [`docs/html/index.html`](docs/html/index.html) locally in a browser (double-click / drag into Chrome or Edge).
 
-Pages deploy automatically from `docs/html/` on each push to `main` (workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml)). First time: in the repo go to **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Pages deploy from `docs/html/` on each push to `main` ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)).
+
+**If you see “404 / There isn't a GitHub Pages site here”:** open **Settings → Pages** in the repo, set **Build and deployment → Source** to **GitHub Actions**, save, then **Actions → Documentation (GitHub Pages) → Re-run all jobs**. Org repos may need an admin to allow Pages for `IHP-GmbH`.
 
 ## Project layout
 
