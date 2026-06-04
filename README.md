@@ -126,16 +126,7 @@ build\gds_to_cdb.exe testdata\sample.gds output\sample.cdb
 
 ## Documentation
 
-HTML API reference lives in [`docs/html/`](docs/html/) (start at [`index.html`](docs/html/index.html)).
-
-| How to view | Notes |
-|-------------|--------|
-| **Local** | Clone the repo and open `docs/html/index.html` in a browser. |
-| **GitHub Pages** | Only if the repo is **public**, or the org has **GitHub Team / Enterprise** (private Pages). The workflow publishes to the [`gh-pages`](https://github.com/IHP-GmbH/CommonDB/tree/gh-pages) branch. |
-
-**This repository is private.** On GitHub Free, Pages is not available for private repos — `Settings → Pages` may show **404**, and https://ihp-gmbh.github.io/CommonDB/ will not work until an org admin enables Pages (paid plan) or makes the repo public.
-
-Workflow: [`.github/workflows/pages.yml`](.github/workflows/pages.yml) updates `gh-pages` on each push to `main`. When Pages is allowed: **Settings → Pages → Deploy from branch → `gh-pages` / (root)**.
+HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally in a browser after cloning).
 
 ## Project layout
 
