@@ -11,9 +11,13 @@
 
 ---
 
-**CORE** (`core::`) is a teaching and application API for storing chip design topology: libraries, cells, layers, shapes, instances, and nets. Layout and schematic data share one model; the view kind (`layout`, `schematic`, `symbol`, `abstract`) lives in `CellContent`.
+**CORE** — **C**ommon **O**pen **R**epository for **E**DA — is a teaching and application API (`core::`) for storing chip design topology: libraries, cells, layers, shapes, instances, and nets. Layout and schematic data share one model; the view kind (`layout`, `schematic`, `symbol`, `abstract`) lives in `CellContent`.
 
-The project is part of the **IHP** open-source IC design flow. Typical inputs are **GDSII** (e.g. IHP sg13g2 standard cells) or **Qucs** `.sch` schematics.
+The project is part of the **IHP** open-source IC design flow. Design data is kept in a format-neutral internal model and serialized to portable binary `.core` files via Cap'n Proto, so tools can load, edit, and save the same representation without tying the database to a single exchange format.
+
+**Note:** `core` in this repository refers to the project core library and API for IC design database storage and Cap'n Proto serialization. It is the central data model layer for libraries, cells, cell contents, shapes, instances, and nets.
+
+> This repository is maintained with commits/checkins only from the project owner.
 
 ## Data model
 
