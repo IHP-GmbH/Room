@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -57,22 +57,23 @@
 
     <main class="content">
       <h1>CORE</h1>
-      <p class="subtitle">Open-source IC layout database on Cap'n Proto</p>
+      <p class="subtitle">Common Open Repository for EDA · Cap'n Proto · C++17</p>
 
       <p>
-        CORE is a teaching and application API for storing layout topology
-        (cells, layers, shapes, instances, nets). Data is serialized to a binary
+        CORE — Common Open Repository for EDA — is a teaching and application API
+        (<code>core::</code>) for storing chip design topology: libraries, cells, layers,
+        shapes, instances, and nets. Layout and schematic data share one model; the view kind
+        (<code>layout</code>, <code>schematic</code>, <code>symbol</code>, <code>abstract</code>)
+        lives in <a href="cellcontent.html">CellContent</a>. Data is serialized to a binary
         <code>.core</code> file through Cap'n Proto.
       </p>
 
       <p>
-        CORE is part of the IHP open-source IC design toolchain.
-        It stores layout and schematic topology from sources such as the
-        IHP Open Source PDK (e.g. sg13g2 GDS) or Qucs schematics.
-        Cap'n Proto is built locally under <code>third_party/capnp-install/</code>
-        (CMake runs <code>scripts/mkcapnp.cmd</code> automatically on first configure). The view type
-        (<code>layout</code>, <code>schematic</code>, <code>symbol</code>) is stored directly
-        in <a href="cellcontent.html">CellContent</a>.
+        The project is part of the IHP open-source IC design flow. Design data is kept in a
+        format-neutral internal model so tools can load, edit, and save the same representation
+        without tying the database to a single exchange format. Cap'n Proto is built locally under
+        <code>third_party/capnp-install/</code> (CMake runs <code>scripts/mkcapnp.cmd</code> or
+        <code>scripts/mkcapnp.sh</code> automatically on first configure).
       </p>
 
       <h2>Data hierarchy</h2>
