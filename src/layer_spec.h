@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <string>
 
-namespace cdb {
+namespace core {
 
 class LayerSpec {
 public:
@@ -19,4 +19,4 @@ public:
         : layerNum(ln), dataType(dt), name(std::move(n)), purpose(p) {}
 };
 
-} // namespace cdb
+} // namespace core

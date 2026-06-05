@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-namespace cdb {
+namespace core {
 
 class Transform {
 public:
@@ -18,4 +18,4 @@ public:
         : x(x_), y(y_), orient(o), mag(m) {}
 };
 
-} // namespace cdb
+} // namespace core

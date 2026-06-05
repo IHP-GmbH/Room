@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace cdb {
+namespace core {
 
 class Database {
 public:
@@ -31,4 +31,4 @@ private:
     Lib lib_{"default"};
 };
 
-} // namespace cdb
+} // namespace core

@@ -5,7 +5,7 @@
 #include <dm.capnp.h>
 #include <common.capnp.h>
 
-namespace cdb {
+namespace core {
 namespace {
 
 schema::Orient toSchemaOrient(Orient o)
@@ -407,4 +407,4 @@ Database readDatabase(schema::Database::Reader root)
     return db;
 }
 
-} // namespace cdb
+} // namespace core

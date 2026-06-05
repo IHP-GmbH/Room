@@ -1,4 +1,6 @@
 :root {
+  --qt-green: #41a62a;
+  --qt-green-dark: #328721;
   --header-bg: #2c3e50;
   --header-fg: #ecf0f1;
   --sidebar-bg: #f5f6f7;
@@ -7,7 +9,9 @@
   --link-hover: #004499;
   --code-bg: #f4f4f4;
   --border: #ccc;
-  --accent: #41a62a;
+  --table-head: #eee;
+  --text: #222;
+  --muted: #666;
 }
 
 * { box-sizing: border-box; }
@@ -17,7 +21,7 @@ body {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: #222;
+  color: var(--text);
   background: #fff;
 }
 
@@ -50,12 +54,8 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   display: block;
 }
 
-.site-header .logo:hover {
-  color: #fff;
-  text-decoration: none;
-}
-
-.site-header .logo span { color: var(--accent); }
+.site-header .logo:hover { color: #fff; text-decoration: none; }
+.site-header .logo span { color: var(--qt-green); }
 
 .site-header nav a {
   color: #bdc3c7;
@@ -83,7 +83,7 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #666;
+  color: var(--muted);
 }
 
 .sidebar ul {
@@ -108,7 +108,24 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
 .content {
   flex: 1;
   padding: 1.5rem 2rem 3rem;
-  max-width: 960px;
+  max-width: 980px;
+}
+
+/* Qt-style doc path */
+.doc-path {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.doc-path a { color: var(--muted); }
+
+/* Class page title */
+.content h1.title {
+  font-size: 1.85rem;
+  font-weight: 400;
+  margin: 0 0 0.35rem;
+  border: none;
 }
 
 .content h1 {
@@ -117,8 +134,15 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   font-weight: 400;
 }
 
+.content .brief {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.content .brief .more { white-space: nowrap; }
+
 .content .subtitle {
-  color: #666;
+  color: var(--muted);
   margin-bottom: 1.5rem;
   font-size: 0.95rem;
 }
@@ -128,6 +152,15 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   margin: 2rem 0 0.75rem;
   padding-bottom: 0.25rem;
   border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.content h3.fn-title {
+  font-size: 1.05rem;
+  margin: 1.75rem 0 0.5rem;
+  font-weight: 600;
+  font-family: Consolas, "Courier New", monospace;
+  color: #003366;
 }
 
 .content h3 {
@@ -138,6 +171,61 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
 .content p { margin: 0.75rem 0; }
 
 .content ul, .content ol { margin: 0.5rem 0 1rem 1.5rem; }
+
+/* Qt meta table (Header, CMake) */
+table.props {
+  border-collapse: collapse;
+  margin: 0.75rem 0 1.25rem;
+  font-size: 0.9rem;
+}
+
+table.props th {
+  text-align: left;
+  padding: 0.35rem 1rem 0.35rem 0;
+  vertical-align: top;
+  font-weight: 600;
+  white-space: nowrap;
+  width: 5.5rem;
+}
+
+table.props td {
+  padding: 0.35rem 0;
+  vertical-align: top;
+}
+
+table.props td code {
+  font-size: 0.88rem;
+}
+
+/* Qt member index (Public Functions) */
+table.memlist {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0 1.5rem;
+  font-size: 0.9rem;
+}
+
+table.memlist td {
+  border-top: 1px solid #e0e0e0;
+  padding: 0.45rem 0.6rem;
+  vertical-align: top;
+}
+
+table.memlist tr:first-child td { border-top: 1px solid var(--border); }
+
+table.memlist td:first-child {
+  width: 55%;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.85rem;
+}
+
+table.memlist td:first-child a {
+  font-weight: 600;
+}
+
+table.memlist td:last-child {
+  color: #333;
+}
 
 .class-list {
   display: grid;
@@ -175,8 +263,8 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
 }
 
 .fn-block {
-  margin: 1.5rem 0;
-  padding-bottom: 1rem;
+  margin: 0 0 1.25rem;
+  padding: 0 0 1.25rem;
   border-bottom: 1px solid #eee;
 }
 
@@ -191,28 +279,30 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
 .fn-type { color: #008080; }
 .fn-param { color: #333; }
 
-.fn-desc {
-  margin: 0.45rem 0 0.5rem;
-}
+.fn-desc { margin: 0.45rem 0 0.5rem; }
 
-table.fn-params {
+table.fn-params,
+table.members {
   width: 100%;
-  max-width: 42rem;
+  max-width: 100%;
   border-collapse: collapse;
   margin: 0.5rem 0 0.65rem;
   font-size: 0.88rem;
 }
 
 table.fn-params th,
-table.fn-params td {
+table.fn-params td,
+table.members th,
+table.members td {
   border: 1px solid var(--border);
   padding: 0.35rem 0.55rem;
   text-align: left;
   vertical-align: top;
 }
 
-table.fn-params th {
-  background: #f5f5f5;
+table.fn-params th,
+table.members th {
+  background: var(--table-head);
   font-weight: 600;
 }
 
@@ -229,14 +319,12 @@ table.fn-params td:first-child {
 }
 
 .fn-returns strong,
-.fn-throws strong {
-  font-weight: 600;
-}
+.fn-throws strong { font-weight: 600; }
 
 pre.example {
   background: #fafafa;
   border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
+  border-left: 4px solid var(--qt-green);
   padding: 1rem;
   overflow-x: auto;
   font-size: 0.85rem;
@@ -246,22 +334,6 @@ pre.example {
 pre.example code {
   font-family: Consolas, "Courier New", monospace;
 }
-
-table.members {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-  font-size: 0.9rem;
-}
-
-table.members th, table.members td {
-  border: 1px solid var(--border);
-  padding: 0.4rem 0.6rem;
-  text-align: left;
-  vertical-align: top;
-}
-
-table.members th { background: #eee; }
 
 .tag {
   display: inline-block;
@@ -277,10 +349,11 @@ table.members th { background: #eee; }
 .tag-struct { background: #cce5ff; }
 .tag-class { background: #fff3cd; }
 
-.breadcrumb {
+.breadcrumb,
+.doc-path {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--muted);
   margin-bottom: 1rem;
 }
 
-.breadcrumb a { color: #666; }
+.breadcrumb a { color: var(--muted); }

@@ -4,9 +4,9 @@
 
 #include <database.capnp.h>
 
-namespace cdb {
+namespace core {
 
 void writeDatabase(schema::Database::Builder root, const Database &db);
 Database readDatabase(schema::Database::Reader root);
 
-} // namespace cdb
+} // namespace core

@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace cdb {
+namespace core {
 namespace {
 
 constexpr std::uint16_t GDS_UNITS    = 0x0305;
@@ -149,7 +149,7 @@ public:
         }
 
         Database db;
-        db.setGenerator("CommonDB GdsImporter");
+        db.setGenerator("CORE GdsImporter");
         db.lib() = Lib(options_.libName);
 
         bool sawEndLib = false;
@@ -390,4 +390,4 @@ Database GdsImporter::importFile(const std::string &gdsPath) const
     return db;
 }
 
-} // namespace cdb
+} // namespace core

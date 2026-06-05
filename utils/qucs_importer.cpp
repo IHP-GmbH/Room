@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace cdb {
+namespace core {
 namespace {
 
 std::string stemFromPath(const std::string &path)
@@ -340,7 +340,7 @@ Database QucsImporter::importFile(const std::string &schPath) const
     const std::string cellName = options_.cellName.empty() ? stemFromPath(schPath) : options_.cellName;
 
     Database db;
-    db.setGenerator("CommonDB QucsImporter");
+    db.setGenerator("CORE QucsImporter");
     db.lib() = Lib(options_.libName);
 
     Cell &cell = db.lib().getOrCreateCell(cellName);
@@ -396,4 +396,4 @@ Database QucsImporter::importFile(const std::string &schPath) const
     return db;
 }
 
-} // namespace cdb
+} // namespace core

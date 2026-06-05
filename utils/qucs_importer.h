@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace cdb {
+namespace core {
 
 class QucsImporter {
 public:
@@ -28,4 +28,4 @@ private:
     mutable std::vector<std::string> errors_;
 };
 
-} // namespace cdb
+} // namespace core

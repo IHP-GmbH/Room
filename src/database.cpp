@@ -8,7 +8,7 @@
 #include <fstream>
 #include <stdexcept>
 
-namespace cdb {
+namespace core {
 
 Database::Database() = default;
 
@@ -37,4 +37,4 @@ Database Database::loadFromFile(const std::string &path)
     return readDatabase(reader.getRoot<schema::Database>());
 }
 
-} // namespace cdb
+} // namespace core

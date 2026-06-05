@@ -5,7 +5,7 @@
 #include <ostream>
 #include <string>
 
-namespace cdb {
+namespace core {
 
 class TextDumper {
 public:
@@ -13,4 +13,4 @@ public:
     void dumpToFile(const Database &db, const std::string &path) const;
 };
 
-} // namespace cdb
+} // namespace core

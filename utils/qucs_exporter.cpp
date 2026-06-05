@@ -7,7 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace cdb {
+namespace core {
 namespace {
 
 const std::string *findProperty(const std::vector<Property> &props, const std::string &name)
@@ -214,4 +214,4 @@ void QucsExporter::exportCell(const Database &db, const std::string &cellName, c
     }
 }
 
-} // namespace cdb
+} // namespace core

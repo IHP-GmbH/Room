@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace cdb {
+namespace core {
 
 class Lib {
 public:
@@ -30,4 +30,4 @@ private:
     std::vector<Cell> cells_;
 };
 
-} // namespace cdb
+} // namespace core

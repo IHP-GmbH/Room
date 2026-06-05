@@ -1,13 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Basic types — CommonDB</title>
+  <title>Basic types — CORE</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="logo" href="index.html"><svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><defs><linearGradient id="logo-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2c3e50"/><stop offset="100%" stop-color="#1a5276"/></linearGradient><linearGradient id="logo-g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#41a62a"/><stop offset="100%" stop-color="#58d68d"/></linearGradient><linearGradient id="logo-bean" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1887F"/><stop offset="100%" stop-color="#5D4037"/></linearGradient><linearGradient id="logo-cup" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#b0bec5"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="12" fill="url(#logo-bg)"/><path d="M22 8v10M32 4v12M42 10v8" stroke="#41a62a" stroke-width="1" stroke-dasharray="2 2" opacity="0.45" stroke-linecap="round"/><g transform="translate(22 11) rotate(32)"><ellipse rx="3.2" ry="4.8" fill="url(#logo-bean)"/><path d="M0 -4 Q0.7 0 0 4 Q-0.7 0 0 -4" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.2" y="-1.2" width="2.4" height="2.4" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(32 7) rotate(-8)"><ellipse rx="3.4" ry="5" fill="url(#logo-bean)"/><path d="M0 -4.2 Q0.75 0 0 4.2 Q-0.75 0 0 -4.2" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(42 13) rotate(48)"><ellipse rx="3" ry="4.5" fill="url(#logo-bean)"/><path d="M0 -3.8 Q0.65 0 0 3.8 Q-0.65 0 0 -3.8" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.1" y="-1.1" width="2.2" height="2.2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><g transform="translate(28 19) rotate(15)"><ellipse rx="2.8" ry="4.2" fill="url(#logo-bean)" opacity="0.95"/><path d="M0 -3.5 Q0.6 0 0 3.5" fill="none" stroke="#3e2723" stroke-width="0.45" opacity="0.75"/></g><path d="M45 30 C55 30 57 38 53 46 C49 50 43 48 43 42" fill="none" stroke="#90a4ae" stroke-width="2.2" stroke-linecap="round"/><path d="M17 50 L20 26 Q32 21 44 26 L47 50 Z" fill="url(#logo-cup)" stroke="#ecf0f1" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="32" cy="27" rx="11.5" ry="3.3" fill="#3e2723"/><ellipse cx="32" cy="26" rx="10" ry="2" fill="#5d4037" opacity="0.5"/><text x="32" y="40" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="700" fill="#263238" letter-spacing="1">CDB</text><g transform="translate(35 25) rotate(-25)"><ellipse rx="2.6" ry="3.8" fill="url(#logo-bean)"/><rect x="-1" y="-1" width="2" height="2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><path d="M21 26 Q32 22 43 26" fill="none" stroke="#fff" stroke-width="1.1" opacity="0.3" stroke-linecap="round"/><path d="M45 32 C53 32 55 39 51 44" fill="none" stroke="#ecf0f1" stroke-width="1.5" stroke-linecap="round"/></svg>Common<span>DB</span></a>
+    <a class="logo" href="index.html"><svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><defs><linearGradient id="logo-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2c3e50"/><stop offset="100%" stop-color="#1a5276"/></linearGradient><linearGradient id="logo-g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#41a62a"/><stop offset="100%" stop-color="#58d68d"/></linearGradient><linearGradient id="logo-bean" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1887F"/><stop offset="100%" stop-color="#5D4037"/></linearGradient><linearGradient id="logo-cup" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#b0bec5"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="12" fill="url(#logo-bg)"/><path d="M22 8v10M32 4v12M42 10v8" stroke="#41a62a" stroke-width="1" stroke-dasharray="2 2" opacity="0.45" stroke-linecap="round"/><g transform="translate(22 11) rotate(32)"><ellipse rx="3.2" ry="4.8" fill="url(#logo-bean)"/><path d="M0 -4 Q0.7 0 0 4 Q-0.7 0 0 -4" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.2" y="-1.2" width="2.4" height="2.4" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(32 7) rotate(-8)"><ellipse rx="3.4" ry="5" fill="url(#logo-bean)"/><path d="M0 -4.2 Q0.75 0 0 4.2 Q-0.75 0 0 -4.2" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(42 13) rotate(48)"><ellipse rx="3" ry="4.5" fill="url(#logo-bean)"/><path d="M0 -3.8 Q0.65 0 0 3.8 Q-0.65 0 0 -3.8" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.1" y="-1.1" width="2.2" height="2.2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><g transform="translate(28 19) rotate(15)"><ellipse rx="2.8" ry="4.2" fill="url(#logo-bean)" opacity="0.95"/><path d="M0 -3.5 Q0.6 0 0 3.5" fill="none" stroke="#3e2723" stroke-width="0.45" opacity="0.75"/></g><path d="M45 30 C55 30 57 38 53 46 C49 50 43 48 43 42" fill="none" stroke="#90a4ae" stroke-width="2.2" stroke-linecap="round"/><path d="M17 50 L20 26 Q32 21 44 26 L47 50 Z" fill="url(#logo-cup)" stroke="#ecf0f1" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="32" cy="27" rx="11.5" ry="3.3" fill="#3e2723"/><ellipse cx="32" cy="26" rx="10" ry="2" fill="#5d4037" opacity="0.5"/><text x="32" y="43" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="700" fill="#263238" letter-spacing="1">CORE</text><g transform="translate(35 25) rotate(-25)"><ellipse rx="2.6" ry="3.8" fill="url(#logo-bean)"/><rect x="-1" y="-1" width="2" height="2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><path d="M21 26 Q32 22 43 26" fill="none" stroke="#fff" stroke-width="1.1" opacity="0.3" stroke-linecap="round"/><path d="M45 32 C53 32 55 39 51 44" fill="none" stroke="#ecf0f1" stroke-width="1.5" stroke-linecap="round"/></svg>CORE</a>
     <nav><a href="index.html">Overview</a><a href="example.html">Example</a><a href="classes.html">All Classes</a></nav>
   </header>
   <div class="layout">
@@ -32,9 +32,9 @@
       <ul><li><a href="gdsimporter.html">GdsImporter</a></li><li><a href="textdumper.html">TextDumper</a></li></ul>
     </aside>
     <main class="content">
-      <div class="breadcrumb"><a href="index.html">CommonDB</a> &raquo; Basic types</div>
+      <div class="breadcrumb"><a href="index.html">CORE</a> &raquo; Basic types</div>
       <h1>Basic types</h1>
-      <p class="subtitle">namespace <code>cdb</code> · layout coordinates in DBU (schematic views may use 1 unit = 1 pixel)</p>
+      <p class="subtitle">namespace <code>CORE</code> · layout coordinates in DBU (schematic views may use 1 unit = 1 pixel)</p>
 
       <p>
         Geometry and metadata types live in separate headers under <code>src/</code>.
@@ -63,12 +63,12 @@
       <p>A point in 2D space. Public data members (POD-style).</p>
 
       <div class="fn-block">
-        <div class="fn-name">Point()</div>
+        <h3 class="fn-title">Point()</h3>
         <p class="fn-desc">Default constructor. Sets <code>x</code> and <code>y</code> to 0.</p>
       </div>
 
       <div class="fn-block">
-        <div class="fn-name">Point(std::int64_t x_, std::int64_t y_)</div>
+        <h3 class="fn-title">Point(std::int64_t x_, std::int64_t y_)</h3>
         <p class="fn-desc">Constructs a point at the given coordinates.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -90,12 +90,12 @@
       <p>Axis-aligned bounding box: lower-left (<code>llx</code>, <code>lly</code>) and upper-right (<code>urx</code>, <code>ury</code>).</p>
 
       <div class="fn-block">
-        <div class="fn-name">Box()</div>
+        <h3 class="fn-title">Box()</h3>
         <p class="fn-desc">Default constructor. All corners set to 0 (empty box).</p>
       </div>
 
       <div class="fn-block">
-        <div class="fn-name">Box(std::int64_t llx, std::int64_t lly, std::int64_t urx, std::int64_t ury)</div>
+        <h3 class="fn-title">Box(std::int64_t llx, std::int64_t lly, std::int64_t urx, std::int64_t ury)</h3>
         <p class="fn-desc">Constructs a box from corner coordinates.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -105,7 +105,7 @@
       </div>
 
       <div class="fn-block">
-        <div class="fn-name">void expand(std::int64_t x, std::int64_t y)</div>
+        <h3 class="fn-title">void expand(std::int64_t x, std::int64_t y)</h3>
         <p class="fn-desc">Grows the box to include the point (<code>x</code>, <code>y</code>). If the box was empty, it becomes a degenerate box at that point.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -115,7 +115,7 @@
       </div>
 
       <div class="fn-block">
-        <div class="fn-name">void expand(const Box &amp; other)</div>
+        <h3 class="fn-title">void expand(const Box &amp; other)</h3>
         <p class="fn-desc">Grows this box to include the entire area of <code>other</code>. No-op if <code>other</code> is empty.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -124,7 +124,7 @@
       </div>
 
       <div class="fn-block">
-        <div class="fn-name">bool empty() const</div>
+        <h3 class="fn-title">bool empty() const</h3>
         <p class="fn-desc">Checks whether the box has no valid area.</p>
         <p class="fn-returns"><strong>Returns:</strong> <code>true</code> when <code>llx &gt;= urx</code> or <code>lly &gt;= ury</code>.</p>
       </div>
@@ -141,12 +141,12 @@
       <p>Placement transform for <a href="instance.html">Instance</a> (offset, orientation, magnification).</p>
 
       <div class="fn-block">
-        <div class="fn-name">Transform()</div>
+        <h3 class="fn-title">Transform()</h3>
         <p class="fn-desc">Default: origin, <code>R0</code>, magnification 1.0.</p>
       </div>
 
       <div class="fn-block">
-        <div class="fn-name">Transform(std::int64_t x_, std::int64_t y_, Orient o, double m)</div>
+        <h3 class="fn-title">Transform(std::int64_t x_, std::int64_t y_, Orient o, double m)</h3>
         <p class="fn-desc">Constructs a transform with explicit offset, orientation, and scale.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -167,7 +167,7 @@
       <p>Generic name/value metadata on libraries, cells, shapes, and instances.</p>
 
       <div class="fn-block">
-        <div class="fn-name">Property(std::string n, std::string v)</div>
+        <h3 class="fn-title">Property(std::string n, std::string v)</h3>
         <p class="fn-desc">Constructs a property pair.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -189,7 +189,7 @@
       <p>GDS layer description. The index in <code>CellContent::layers()</code> is used as <code>layerId</code> in shapes.</p>
 
       <div class="fn-block">
-        <div class="fn-name">LayerSpec(std::uint16_t ln, std::uint16_t dt, std::string n, LayerPurpose p)</div>
+        <h3 class="fn-title">LayerSpec(std::uint16_t ln, std::uint16_t dt, std::string n, LayerPurpose p)</h3>
         <p class="fn-desc">Constructs a layer entry from GDS layer/datatype numbers and a display name.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -230,7 +230,7 @@
       <p>Declared in <code>enums.h</code> (implementation in <code>enums.cpp</code>). Include <code>enums.h</code> after the type headers, or use <code>types.h</code> plus <code>enums.h</code>.</p>
 
       <div class="fn-block">
-        <div class="fn-name">std::string viewTypeToString(ViewType type)</div>
+        <h3 class="fn-title">std::string viewTypeToString(ViewType type)</h3>
         <p class="fn-desc">Converts a view type enum to its serialized string name.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -240,7 +240,7 @@
       </div>
 
       <div class="fn-block">
-        <div class="fn-name">std::string layerPurposeToString(LayerPurpose purpose)</div>
+        <h3 class="fn-title">std::string layerPurposeToString(LayerPurpose purpose)</h3>
         <p class="fn-desc">Converts a layer purpose enum to a string.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -250,7 +250,7 @@
       </div>
 
       <div class="fn-block">
-        <div class="fn-name">std::string sigTypeToString(SigType type)</div>
+        <h3 class="fn-title">std::string sigTypeToString(SigType type)</h3>
         <p class="fn-desc">Converts a signal type enum to a string.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -263,14 +263,14 @@
       <pre class="example"><code>#include "types.h"
 #include "enums.h"
 
-cdb::Point p{1000, 2000};
+core::Point p{1000, 2000};
 
-cdb::Box box{0, 0, 1000, 500};
+core::Box box{0, 0, 1000, 500};
 box.expand(2000, 3000);
 
-cdb::Transform xf{2000, 2000, cdb::Orient::R90, 1.0};
+core::Transform xf{2000, 2000, core::Orient::R90, 1.0};
 
-cdb::LayerSpec layer{2, 0, "MET1", cdb::LayerPurpose::Drawing};
+core::LayerSpec layer{2, 0, "MET1", core::LayerPurpose::Drawing};
 // layerId 0 = first entry in CellContent::layers()</code></pre>
     </main>
   </div>

@@ -1,7 +1,7 @@
 @0xb2c3d4e5f6071829;
 
 using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("cdb::schema");
+$Cxx.namespace("core::schema");
 
 using Property = import "common.capnp".Property;
 

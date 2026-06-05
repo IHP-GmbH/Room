@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace cdb {
+namespace core {
 
 class Net {
 public:
@@ -25,4 +25,4 @@ private:
     std::vector<Term> terms_;
 };
 
-} // namespace cdb
+} // namespace core

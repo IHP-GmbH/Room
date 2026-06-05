@@ -43,7 +43,7 @@
       "command": "cmake",
       "args": [
         "--build", "build", "-j4",
-        "--target", "cdb_core", "cdb_utils"
+        "--target", "core", "core_utils"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "dependsOn": ["CMake: Configure Debug"],
@@ -57,7 +57,7 @@
       "command": "cmake",
       "args": [
         "--build", "build", "-j4",
-        "--target", "cdb_core", "cdb_utils"
+        "--target", "core", "core_utils"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "dependsOn": ["CMake: Configure Release"],
@@ -102,12 +102,12 @@
       "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "Example: GDS to CommonDB",
+      "label": "Example: GDS to CORE",
       "type": "shell",
       "command": "cmd",
       "args": [
         "/c",
-        "if not exist examples\\gds_to_cdb\\output mkdir examples\\gds_to_cdb\\output && build\\gds_to_cdb.exe"
+        "if not exist examples\\gds_to_core\\output mkdir examples\\gds_to_core\\output && build\\gds_to_core.exe"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "dependsOn": ["Build: All Targets"],
@@ -115,22 +115,28 @@
       "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "Example: Qucs to CommonDB",
+      "label": "Example: Qucs to CORE",
       "type": "shell",
       "command": "cmd",
       "args": [
         "/c",
-        "if not exist examples\\qucs_to_cdb\\output mkdir examples\\qucs_to_cdb\\output && build\\qucs_to_cdb.exe"
+        "if not exist examples\\qucs_to_core\\output mkdir examples\\qucs_to_core\\output && build\\qucs_to_core.exe"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "dependsOn": ["Build: All Targets"],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
     },
+    {
+      "label": "Example: Build & Run Full Demo",
+      "type": "shell",
+      "command": "cmd",
+      "args": ["/c", "echo Run Example: Make Sample GDS then Example: GDS to CORE"],
+      "options": { "cwd": "${workspaceFolder}" },
       "dependsOrder": "sequence",
       "dependsOn": [
         "Build: All Targets",
-        "Example: GDS to CommonDB"
+        "Example: GDS to CORE"
       ],
       "problemMatcher": [],
       "group": { "kind": "test", "isDefault": true },

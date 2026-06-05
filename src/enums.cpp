@@ -1,6 +1,6 @@
 #include "enums.h"
 
-namespace cdb {
+namespace core {
 
 std::string viewTypeToString(ViewType type)
 {
@@ -39,4 +39,4 @@ std::string sigTypeToString(SigType type)
     return "unknown";
 }
 
-} // namespace cdb
+} // namespace core

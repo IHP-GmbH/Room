@@ -1,6 +1,6 @@
 #include "shape.h"
 
-namespace cdb {
+namespace core {
 
 Shape::Shape(RectData data) : type_(Type::Rect), rect_(std::move(data)) {}
 Shape::Shape(PolygonData data) : type_(Type::Polygon), polygon_(std::move(data)) {}
@@ -27,4 +27,4 @@ const Shape::TextData *Shape::text() const
     return type_ == Type::Text ? &text_ : nullptr;
 }
 
-} // namespace cdb
+} // namespace core

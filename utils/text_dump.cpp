@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <stdexcept>
 
-namespace cdb {
+namespace core {
 namespace {
 
 void indent(std::ostream &out, int level)
@@ -80,7 +80,7 @@ void dumpShape(std::ostream &out, const Shape &shape, int level, const CellConte
 
 void TextDumper::dump(const Database &db, std::ostream &out) const
 {
-    out << "=== CommonDB text dump ===\n";
+    out << "=== CORE text dump ===\n";
     out << "version: " << db.version() << "\n";
     out << "generator: " << db.generator() << "\n";
     out << "technology: " << db.technology() << "\n";
@@ -133,4 +133,4 @@ void TextDumper::dumpToFile(const Database &db, const std::string &path) const
     dump(db, out);
 }
 
-} // namespace cdb
+} // namespace core

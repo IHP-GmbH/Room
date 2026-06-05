@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace cdb {
+namespace core {
 
 enum class Orient {
     R0, R90, R180, R270,
@@ -27,4 +27,4 @@ std::string viewTypeToString(ViewType type);
 std::string layerPurposeToString(LayerPurpose purpose);
 std::string sigTypeToString(SigType type);
 
-} // namespace cdb
+} // namespace core

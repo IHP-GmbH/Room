@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace cdb {
+namespace core {
 
 class Box {
 public:
@@ -20,4 +20,4 @@ public:
     bool empty() const;
 };
 
-} // namespace cdb
+} // namespace core

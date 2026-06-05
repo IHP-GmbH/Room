@@ -1,17 +1,17 @@
 <p align="center">
-  <img src="docs/html/logo.svg" alt="CommonDB logo" width="120" height="120">
+  <img src="docs/html/logo.svg" alt="CORE logo" width="120" height="120">
 </p>
 
-<h1 align="center">CommonDB</h1>
+<h1 align="center">CORE</h1>
 
 <p align="center">
   <strong>Open-source IC layout and schematic database</strong><br>
-  Binary <code>.cdb</code> files · Cap'n Proto · C++17
+  Binary <code>.core</code> files · Cap'n Proto · C++17
 </p>
 
 ---
 
-**CommonDB** (`cdb::`) is a teaching and application API for storing chip design topology: libraries, cells, layers, shapes, instances, and nets. Layout and schematic data share one model; the view kind (`layout`, `schematic`, `symbol`, `abstract`) lives in `CellContent`.
+**CORE** (`core::`) is a teaching and application API for storing chip design topology: libraries, cells, layers, shapes, instances, and nets. Layout and schematic data share one model; the view kind (`layout`, `schematic`, `symbol`, `abstract`) lives in `CellContent`.
 
 The project is part of the **IHP** open-source IC design flow. Typical inputs are **GDSII** (e.g. IHP sg13g2 standard cells) or **Qucs** `.sch` schematics.
 
@@ -41,7 +41,7 @@ On Windows, the repo’s VS Code tasks assume **Qt MinGW 8.1** (`C:/Qt/Tools/min
 
 ## Build
 
-On the **first** `cmake` configure, CommonDB builds Cap'n Proto into `third_party/capnp-install/` automatically if it is not already there (option `COMMONDB_BOOTSTRAP_CAPNP=ON`, default). That step can take several minutes; later configures are instant.
+On the **first** `cmake` configure, CORE builds Cap'n Proto into `third_party/capnp-install/` automatically if it is not already there (option `CORE_BOOTSTRAP_CAPNP=ON`, default). That step can take several minutes; later configures are instant.
 
 To build Cap'n Proto by hand (optional), see [third_party/README.md](third_party/README.md).
 
@@ -70,10 +70,10 @@ cmake --build build -j$(nproc)
 
 Open the folder in VS Code (CMake Tools extension recommended):
 
-1. **CMake: Configure Debug** — configures CommonDB and bootstraps Cap'n Proto if needed  
-2. **Build: Static Libraries (.a)** — `cdb_core`, `cdb_utils`  
-3. **Build: All Targets** — adds `gds_to_cdb`, `qucs_to_cdb`, `make_sample_gds`  
-4. **Example: GDS to CommonDB** / **Example: Qucs to CommonDB** — run demos after a full build  
+1. **CMake: Configure Debug** — configures CORE and bootstraps Cap'n Proto if needed  
+2. **Build: Static Libraries (.a)** — `core`, `core_utils`  
+3. **Build: All Targets** — adds `gds_to_core`, `qucs_to_core`, `make_sample_gds`  
+4. **Example: GDS to CORE** / **Example: Qucs to CORE** — run demos after a full build  
 
 Default build task: **Build: Static Libraries (.a)** (`Ctrl+Shift+B` may need to be bound to that task).
 
@@ -81,10 +81,10 @@ Default build task: **Build: Static Libraries (.a)** (`Ctrl+Shift+B` may need to
 
 | Target | Type | Description |
 |--------|------|-------------|
-| `cdb_core` | static library | Database API + Cap'n Proto serialization |
-| `cdb_utils` | static library | GDS / Qucs importers, text dump |
-| `gds_to_cdb` | executable | GDSII → `.cdb` |
-| `qucs_to_cdb` | executable | Qucs `.sch` → `.cdb` (round-trip export) |
+| `core` | static library | Database API + Cap'n Proto serialization |
+| `core_utils` | static library | GDS / Qucs importers, text dump |
+| `gds_to_core` | executable | GDSII → `.core` |
+| `qucs_to_core` | executable | Qucs `.sch` → `.core` (round-trip export) |
 | `make_sample_gds` | executable | Minimal sample GDS for tests |
 
 Install headers and libraries into a prefix:
@@ -93,35 +93,35 @@ Install headers and libraries into a prefix:
 cmake --install build --prefix install
 ```
 
-Use `find_package(CommonDB)` from another CMake project via `install/lib/cmake/CommonDB/`.
+Use `find_package(CORE)` from another CMake project via `install/lib/cmake/CORE/`.
 
 ## Examples
 
 ### GDS layout import
 
-Bundled demo (no arguments — uses `examples/gds_to_cdb/data/sg13g2_stdcell.gds`):
+Bundled demo (no arguments — uses `examples/gds_to_core/data/sg13g2_stdcell.gds`):
 
 ```bat
-build\gds_to_cdb.exe
+build\gds_to_core.exe
 ```
 
 Custom paths:
 
 ```bat
-build\gds_to_cdb.exe input.gds output\layout.cdb output\layout.txt CELL_NAME
+build\gds_to_core.exe input.gds output\layout.core output\layout.txt CELL_NAME
 ```
 
 ### Qucs schematic import
 
 ```bat
-build\qucs_to_cdb.exe examples\qucs_to_cdb\data\rc_lowpass.sch examples\qucs_to_cdb\output\schematic.cdb
+build\qucs_to_core.exe examples\qucs_to_core\data\rc_lowpass.sch examples\qucs_to_core\output\schematic.core
 ```
 
 ### Minimal GDS
 
 ```bat
 build\make_sample_gds.exe testdata\sample.gds
-build\gds_to_cdb.exe testdata\sample.gds output\sample.cdb
+build\gds_to_core.exe testdata\sample.gds output\sample.core
 ```
 
 ## Documentation
@@ -135,8 +135,8 @@ HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally
 | `src/` | Core C++ API (`Database`, `Cell`, `Shape`, …) |
 | `schema/` | Cap'n Proto schemas (`.capnp`) |
 | `utils/` | `GdsImporter`, `QucsImporter`, `QucsExporter`, `TextDumper` |
-| `examples/gds_to_cdb/` | GDS import example + sample data |
-| `examples/qucs_to_cdb/` | Qucs import example + sample `.sch` |
+| `examples/gds_to_core/` | GDS import example + sample data |
+| `examples/qucs_to_core/` | Qucs import example + sample `.sch` |
 | `third_party/capnp-install/` | Cap'n Proto compiler and libraries |
 | `scripts/mkcapnp.cmd` | Build Cap'n Proto on Windows |
 | `docs/html/` | Documentation and `logo.svg` |
@@ -144,4 +144,4 @@ HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally
 
 ## License
 
-CommonDB is licensed under the **GNU General Public License v3.0**. See [LICENSE](LICENSE) for the full text.
+CORE is licensed under the **GNU General Public License v3.0**. See [LICENSE](LICENSE) for the full text.

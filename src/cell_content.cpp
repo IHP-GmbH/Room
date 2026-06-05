@@ -1,8 +1,8 @@
 #include "cell_content.h"
 
-namespace cdb {
+namespace core {
 
 CellContent::CellContent(ViewType viewType, double dbuPerMicron)
     : viewType_(viewType), dbuPerMicron_(dbuPerMicron) {}
 
-} // namespace cdb
+} // namespace core

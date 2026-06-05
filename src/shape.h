@@ -4,7 +4,7 @@
 
 #include <vector>
 
-namespace cdb {
+namespace core {
 
 class Shape {
 public:
@@ -53,4 +53,4 @@ private:
     std::vector<Property> properties_;
 };
 
-} // namespace cdb
+} // namespace core

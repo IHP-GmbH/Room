@@ -1,6 +1,6 @@
 #include "block.h"
 
-namespace cdb {
+namespace core {
 
 void Block::recomputeBBox()
 {
@@ -22,4 +22,4 @@ void Block::recomputeBBox()
     }
 }
 
-} // namespace cdb
+} // namespace core

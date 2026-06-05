@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace cdb {
+namespace core {
 
 class Property {
 public:
@@ -13,4 +13,4 @@ public:
     Property(std::string n, std::string v) : name(std::move(n)), value(std::move(v)) {}
 };
 
-} // namespace cdb
+} // namespace core

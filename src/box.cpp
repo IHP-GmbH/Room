@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace cdb {
+namespace core {
 
 void Box::expand(std::int64_t x, std::int64_t y)
 {
@@ -40,4 +40,4 @@ bool Box::empty() const
     return (llx >= urx) || (lly >= ury);
 }
 
-} // namespace cdb
+} // namespace core

@@ -8,17 +8,17 @@
 
 namespace {
 
-constexpr const char *kDefaultSch = "examples/qucs_to_cdb/data/rc_lowpass.sch";
-constexpr const char *kDefaultCdb = "examples/qucs_to_cdb/output/schematic.cdb";
-constexpr const char *kDefaultDump = "examples/qucs_to_cdb/output/schematic.txt";
-constexpr const char *kDefaultRoundtrip = "examples/qucs_to_cdb/output/schematic_roundtrip.sch";
+constexpr const char *kDefaultSch = "examples/qucs_to_core/data/rc_lowpass.sch";
+constexpr const char *kDefaultCore = "examples/qucs_to_core/output/schematic.core";
+constexpr const char *kDefaultDump = "examples/qucs_to_core/output/schematic.txt";
+constexpr const char *kDefaultRoundtrip = "examples/qucs_to_core/output/schematic_roundtrip.sch";
 
 void printUsage(const char *prog)
 {
-    std::cerr << "Usage: " << prog << " [input.sch] [output.cdb] [dump.txt] [roundtrip.sch]\n"
+    std::cerr << "Usage: " << prog << " [input.sch] [output.core] [dump.txt] [roundtrip.sch]\n"
               << "\n"
               << "  input.sch      Qucs schematic (default: " << kDefaultSch << ")\n"
-              << "  output.cdb     CommonDB file (default: " << kDefaultCdb << ")\n"
+              << "  output.core     CORE file (default: " << kDefaultCore << ")\n"
               << "  dump.txt       text dump (default: " << kDefaultDump << ")\n"
               << "  roundtrip.sch  export schematic back to Qucs format\n";
 }
@@ -40,38 +40,38 @@ int main(int argc, char *argv[])
     }
 
     const std::string schPath = (argc >= 2) ? argv[1] : kDefaultSch;
-    const std::string cdbPath = (argc >= 3) ? argv[2] : kDefaultCdb;
+    const std::string corePath = (argc >= 3) ? argv[2] : kDefaultCore;
     const std::string dumpPath = (argc >= 4) ? argv[3] : kDefaultDump;
     const std::string roundtripPath = (argc >= 5) ? argv[4] : kDefaultRoundtrip;
 
-    cdb::QucsImporter::Options importOpts;
+    core::QucsImporter::Options importOpts;
     importOpts.libName = "qucs_import";
-    cdb::QucsImporter importer(importOpts);
+    core::QucsImporter importer(importOpts);
 
     std::cout << "Importing Qucs schematic: " << schPath << '\n';
-    cdb::Database db = importer.importFile(schPath);
+    core::Database db = importer.importFile(schPath);
     printMessages("warning", importer.warnings());
     printMessages("error", importer.errors());
     if (!importer.errors().empty()) {
         return 2;
     }
 
-    db.setGenerator("CommonDB qucs_to_cdb");
+    db.setGenerator("CORE qucs_to_core");
     db.setTechnology("qucs");
 
-    db.saveToFile(cdbPath);
-    std::cout << "Saved CommonDB file: " << cdbPath << '\n';
+    db.saveToFile(corePath);
+    std::cout << "Saved CORE file: " << corePath << '\n';
     std::cout << "  cells: " << db.lib().cells().size() << '\n';
 
-    cdb::TextDumper dumper;
+    core::TextDumper dumper;
     dumper.dumpToFile(db, dumpPath);
     std::cout << "Text dump: " << dumpPath << '\n';
 
-    const cdb::Database reloaded = cdb::Database::loadFromFile(cdbPath);
+    const core::Database reloaded = core::Database::loadFromFile(corePath);
     std::cout << "Reload check: " << reloaded.lib().cells().size() << " cells\n";
 
     if (!reloaded.lib().cells().empty()) {
-        cdb::QucsExporter exporter;
+        core::QucsExporter exporter;
         exporter.exportCell(reloaded, reloaded.lib().cells().front().name(), roundtripPath);
         printMessages("warning", exporter.warnings());
         printMessages("error", exporter.errors());

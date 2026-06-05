@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <string>
 
-namespace cdb {
+namespace core {
 
 class Term {
 public:
@@ -21,4 +21,4 @@ private:
     Point position_;
 };
 
-} // namespace cdb
+} // namespace core

@@ -10,31 +10,31 @@
 
 namespace {
 
-constexpr const char *kDefaultGds = "examples/gds_to_cdb/data/sg13g2_stdcell.gds";
-constexpr const char *kDefaultCdb = "examples/gds_to_cdb/output/sg13g2_inv_2.cdb";
+constexpr const char *kDefaultGds = "examples/gds_to_core/data/sg13g2_stdcell.gds";
+constexpr const char *kDefaultCore = "examples/gds_to_core/output/sg13g2_inv_2.core";
 
 void printUsage(const char *prog)
 {
-    std::cerr << "Usage: " << prog << " <input.gds> <output.cdb> [dump.txt] [cell-name]\n"
+    std::cerr << "Usage: " << prog << " <input.gds> <output.core> [dump.txt] [cell-name]\n"
               << "\n"
               << "  input.gds   GDSII file to import\n"
-              << "  output.cdb  CommonDB file path (any directory/name, e.g. layout.cdb)\n"
+              << "  output.core  CORE file path (any directory/name, e.g. layout.core)\n"
               << "  dump.txt    optional text dump (default: output name with .txt)\n"
               << "  cell-name   optional cell to keep (default: auto-detect inv2)\n"
               << "\n"
               << "With no arguments, runs the bundled sg13g2 demo.\n"
               << "\n"
               << "Examples:\n"
-              << "  " << prog << " data/chip.gds out/layout.cdb out/layout.txt TOP\n"
-              << "  " << prog << " data/chip.gds D:/design/schematic.cdb\n";
+              << "  " << prog << " data/chip.gds out/layout.core out/layout.txt TOP\n"
+              << "  " << prog << " data/chip.gds D:/design/schematic.core\n";
 }
 
-std::string defaultDumpPath(const std::string &cdbPath)
+std::string defaultDumpPath(const std::string &corePath)
 {
-    if (cdbPath.size() >= 4 && cdbPath.compare(cdbPath.size() - 4, 4, ".cdb") == 0) {
-        return cdbPath.substr(0, cdbPath.size() - 4) + ".txt";
+    if (corePath.size() >= 5 && corePath.compare(corePath.size() - 5, 5, ".core") == 0) {
+        return corePath.substr(0, corePath.size() - 5) + ".txt";
     }
-    return cdbPath + ".txt";
+    return corePath + ".txt";
 }
 
 std::string toLower(std::string value)
@@ -51,13 +51,13 @@ bool endsWith(const std::string &value, const std::string &suffix)
            value.compare(value.size() - suffix.size(), suffix.size(), suffix) == 0;
 }
 
-std::string findInv2CellName(const cdb::Lib &lib)
+std::string findInv2CellName(const core::Lib &lib)
 {
-    if (const cdb::Cell *cell = lib.findCell("sg13g2_inv_2")) {
+    if (const core::Cell *cell = lib.findCell("sg13g2_inv_2")) {
         return cell->name();
     }
 
-    for (const cdb::Cell &cell : lib.cells()) {
+    for (const core::Cell &cell : lib.cells()) {
         const std::string lower = toLower(cell.name());
         if (lower == "inv2" || endsWith(lower, "_inv_2") || lower.find("inv_2") != std::string::npos) {
             return cell.name();
@@ -67,10 +67,10 @@ std::string findInv2CellName(const cdb::Lib &lib)
     return {};
 }
 
-std::vector<std::string> listInvCells(const cdb::Lib &lib)
+std::vector<std::string> listInvCells(const core::Lib &lib)
 {
     std::vector<std::string> names;
-    for (const cdb::Cell &cell : lib.cells()) {
+    for (const core::Cell &cell : lib.cells()) {
         if (toLower(cell.name()).find("inv") != std::string::npos) {
             names.push_back(cell.name());
         }
@@ -79,17 +79,17 @@ std::vector<std::string> listInvCells(const cdb::Lib &lib)
     return names;
 }
 
-bool keepSingleCell(cdb::Database &db, const std::string &cellName)
+bool keepSingleCell(core::Database &db, const std::string &cellName)
 {
-    std::vector<cdb::Cell> &cells = db.lib().cells();
-    const auto it = std::find_if(cells.begin(), cells.end(), [&](const cdb::Cell &cell) {
+    std::vector<core::Cell> &cells = db.lib().cells();
+    const auto it = std::find_if(cells.begin(), cells.end(), [&](const core::Cell &cell) {
         return cell.name() == cellName;
     });
     if (it == cells.end()) {
         return false;
     }
 
-    cdb::Cell kept = std::move(*it);
+    core::Cell kept = std::move(*it);
     cells.clear();
     cells.push_back(std::move(kept));
     return true;
@@ -109,16 +109,16 @@ int main(int argc, char *argv[])
     }
 
     const std::string gdsPath = (argc >= 2) ? argv[1] : kDefaultGds;
-    const std::string cdbPath = (argc >= 3) ? argv[2] : kDefaultCdb;
-    const std::string dumpPath = (argc >= 4) ? argv[3] : defaultDumpPath(cdbPath);
+    const std::string corePath = (argc >= 3) ? argv[2] : kDefaultCore;
+    const std::string dumpPath = (argc >= 4) ? argv[3] : defaultDumpPath(corePath);
     const std::string requestedCell = (argc >= 5) ? argv[4] : std::string{};
 
-    cdb::GdsImporter::Options opts;
+    core::GdsImporter::Options opts;
     opts.libName = "gds_import";
-    cdb::GdsImporter importer(opts);
+    core::GdsImporter importer(opts);
 
     std::cout << "Importing GDS: " << gdsPath << "\n";
-    cdb::Database db = importer.importFile(gdsPath);
+    core::Database db = importer.importFile(gdsPath);
 
     for (const auto &w : importer.warnings()) {
         std::cerr << "warning: " << w << "\n";
@@ -149,18 +149,18 @@ int main(int argc, char *argv[])
         }
     }
 
-    db.setGenerator("CommonDB gds_to_cdb");
+    db.setGenerator("CORE gds_to_core");
     db.setTechnology("sg13g2");
 
-    db.saveToFile(cdbPath);
-    std::cout << "Saved CommonDB file: " << cdbPath << "\n";
+    db.saveToFile(corePath);
+    std::cout << "Saved CORE file: " << corePath << "\n";
     if (!cellName.empty()) {
         std::cout << "  cell: " << cellName << "\n";
     } else {
         std::cout << "  cells: " << db.lib().cells().size() << "\n";
     }
 
-    cdb::TextDumper dumper;
+    core::TextDumper dumper;
     dumper.dumpToFile(db, dumpPath);
     std::cout << "Text dump: " << dumpPath << "\n";
 

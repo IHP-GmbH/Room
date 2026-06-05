@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace cdb {
+namespace core {
 
 class Block {
 public:
@@ -30,4 +30,4 @@ private:
     Box bbox_;
 };
 
-} // namespace cdb
+} // namespace core

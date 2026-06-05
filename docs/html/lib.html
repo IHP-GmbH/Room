@@ -1,13 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>cdb::Lib — CommonDB</title>
+  <title>Lib Class | CORE Core | CORE</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="logo" href="index.html"><svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><defs><linearGradient id="logo-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2c3e50"/><stop offset="100%" stop-color="#1a5276"/></linearGradient><linearGradient id="logo-g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#41a62a"/><stop offset="100%" stop-color="#58d68d"/></linearGradient><linearGradient id="logo-bean" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1887F"/><stop offset="100%" stop-color="#5D4037"/></linearGradient><linearGradient id="logo-cup" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#b0bec5"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="12" fill="url(#logo-bg)"/><path d="M22 8v10M32 4v12M42 10v8" stroke="#41a62a" stroke-width="1" stroke-dasharray="2 2" opacity="0.45" stroke-linecap="round"/><g transform="translate(22 11) rotate(32)"><ellipse rx="3.2" ry="4.8" fill="url(#logo-bean)"/><path d="M0 -4 Q0.7 0 0 4 Q-0.7 0 0 -4" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.2" y="-1.2" width="2.4" height="2.4" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(32 7) rotate(-8)"><ellipse rx="3.4" ry="5" fill="url(#logo-bean)"/><path d="M0 -4.2 Q0.75 0 0 4.2 Q-0.75 0 0 -4.2" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(42 13) rotate(48)"><ellipse rx="3" ry="4.5" fill="url(#logo-bean)"/><path d="M0 -3.8 Q0.65 0 0 3.8 Q-0.65 0 0 -3.8" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.1" y="-1.1" width="2.2" height="2.2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><g transform="translate(28 19) rotate(15)"><ellipse rx="2.8" ry="4.2" fill="url(#logo-bean)" opacity="0.95"/><path d="M0 -3.5 Q0.6 0 0 3.5" fill="none" stroke="#3e2723" stroke-width="0.45" opacity="0.75"/></g><path d="M45 30 C55 30 57 38 53 46 C49 50 43 48 43 42" fill="none" stroke="#90a4ae" stroke-width="2.2" stroke-linecap="round"/><path d="M17 50 L20 26 Q32 21 44 26 L47 50 Z" fill="url(#logo-cup)" stroke="#ecf0f1" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="32" cy="27" rx="11.5" ry="3.3" fill="#3e2723"/><ellipse cx="32" cy="26" rx="10" ry="2" fill="#5d4037" opacity="0.5"/><text x="32" y="40" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="700" fill="#263238" letter-spacing="1">CDB</text><g transform="translate(35 25) rotate(-25)"><ellipse rx="2.6" ry="3.8" fill="url(#logo-bean)"/><rect x="-1" y="-1" width="2" height="2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><path d="M21 26 Q32 22 43 26" fill="none" stroke="#fff" stroke-width="1.1" opacity="0.3" stroke-linecap="round"/><path d="M45 32 C53 32 55 39 51 44" fill="none" stroke="#ecf0f1" stroke-width="1.5" stroke-linecap="round"/></svg>Common<span>DB</span></a>
+    <a class="logo" href="index.html"><svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><defs><linearGradient id="logo-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2c3e50"/><stop offset="100%" stop-color="#1a5276"/></linearGradient><linearGradient id="logo-g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#41a62a"/><stop offset="100%" stop-color="#58d68d"/></linearGradient><linearGradient id="logo-bean" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1887F"/><stop offset="100%" stop-color="#5D4037"/></linearGradient><linearGradient id="logo-cup" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#b0bec5"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="12" fill="url(#logo-bg)"/><path d="M22 8v10M32 4v12M42 10v8" stroke="#41a62a" stroke-width="1" stroke-dasharray="2 2" opacity="0.45" stroke-linecap="round"/><g transform="translate(22 11) rotate(32)"><ellipse rx="3.2" ry="4.8" fill="url(#logo-bean)"/><path d="M0 -4 Q0.7 0 0 4 Q-0.7 0 0 -4" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.2" y="-1.2" width="2.4" height="2.4" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(32 7) rotate(-8)"><ellipse rx="3.4" ry="5" fill="url(#logo-bean)"/><path d="M0 -4.2 Q0.75 0 0 4.2 Q-0.75 0 0 -4.2" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(42 13) rotate(48)"><ellipse rx="3" ry="4.5" fill="url(#logo-bean)"/><path d="M0 -3.8 Q0.65 0 0 3.8 Q-0.65 0 0 -3.8" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.1" y="-1.1" width="2.2" height="2.2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><g transform="translate(28 19) rotate(15)"><ellipse rx="2.8" ry="4.2" fill="url(#logo-bean)" opacity="0.95"/><path d="M0 -3.5 Q0.6 0 0 3.5" fill="none" stroke="#3e2723" stroke-width="0.45" opacity="0.75"/></g><path d="M45 30 C55 30 57 38 53 46 C49 50 43 48 43 42" fill="none" stroke="#90a4ae" stroke-width="2.2" stroke-linecap="round"/><path d="M17 50 L20 26 Q32 21 44 26 L47 50 Z" fill="url(#logo-cup)" stroke="#ecf0f1" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="32" cy="27" rx="11.5" ry="3.3" fill="#3e2723"/><ellipse cx="32" cy="26" rx="10" ry="2" fill="#5d4037" opacity="0.5"/><text x="32" y="43" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="9" font-weight="700" fill="#263238" letter-spacing="1">CORE</text><g transform="translate(35 25) rotate(-25)"><ellipse rx="2.6" ry="3.8" fill="url(#logo-bean)"/><rect x="-1" y="-1" width="2" height="2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><path d="M21 26 Q32 22 43 26" fill="none" stroke="#fff" stroke-width="1.1" opacity="0.3" stroke-linecap="round"/><path d="M45 32 C53 32 55 39 51 44" fill="none" stroke="#ecf0f1" stroke-width="1.5" stroke-linecap="round"/></svg>CORE</a>
     <nav><a href="index.html">Overview</a><a href="example.html">Example</a><a href="classes.html">All Classes</a></nav>
   </header>
   <div class="layout">
@@ -35,54 +35,75 @@
       <ul><li><a href="gdsimporter.html">GdsImporter</a></li><li><a href="textdumper.html">TextDumper</a></li></ul>
     </aside>
     <main class="content">
-      <div class="breadcrumb"><a href="index.html">CommonDB</a> &raquo; <a href="classes.html">Classes</a> &raquo; Lib</div>
-      <h1>cdb::Lib <span class="tag tag-class">class</span></h1>
-      <p class="subtitle">src/lib.h · #include "lib.h"</p>
-      <p>Named library of cells. Stored inside <a href="database.html">Database</a>.</p>
+            <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Core</a> &raquo; C++ Classes &raquo; Lib</p>
 
-      <h2>Member functions</h2>
+      <h1 class="title">Lib Class</h1>
+      <p class="brief">Named library of cells stored inside a <a href="database.html">Database</a>. <a class="more" href="#details">More…</a></p>
 
-      <div class="fn-block">
-        <div class="fn-name">explicit Lib(std::string name)</div>
+      <table class="props">
+        <tr><th>Header:</th><td><code>#include "lib.h"</code></td></tr>
+        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE CORE::core)</code></td></tr>
+      </table>
+
+            <h2 id="public-functions">Public Functions</h2>
+      <table class="memlist">
+        <tr><td><a href="#lib">explicit Lib(std::string name)</a></td><td>Constructs a library with the given name.</td></tr>
+        <tr><td><a href="#fn-1">const std::string &amp; name() const</a></td><td>Returns the library name.</td></tr>
+        <tr><td><a href="#fn-2">std::vector&lt;Property&gt; &amp; properties()</a></td><td>Returns the library metadata list for modification.</td></tr>
+        <tr><td><a href="#fn-3">const std::vector&lt;Property&gt; &amp; properties() const</a></td><td>Returns the library metadata list for read-only access.</td></tr>
+        <tr><td><a href="#fn-4">std::vector&lt;Cell&gt; &amp; cells()</a></td><td>Returns all cells in this library for modification.</td></tr>
+        <tr><td><a href="#fn-5">const std::vector&lt;Cell&gt; &amp; cells() const</a></td><td>Returns all cells in this library for read-only access.</td></tr>
+        <tr><td><a href="#findCell">Cell * findCell(const std::string &amp; name)</a></td><td>Searches for a cell by name.</td></tr>
+        <tr><td><a href="#findCell-7">const Cell * findCell(const std::string &amp; name) const</a></td><td>Searches for a cell by name (const overload).</td></tr>
+        <tr><td><a href="#Cell">Cell &amp; getOrCreateCell(const std::string &amp; name)</a></td><td>Returns an existing cell or appends a new one with the given name.</td></tr>
+      </table>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>A <code>core::Lib</code> is a named collection of <a href="cell.html">Cell</a> objects. Each <a href="database.html">Database</a> owns exactly one library (default name <code>"default"</code>).</p>
+
+      <h2>Member Function Documentation</h2>
+
+      <div class="fn-block" id="lib">
+        <h3 class="fn-title">explicit Lib(std::string name)</h3>
         <p class="fn-desc">Constructs a library with the given name.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>name</code></td><td>Library name stored in the database and serialized to the <code>.cdb</code> file.</td></tr>
+          <tr><td><code>name</code></td><td>Library name stored in the database and serialized to the <code>.core</code> file.</td></tr>
         </table>
       </div>
 
-      <div class="fn-block">
-        <div class="fn-name">const std::string &amp; name() const</div>
+      <div class="fn-block" id="fn-1">
+        <h3 class="fn-title">const std::string &amp; name() const</h3>
         <p class="fn-desc">Returns the library name.</p>
         <p class="fn-returns"><strong>Returns:</strong> The name passed to the constructor or read from a loaded file.</p>
       </div>
 
-      <div class="fn-block">
-        <div class="fn-name">std::vector&lt;Property&gt; &amp; properties()</div>
+      <div class="fn-block" id="fn-2">
+        <h3 class="fn-title">std::vector&lt;Property&gt; &amp; properties()</h3>
         <p class="fn-desc">Returns the library metadata list for modification.</p>
         <p class="fn-returns"><strong>Returns:</strong> Mutable reference to name/value <a href="types.html#property">Property</a> pairs attached to this library.</p>
       </div>
 
-      <div class="fn-block">
-        <div class="fn-name">const std::vector&lt;Property&gt; &amp; properties() const</div>
+      <div class="fn-block" id="fn-3">
+        <h3 class="fn-title">const std::vector&lt;Property&gt; &amp; properties() const</h3>
         <p class="fn-desc">Returns the library metadata list for read-only access.</p>
         <p class="fn-returns"><strong>Returns:</strong> Const reference to name/value properties.</p>
       </div>
 
-      <div class="fn-block">
-        <div class="fn-name">std::vector&lt;Cell&gt; &amp; cells()</div>
+      <div class="fn-block" id="fn-4">
+        <h3 class="fn-title">std::vector&lt;Cell&gt; &amp; cells()</h3>
         <p class="fn-desc">Returns all cells in this library for modification.</p>
         <p class="fn-returns"><strong>Returns:</strong> Mutable reference to the cell vector. Use <code>getOrCreateCell()</code> to add cells by name.</p>
       </div>
 
-      <div class="fn-block">
-        <div class="fn-name">const std::vector&lt;Cell&gt; &amp; cells() const</div>
+      <div class="fn-block" id="fn-5">
+        <h3 class="fn-title">const std::vector&lt;Cell&gt; &amp; cells() const</h3>
         <p class="fn-desc">Returns all cells in this library for read-only access.</p>
         <p class="fn-returns"><strong>Returns:</strong> Const reference to the cell vector.</p>
       </div>
 
-      <div class="fn-block">
-        <div class="fn-name">Cell * findCell(const std::string &amp; name)</div>
+      <div class="fn-block" id="findCell">
+        <h3 class="fn-title">Cell * findCell(const std::string &amp; name)</h3>
         <p class="fn-desc">Searches for a cell by name.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -91,8 +112,8 @@
         <p class="fn-returns"><strong>Returns:</strong> Pointer to the matching <a href="cell.html">Cell</a>, or <code>nullptr</code> if no cell with that name exists.</p>
       </div>
 
-      <div class="fn-block">
-        <div class="fn-name">const Cell * findCell(const std::string &amp; name) const</div>
+      <div class="fn-block" id="findCell-7">
+        <h3 class="fn-title">const Cell * findCell(const std::string &amp; name) const</h3>
         <p class="fn-desc">Searches for a cell by name (const overload).</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -101,8 +122,8 @@
         <p class="fn-returns"><strong>Returns:</strong> Const pointer to the matching cell, or <code>nullptr</code> if not found.</p>
       </div>
 
-      <div class="fn-block">
-        <div class="fn-name">Cell &amp; getOrCreateCell(const std::string &amp; name)</div>
+      <div class="fn-block" id="Cell">
+        <h3 class="fn-title">Cell &amp; getOrCreateCell(const std::string &amp; name)</h3>
         <p class="fn-desc">Returns an existing cell or appends a new one with the given name.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
@@ -112,14 +133,14 @@
       </div>
 
       <h2>Example</h2>
-      <pre class="example"><code>cdb::Lib lib("my_pdk");
+      <pre class="example"><code>core::Lib lib("my_pdk");
 lib.properties().push_back({"author", "team"});
 
-cdb::Cell &amp; top = lib.getOrCreateCell("TOP");
-cdb::CellContent &amp; layout = top.getOrCreateContent(cdb::ViewType::Layout);
+core::Cell &amp; top = lib.getOrCreateCell("TOP");
+core::CellContent &amp; layout = top.getOrCreateContent(core::ViewType::Layout);
 
 layout.block().shapes().emplace_back(
-    cdb::Shape::RectData{{0, 0, 1000, 1000}, 0});</code></pre>
+    core::Shape::RectData{{0, 0, 1000, 1000}, 0});</code></pre>
     </main>
   </div>
 </body>

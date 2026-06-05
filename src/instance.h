@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace cdb {
+namespace core {
 
 class Instance {
 public:
@@ -24,4 +24,4 @@ private:
     std::vector<Property> properties_;
 };
 
-} // namespace cdb
+} // namespace core

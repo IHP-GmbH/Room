@@ -1,7 +1,7 @@
 # Build third_party/capnp-install at configure time when missing.
 
-function(commondb_bootstrap_capnp capnp_root capnp_include)
-    if(NOT COMMONDB_BOOTSTRAP_CAPNP)
+function(core_bootstrap_capnp capnp_root capnp_include)
+    if(NOT CORE_BOOTSTRAP_CAPNP)
         return()
     endif()
 

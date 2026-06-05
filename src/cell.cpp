@@ -1,6 +1,6 @@
 #include "cell.h"
 
-namespace cdb {
+namespace core {
 
 Cell::Cell(std::string name) : name_(std::move(name)) {}
 
@@ -33,4 +33,4 @@ CellContent &Cell::getOrCreateContent(ViewType type, double dbuPerMicron)
     return contents_.back();
 }
 
-} // namespace cdb
+} // namespace core

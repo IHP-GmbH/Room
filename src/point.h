@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace cdb {
+namespace core {
 
 class Point {
 public:
@@ -13,4 +13,4 @@ public:
     Point(std::int64_t x_, std::int64_t y_) : x(x_), y(y_) {}
 };
 
-} // namespace cdb
+} // namespace core

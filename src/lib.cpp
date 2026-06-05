@@ -1,6 +1,6 @@
 #include "lib.h"
 
-namespace cdb {
+namespace core {
 
 Lib::Lib(std::string name) : name_(std::move(name)) {}
 
@@ -33,4 +33,4 @@ Cell &Lib::getOrCreateCell(const std::string &name)
     return cells_.back();
 }
 
-} // namespace cdb
+} // namespace core

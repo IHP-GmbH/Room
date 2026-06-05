@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace cdb {
+namespace core {
 
 class CellContent {
 public:
@@ -34,4 +34,4 @@ private:
     Block block_;
 };
 
-} // namespace cdb
+} // namespace core
