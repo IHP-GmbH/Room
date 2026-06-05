@@ -17,7 +17,7 @@ The project is part of the **IHP** open-source IC design flow. Design data is ke
 
 **Note:** `core` in this repository refers to the project core library and API for IC design database storage and Cap'n Proto serialization. It is the central data model layer for libraries, cells, cell contents, shapes, instances, and nets.
 
-> This repository is maintained with commits/checkins only from the project owner.
+> This repository is maintained with commits/checkins only from the project owner. After clone, run `scripts\setup-githooks.cmd` (Windows) or `./scripts/setup-githooks.sh` (Linux/macOS) once so git hooks strip accidental Cursor co-author trailers from commit messages.
 
 ## Data model
 

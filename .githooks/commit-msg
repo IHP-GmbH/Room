@@ -1,0 +1,12 @@
+#!/bin/sh
+# Remove Cursor agent attribution if injected into the commit message.
+COMMIT_MSG_FILE=$1
+[ -f "$COMMIT_MSG_FILE" ] || exit 0
+
+filter_msg() {
+  grep -viE '^(Co-authored-by:[[:space:]]*Cursor|Made-with:[[:space:]]*Cursor)' "$COMMIT_MSG_FILE" \
+    | grep -vi 'cursoragent@cursor.com' > "$COMMIT_MSG_FILE.tmp" \
+    && mv "$COMMIT_MSG_FILE.tmp" "$COMMIT_MSG_FILE"
+}
+
+filter_msg
