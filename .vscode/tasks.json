@@ -91,12 +91,14 @@
     {
       "label": "Example: Make Sample GDS",
       "type": "shell",
-      "command": "cmd",
-      "args": [
-        "/c",
-        "if not exist testdata mkdir testdata && build\\make_sample_gds.exe testdata\\sample.gds"
-      ],
-      "options": { "cwd": "${workspaceFolder}" },
+      "command": "if not exist testdata mkdir testdata & build\\make_sample_gds.exe testdata\\sample.gds",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
       "dependsOn": ["Build: All Targets"],
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -104,43 +106,119 @@
     {
       "label": "Example: GDS to CORE",
       "type": "shell",
-      "command": "cmd",
-      "args": [
-        "/c",
-        "if not exist examples\\gds_to_core\\output mkdir examples\\gds_to_core\\output && build\\gds_to_core.exe"
-      ],
-      "options": { "cwd": "${workspaceFolder}" },
+      "command": "if not exist examples\\gds_to_core\\output mkdir examples\\gds_to_core\\output & build\\gds_to_core.exe",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
       "dependsOn": ["Build: All Targets"],
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "showReuseMessage": false,
+        "close": false
+      }
+    },
+    {
+      "label": "Run Demo: GDS to CORE",
+      "type": "process",
+      "command": "${workspaceFolder}/build/gds_to_core.exe",
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["Ensure: gds_to_core output dir"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "showReuseMessage": false,
+        "close": false
+      }
+    },
+    {
+      "label": "Ensure: gds_to_core output dir",
+      "type": "shell",
+      "command": "if not exist examples\\gds_to_core\\output mkdir examples\\gds_to_core\\output",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "panel": "shared", "close": true }
     },
     {
       "label": "Example: Qucs to CORE",
       "type": "shell",
-      "command": "cmd",
-      "args": [
-        "/c",
-        "if not exist examples\\qucs_to_core\\output mkdir examples\\qucs_to_core\\output && build\\qucs_to_core.exe"
-      ],
-      "options": { "cwd": "${workspaceFolder}" },
+      "command": "if not exist examples\\qucs_to_core\\output mkdir examples\\qucs_to_core\\output & build\\qucs_to_core.exe",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
       "dependsOn": ["Build: All Targets"],
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "showReuseMessage": false,
+        "close": false
+      }
+    },
+    {
+      "label": "Run Demo: Qucs to CORE",
+      "type": "process",
+      "command": "${workspaceFolder}/build/qucs_to_core.exe",
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["Ensure: qucs_to_core output dir"],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "showReuseMessage": false,
+        "close": false
+      }
+    },
+    {
+      "label": "Ensure: qucs_to_core output dir",
+      "type": "shell",
+      "command": "if not exist examples\\qucs_to_core\\output mkdir examples\\qucs_to_core\\output",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
+      "problemMatcher": [],
+      "presentation": { "reveal": "silent", "panel": "shared", "close": true }
     },
     {
       "label": "Example: Build & Run Full Demo",
-      "type": "shell",
-      "command": "cmd",
-      "args": ["/c", "echo Run Example: Make Sample GDS then Example: GDS to CORE"],
-      "options": { "cwd": "${workspaceFolder}" },
       "dependsOrder": "sequence",
       "dependsOn": [
         "Build: All Targets",
-        "Example: GDS to CORE"
+        "Run Demo: GDS to CORE"
       ],
       "problemMatcher": [],
       "group": { "kind": "test", "isDefault": true },
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "showReuseMessage": false,
+        "close": false
+      }
     }
   ]
 }

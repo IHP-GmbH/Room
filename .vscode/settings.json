@@ -21,5 +21,7 @@
   "search.exclude": {
     "**/build": true,
     "**/install": true
-  }
+  },
+
+  "terminal.integrated.showExitAlert": false
 }
