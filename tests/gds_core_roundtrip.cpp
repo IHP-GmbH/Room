@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 {
     if (argc != 3) {
         std::cerr << "Usage: " << argv[0] << " <input.gds> <output.gds>\n"
-                  << "  Full-library round-trip: GDS -> CORE -> GDS (sg13g2_stdcell.gds).\n";
+                  << "  Full-library round-trip: GDS -> CORE -> GDS.\n";
         return 1;
     }
 
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     const std::string outputGds = argv[2];
     const std::string corePath = outputGds + ".core";
 
-    std::cout << "=== sg13g2_stdcell GDS round-trip ===\n";
+    std::cout << "=== GDS -> CORE -> GDS round-trip ===\n";
     std::cout << "input:  " << inputGds << '\n';
     std::cout << "output: " << outputGds << '\n';
     std::cout << "core:   " << corePath << "\n\n";

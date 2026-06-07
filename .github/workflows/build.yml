@@ -38,7 +38,9 @@ jobs:
             libtool \
             pkg-config \
             klayout
-          chmod +x scripts/mkcapnp.sh scripts/build_capnp_linux.sh scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh
+          chmod +x scripts/mkcapnp.sh scripts/build_capnp_linux.sh \
+            scripts/run_sample_gds_roundtrip_test.sh \
+            scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -46,11 +48,11 @@ jobs:
       - name: Build
         run: cmake --build build -j"$(nproc)"
 
-      - name: Tests
-        run: |
-          ./build/make_sample_gds testdata/sample.gds
-          ./build/gds_to_core testdata/sample.gds build/smoke.core build/smoke.txt
-          ctest --test-dir build --output-on-failure -R sg13g2_stdcell_gds_roundtrip
+      - name: "Test: sample GDS round-trip"
+        run: ./scripts/run_sample_gds_roundtrip_test.sh build
+
+      - name: "Test: sg13g2 stdcell GDS round-trip"
+        run: ./scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh build
 
   build-windows:
     runs-on: windows-latest
@@ -88,7 +90,5 @@ jobs:
       - name: Build
         run: cmake --build build -j"$(nproc)"
 
-      - name: Tests
-        run: |
-          ./build/make_sample_gds.exe testdata/sample.gds
-          ./build/gds_to_core.exe testdata/sample.gds build/smoke.core build/smoke.txt
+      - name: "Test: sample GDS round-trip"
+        run: ./scripts/run_sample_gds_roundtrip_test.cmd build

@@ -14,13 +14,13 @@ if [[ ! -f "$INPUT_GDS" ]]; then
   exit 1
 fi
 
-ROUNDTRIP="$BUILD/sg13g2_stdcell_gds_roundtrip"
-if [[ -x "$BUILD/sg13g2_stdcell_gds_roundtrip.exe" ]]; then
-  ROUNDTRIP="$BUILD/sg13g2_stdcell_gds_roundtrip.exe"
+ROUNDTRIP="$BUILD/gds_core_roundtrip"
+if [[ -x "$BUILD/gds_core_roundtrip.exe" ]]; then
+  ROUNDTRIP="$BUILD/gds_core_roundtrip.exe"
 fi
 
 if [[ ! -x "$ROUNDTRIP" ]]; then
-  echo "Missing $ROUNDTRIP (cmake --build build --target sg13g2_stdcell_gds_roundtrip)" >&2
+  echo "Missing $ROUNDTRIP (cmake --build build --target gds_core_roundtrip)" >&2
   exit 1
 fi
 

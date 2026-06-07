@@ -17,10 +17,10 @@ if not exist "%INPUT_GDS%" (
 
 if not exist "%WORK_DIR%" mkdir "%WORK_DIR%"
 
-set "ROUNDTRIP=%BUILD%\sg13g2_stdcell_gds_roundtrip.exe"
-if not exist "%ROUNDTRIP%" set "ROUNDTRIP=%BUILD%\sg13g2_stdcell_gds_roundtrip"
+set "ROUNDTRIP=%BUILD%\gds_core_roundtrip.exe"
+if not exist "%ROUNDTRIP%" set "ROUNDTRIP=%BUILD%\gds_core_roundtrip"
 if not exist "%ROUNDTRIP%" (
-  echo Missing sg13g2_stdcell_gds_roundtrip. Run: cmake --build build --target sg13g2_stdcell_gds_roundtrip >&2
+  echo Missing gds_core_roundtrip. Run: cmake --build build --target gds_core_roundtrip >&2
   exit /b 1
 )
 
