@@ -21,6 +21,7 @@ constexpr std::uint16_t GDS_PATH     = 0x0900;
 constexpr std::uint16_t GDS_SREF     = 0x0A00;
 constexpr std::uint16_t GDS_AREF     = 0x0B00;
 constexpr std::uint16_t GDS_TEXT     = 0x0C00;
+constexpr std::uint16_t GDS_TEXTTYPE = 0x1602;
 constexpr std::uint16_t GDS_LAYER    = 0x0D02;
 constexpr std::uint16_t GDS_DATATYPE = 0x0E02;
 constexpr std::uint16_t GDS_WIDTH    = 0x0F03;
@@ -249,9 +250,11 @@ public:
             switch (recType) {
             case GDS_UNITS:
                 if (payloadLen >= 16) {
-                    const double dbuInUser = readGdsReal(payload + 8);
-                    if (dbuInUser > 0.0) {
-                        dbuPerMicron = 1.0 / dbuInUser;
+                    const double userPerDbu = readGdsReal(payload);
+                    const double metersPerUser = readGdsReal(payload + 8);
+                    const double metersPerDbu = userPerDbu * metersPerUser;
+                    if (metersPerDbu > 0.0) {
+                        dbuPerMicron = 1e-6 / metersPerDbu;
                     }
                 }
                 break;
@@ -297,16 +300,17 @@ public:
                 }
                 break;
             case GDS_DATATYPE:
+            case GDS_TEXTTYPE:
             case GDS_BOXTYPE:
                 if (payloadLen >= 2) {
                     draft.dataType = be16(payload);
                 }
                 break;
             case GDS_WIDTH:
-                if (payloadLen >= 2) {
-                    draft.width = be16(payload);
-                } else if (payloadLen >= 4) {
+                if (payloadLen >= 4) {
                     draft.width = static_cast<std::uint32_t>(be32(payload));
+                } else if (payloadLen >= 2) {
+                    draft.width = be16(payload);
                 }
                 break;
             case GDS_SNAME:
@@ -356,10 +360,11 @@ public:
         for (auto &cell : db.lib().cells()) {
             if (CellContent *content = cell.findContent(ViewType::Layout)) {
                 content->setDbuPerMicron(dbuPerMicron);
-                content->layers() = globalLayers_;
                 content->block().recomputeBBox();
             }
         }
+
+        db.lib().layers() = globalLayers_;
 
         return db;
     }

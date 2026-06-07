@@ -204,6 +204,38 @@
       "presentation": { "reveal": "silent", "panel": "shared", "close": true }
     },
     {
+      "label": "Build: sg13g2_stdcell_gds_roundtrip",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build", "--target", "sg13g2_stdcell_gds_roundtrip"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: Configure Debug"],
+      "problemMatcher": "$gcc",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Test: sg13g2_stdcell GDS round-trip",
+      "type": "shell",
+      "command": "scripts\\run_sg13g2_stdcell_gds_roundtrip_test.cmd",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
+      "dependsOn": ["Build: sg13g2_stdcell_gds_roundtrip"],
+      "problemMatcher": [],
+      "group": { "kind": "test", "isDefault": false },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "showReuseMessage": false,
+        "close": false
+      }
+    },
+    {
       "label": "Example: Build & Run Full Demo",
       "dependsOrder": "sequence",
       "dependsOn": [

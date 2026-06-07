@@ -22,7 +22,7 @@ void dumpBox(std::ostream &out, const Box &box)
     out << "(" << box.llx << "," << box.lly << ")-(" << box.urx << "," << box.ury << ")";
 }
 
-void dumpShape(std::ostream &out, const Shape &shape, int level, const CellContent &content)
+void dumpShape(std::ostream &out, const Shape &shape, int level, const std::vector<LayerSpec> &layers)
 {
     indent(out, level);
     out << "shape ";
@@ -30,8 +30,8 @@ void dumpShape(std::ostream &out, const Shape &shape, int level, const CellConte
     case Shape::Type::Rect:
         out << "rect layer=";
         if (const auto *r = shape.rect()) {
-            if (r->layerId < content.layers().size()) {
-                out << content.layers()[r->layerId].name;
+            if (r->layerId < layers.size()) {
+                out << layers[r->layerId].name;
             } else {
                 out << r->layerId;
             }
@@ -42,8 +42,8 @@ void dumpShape(std::ostream &out, const Shape &shape, int level, const CellConte
     case Shape::Type::Polygon:
         out << "polygon layer=";
         if (const auto *p = shape.polygon()) {
-            if (p->layerId < content.layers().size()) {
-                out << content.layers()[p->layerId].name;
+            if (p->layerId < layers.size()) {
+                out << layers[p->layerId].name;
             } else {
                 out << p->layerId;
             }
@@ -53,8 +53,8 @@ void dumpShape(std::ostream &out, const Shape &shape, int level, const CellConte
     case Shape::Type::Path:
         out << "path layer=";
         if (const auto *p = shape.path()) {
-            if (p->layerId < content.layers().size()) {
-                out << content.layers()[p->layerId].name;
+            if (p->layerId < layers.size()) {
+                out << layers[p->layerId].name;
             } else {
                 out << p->layerId;
             }
@@ -64,8 +64,8 @@ void dumpShape(std::ostream &out, const Shape &shape, int level, const CellConte
     case Shape::Type::Text:
         out << "text layer=";
         if (const auto *t = shape.text()) {
-            if (t->layerId < content.layers().size()) {
-                out << content.layers()[t->layerId].name;
+            if (t->layerId < layers.size()) {
+                out << layers[t->layerId].name;
             } else {
                 out << t->layerId;
             }
@@ -85,15 +85,17 @@ void TextDumper::dump(const Database &db, std::ostream &out) const
     out << "generator: " << db.generator() << "\n";
     out << "technology: " << db.technology() << "\n";
     out << "lib: " << db.lib().name() << "\n";
+    out << "layers: " << db.lib().layers().size() << "\n";
     out << "cells: " << db.lib().cells().size() << "\n\n";
 
+    const auto &layers = db.lib().layers();
     for (const auto &cell : db.lib().cells()) {
         out << "cell \"" << cell.name() << "\"\n";
         for (const auto &content : cell.contents()) {
             indent(out, 1);
             out << "type " << viewTypeToString(content.viewType())
                 << " dbuPerMicron=" << std::fixed << std::setprecision(3) << content.dbuPerMicron()
-                << " layers=" << content.layers().size() << "\n";
+                << "\n";
 
             const auto &block = content.block();
             indent(out, 1);
@@ -107,7 +109,7 @@ void TextDumper::dump(const Database &db, std::ostream &out) const
                 << " nets=" << block.nets().size() << "\n";
 
             for (const auto &shape : block.shapes()) {
-                dumpShape(out, shape, 2, content);
+                dumpShape(out, shape, 2, layers);
             }
             for (const auto &inst : block.instances()) {
                 indent(out, 2);

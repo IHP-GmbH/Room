@@ -135,7 +135,7 @@ Database  →  Lib  →  Cell  →  CellContent(layout)  →  Block
       <table class="members">
         <tr><th>GDS record</th><th>CORE</th></tr>
         <tr><td>STRNAME</td><td><a href="cell.html">Cell</a></td></tr>
-        <tr><td>LAYER + DATATYPE</td><td><a href="types.html#layerspec">LayerSpec</a> in <a href="cellcontent.html">CellContent</a></td></tr>
+        <tr><td>LAYER + DATATYPE</td><td><a href="types.html#layerspec">LayerSpec</a> in <a href="lib.html">Lib::layers()</a></td></tr>
         <tr><td>BOUNDARY / BOX</td><td><a href="shape.html">Shape::Polygon</a></td></tr>
         <tr><td>PATH</td><td><a href="shape.html">Shape::Path</a></td></tr>
         <tr><td>TEXT</td><td><a href="shape.html">Shape::Text</a></td></tr>
@@ -148,10 +148,11 @@ Database  →  Lib  →  Cell  →  CellContent(layout)  →  Block
 version: 0.1
 generator: CORE GdsImporter
 lib: gds_import
+layers: 3
 cells: 2
 
 cell "TOP"
-  type layout dbuPerMicron=1000.000 layers=3
+  type layout dbuPerMicron=1000.000
   bbox=(0,0)-(5000,5000)
   shapes=2 instances=1 nets=0
     shape path layer=L2/D0 width=200 points=2

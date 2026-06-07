@@ -24,8 +24,9 @@ The project is part of the **IHP** open-source IC design flow. Design data is ke
 ```
 Database
  └── Lib
+      ├── layers[]           ← LayerSpec table (shared by all cells)
       └── Cell[]
-           └── CellContent[]    ← viewType, dbuPerMicron, layers
+           └── CellContent[] ← viewType, dbuPerMicron
                 └── Block
                      ├── Shape[]
                      ├── Instance[]

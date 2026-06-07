@@ -52,8 +52,6 @@
         <tr><td><a href="#setViewType">void setViewType(ViewType type)</a></td><td>Changes the stored view type label.</td></tr>
         <tr><td><a href="#doubledbuPerMicron">double dbuPerMicron() const</a></td><td>Returns the coordinate resolution for this view.</td></tr>
         <tr><td><a href="#setDbuPerMicron">void setDbuPerMicron(double value)</a></td><td>Sets the coordinate resolution for this view.</td></tr>
-        <tr><td><a href="#fn-4">std::vector&lt;LayerSpec&gt; &amp; layers()</a></td><td>Returns the layer table for modification.</td></tr>
-        <tr><td><a href="#fn-5">const std::vector&lt;LayerSpec&gt; &amp; layers() const</a></td><td>Returns the layer table for read-only access.</td></tr>
         <tr><td><a href="#fn-6">std::vector&lt;Property&gt; &amp; properties()</a></td><td>Returns view-level metadata for modification.</td></tr>
         <tr><td><a href="#fn-7">const std::vector&lt;Property&gt; &amp; properties() const</a></td><td>Returns view-level metadata for read-only access.</td></tr>
         <tr><td><a href="#Block">Block &amp; block()</a></td><td>Returns the topology container for modification.</td></tr>
@@ -61,12 +59,13 @@
       </table>
 
       <h2 id="details">Detailed Description</h2>
+      <p>One view of a <a href="cell.html">Cell</a> (layout, schematic, symbol, or abstract). Layer definitions live on the parent <a href="lib.html">Lib</a>; shapes in <code>block()</code> reference them by <code>layerId</code>.</p>
 
       <h2>Member Function Documentation</h2>
 
       <div class="fn-block" id="ViewTypeviewType">
         <h3 class="fn-title">CellContent(ViewType viewType, double dbuPerMicron = 1000.0)</h3>
-        <p class="fn-desc">Constructs view data for one cell view with an empty layer table and empty <a href="block.html">Block</a>.</p>
+        <p class="fn-desc">Constructs view data for one cell view with an empty <a href="block.html">Block</a>.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
           <tr><td><code>viewType</code></td><td>Kind of view: <code>Layout</code>, <code>Schematic</code>, <code>Symbol</code>, or <code>Abstract</code>.</td></tr>
@@ -95,28 +94,7 @@
         <p class="fn-returns"><strong>Returns:</strong> Database units per micron (from GDS UNITS or the constructor default).</p>
       </div>
 
-      <div class="fn-block" id="fn-4">
-        <h3 class="fn-title">void setDbuPerMicron(double value)</h3>
-        <p class="fn-desc">Sets the coordinate resolution for this view.</p>
-        <table class="fn-params">
-          <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>value</code></td><td>Database units per micron; must be positive.</td></tr>
-        </table>
-      </div>
-
-      <div class="fn-block" id="fn-5">
-        <h3 class="fn-title">std::vector&lt;LayerSpec&gt; &amp; layers()</h3>
-        <p class="fn-desc">Returns the layer table for modification.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Mutable reference to <a href="types.html#layerspec">LayerSpec</a> entries. The index of each entry is used as <code>layerId</code> in shapes.</p>
-      </div>
-
       <div class="fn-block" id="fn-6">
-        <h3 class="fn-title">const std::vector&lt;LayerSpec&gt; &amp; layers() const</h3>
-        <p class="fn-desc">Returns the layer table for read-only access.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Const reference to the layer table.</p>
-      </div>
-
-      <div class="fn-block" id="fn-7">
         <h3 class="fn-title">std::vector&lt;Property&gt; &amp; properties()</h3>
         <p class="fn-desc">Returns view-level metadata for modification.</p>
         <p class="fn-returns"><strong>Returns:</strong> Mutable reference to name/value properties on this view.</p>
@@ -141,11 +119,11 @@
       </div>
 
       <h2>Example</h2>
-      <pre class="example"><code>core::CellContent content(core::ViewType::Layout, 1000.0);
+      <pre class="example"><code>core::Lib &amp; lib = db.lib();
+lib.layers().push_back({2, 0, "L2/D0", core::LayerPurpose::Drawing});
+lib.layers().push_back({3, 0, "L3/D0", core::LayerPurpose::Label});
 
-content.layers().push_back({2, 0, "L2/D0", core::LayerPurpose::Drawing});
-content.layers().push_back({3, 0, "L3/D0", core::LayerPurpose::Label});
-
+core::CellContent content(core::ViewType::Layout, 1000.0);
 core::Block &amp; block = content.block();
 block.shapes().emplace_back(core::Shape::TextData{
     {100, 100}, "TOPCELL", 1, 200});

@@ -1,0 +1,77 @@
+# Geometric compare of two GDS layouts using KLayout DRC XOR.
+# Based on Matthias's batch XOR recipe:
+#   https://www.klayout.de/forum/discussion/293/xor-two-layout-without-gui
+#
+# Usage (verify — exit 0 when layouts match):
+#   klayout -b -rd gds1=orig.gds -rd gds2=roundtrip.gds -r scripts/klayout_compare_gds.drc
+#
+# Usage (write XOR differences to a GDS for inspection):
+#   klayout -b -rd gds1=orig.gds -rd gds2=roundtrip.gds -rd out=xor.gds \
+#           -r scripts/klayout_compare_gds.drc -rd write_xor=1
+#
+# Optional:
+#   -rd skip_text=1   skip layer 8/25 (label layer in sg13g2 stdcell)
+
+gds1 = $gds1
+gds2 = $gds2
+skip_text = defined?($skip_text) && ($skip_text.to_i != 0)
+write_xor = defined?($out) && defined?($write_xor) && ($write_xor.to_i != 0)
+
+if write_xor
+  target($out)
+end
+
+rba1 = RBA::Layout::new
+rba1.read(gds1)
+rba2 = RBA::Layout::new
+rba2.read(gds2)
+
+names1 = rba1.each_cell.map { |c| c.name }.sort
+names2 = rba2.each_cell.map { |c| c.name }.sort
+
+if names1 != names2
+  log("ERROR: cell lists differ")
+  log("  only in gds1: #{(names1 - names2).inspect}")
+  log("  only in gds2: #{(names2 - names1).inspect}")
+  errors(1)
+end
+
+mismatch_count = 0
+
+names1.each do |cell_name|
+  l1 = layout(gds1, cell_name)
+  l2 = layout(gds2, cell_name)
+
+  layers = []
+  [l1, l2].each do |src|
+    src.layout.layer_indices.each do |index|
+      info = src.layout.get_info(index)
+      layers << [info.layer, info.datatype]
+    end
+  end
+
+  layers.sort.uniq.each do |l, d|
+    if skip_text && l == 8 && d == 25
+      next
+    end
+
+    diff = l1.input(l, d) ^ l2.input(l, d)
+    if diff.is_empty?
+      next
+    end
+
+    if write_xor
+      diff.output("XOR_#{cell_name}_#{l}_#{d}", l, 999)
+    end
+
+    log("ERROR: #{cell_name} layer #{l}/#{d} differs")
+    mismatch_count += 1
+  end
+end
+
+if mismatch_count > 0
+  log("FAILED: #{mismatch_count} cell/layer pair(s) differ between #{gds1} and #{gds2}")
+  error("layout XOR mismatch: #{mismatch_count} cell/layer pair(s)")
+else
+  log("PASSED: #{gds1} matches #{gds2}")
+end

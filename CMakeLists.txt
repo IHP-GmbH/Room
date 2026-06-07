@@ -88,6 +88,7 @@ target_link_libraries(core PUBLIC ${CAPNP_LIBRARY} ${KJ_LIBRARY})
 
 add_library(core_utils STATIC
     utils/gds_importer.cpp
+    utils/gds_exporter.cpp
     utils/qucs_importer.cpp
     utils/qucs_exporter.cpp
     utils/text_dump.cpp
@@ -128,3 +129,5 @@ install(EXPORT CORETargets
 
 install(FILES cmake/COREConfig.cmake
         DESTINATION lib/cmake/CORE)
+
+include("${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")

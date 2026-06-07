@@ -79,9 +79,10 @@
       <h2>Data hierarchy</h2>
       <div class="diagram">Database
  └── Lib
+      ├── layers[]              ← LayerSpec table (one per library)
       └── Cell[]
-           └── CellContent[]     ← viewType: layout | schematic | symbol | abstract
-                ├── dbuPerMicron, layers
+           └── CellContent[]    ← viewType: layout | schematic | symbol | abstract
+                ├── dbuPerMicron
                 └── Block
                      ├── Shape[]
                      ├── Instance[]

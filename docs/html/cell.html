@@ -134,9 +134,11 @@
       <h2>Example</h2>
       <pre class="example"><code>core::Cell cell("NAND2");
 
+core::Lib &amp; lib = db.lib();
+lib.layers().push_back({1, 0, "MET1", core::LayerPurpose::Drawing});
+
 // layout view
 core::CellContent &amp; lay = cell.getOrCreateContent(core::ViewType::Layout, 1000.0);
-lay.layers().push_back({1, 0, "MET1", core::LayerPurpose::Drawing});
 lay.block().shapes().emplace_back(core::Shape::PolygonData{
     {{{0,0}, {100,0}, {100,50}}}, 0});
 

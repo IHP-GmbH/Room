@@ -11,7 +11,7 @@ using Block     = import "design.capnp".Block;
 struct CellContent {
   viewType     @0 :ViewType;
   dbuPerMicron @1 :Float64;
-  layers       @2 :List(LayerSpec);
+  legacyLayers @2 :List(LayerSpec);  # deprecated: use Lib.layers
   properties   @3 :List(Property);
   block        @4 :Block;
 }
@@ -26,6 +26,7 @@ struct Lib {
   name       @0 :Text;
   properties @1 :List(Property);
   cells      @2 :List(Cell);
+  layers     @3 :List(LayerSpec);
 }
 
 struct Database {

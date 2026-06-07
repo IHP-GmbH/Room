@@ -53,13 +53,16 @@
         <tr><td><a href="#fn-3">const std::vector&lt;Property&gt; &amp; properties() const</a></td><td>Returns the library metadata list for read-only access.</td></tr>
         <tr><td><a href="#fn-4">std::vector&lt;Cell&gt; &amp; cells()</a></td><td>Returns all cells in this library for modification.</td></tr>
         <tr><td><a href="#fn-5">const std::vector&lt;Cell&gt; &amp; cells() const</a></td><td>Returns all cells in this library for read-only access.</td></tr>
+        <tr><td><a href="#fn-layers">std::vector&lt;LayerSpec&gt; &amp; layers()</a></td><td>Returns the shared layer table for modification.</td></tr>
+        <tr><td><a href="#fn-layers-const">const std::vector&lt;LayerSpec&gt; &amp; layers() const</a></td><td>Returns the shared layer table for read-only access.</td></tr>
         <tr><td><a href="#findCell">Cell * findCell(const std::string &amp; name)</a></td><td>Searches for a cell by name.</td></tr>
         <tr><td><a href="#findCell-7">const Cell * findCell(const std::string &amp; name) const</a></td><td>Searches for a cell by name (const overload).</td></tr>
         <tr><td><a href="#Cell">Cell &amp; getOrCreateCell(const std::string &amp; name)</a></td><td>Returns an existing cell or appends a new one with the given name.</td></tr>
       </table>
 
       <h2 id="details">Detailed Description</h2>
-      <p>A <code>core::Lib</code> is a named collection of <a href="cell.html">Cell</a> objects. Each <a href="database.html">Database</a> owns exactly one library (default name <code>"default"</code>).</p>
+      <p>A <code>core::Lib</code> is a named collection of <a href="cell.html">Cell</a> objects and a shared <a href="types.html#layerspec">LayerSpec</a> table. Each <a href="database.html">Database</a> owns exactly one library (default name <code>"default"</code>).</p>
+      <p>Shapes and terminals store a <code>layerId</code> index into <code>Lib::layers()</code>, not GDS layer numbers directly. Importers such as <a href="gdsimporter.html">GdsImporter</a> build this table once per library while scanning the file.</p>
 
       <h2>Member Function Documentation</h2>
 
@@ -102,6 +105,18 @@
         <p class="fn-returns"><strong>Returns:</strong> Const reference to the cell vector.</p>
       </div>
 
+      <div class="fn-block" id="fn-layers">
+        <h3 class="fn-title">std::vector&lt;LayerSpec&gt; &amp; layers()</h3>
+        <p class="fn-desc">Returns the shared layer table for modification.</p>
+        <p class="fn-returns"><strong>Returns:</strong> Mutable reference to <a href="types.html#layerspec">LayerSpec</a> entries. The index of each entry is used as <code>layerId</code> in shapes and terms across all cells in this library.</p>
+      </div>
+
+      <div class="fn-block" id="fn-layers-const">
+        <h3 class="fn-title">const std::vector&lt;LayerSpec&gt; &amp; layers() const</h3>
+        <p class="fn-desc">Returns the shared layer table for read-only access.</p>
+        <p class="fn-returns"><strong>Returns:</strong> Const reference to the layer table.</p>
+      </div>
+
       <div class="fn-block" id="findCell">
         <h3 class="fn-title">Cell * findCell(const std::string &amp; name)</h3>
         <p class="fn-desc">Searches for a cell by name.</p>
@@ -135,6 +150,8 @@
       <h2>Example</h2>
       <pre class="example"><code>core::Lib lib("my_pdk");
 lib.properties().push_back({"author", "team"});
+lib.layers().push_back({1, 0, "MET1", core::LayerPurpose::Drawing});
+lib.layers().push_back({8, 25, "L8/D25", core::LayerPurpose::Label});
 
 core::Cell &amp; top = lib.getOrCreateCell("TOP");
 core::CellContent &amp; layout = top.getOrCreateContent(core::ViewType::Layout);

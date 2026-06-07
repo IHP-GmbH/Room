@@ -20,6 +20,9 @@ public:
     std::vector<Cell> &cells() { return cells_; }
     const std::vector<Cell> &cells() const { return cells_; }
 
+    std::vector<LayerSpec> &layers() { return layers_; }
+    const std::vector<LayerSpec> &layers() const { return layers_; }
+
     Cell *findCell(const std::string &name);
     const Cell *findCell(const std::string &name) const;
     Cell &getOrCreateCell(const std::string &name);
@@ -27,6 +30,7 @@ public:
 private:
     std::string name_;
     std::vector<Property> properties_;
+    std::vector<LayerSpec> layers_;
     std::vector<Cell> cells_;
 };
 

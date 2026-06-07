@@ -3,8 +3,6 @@
 #include "block.h"
 #include "types.h"
 
-#include <vector>
-
 namespace core {
 
 class CellContent {
@@ -17,9 +15,6 @@ public:
     double dbuPerMicron() const { return dbuPerMicron_; }
     void setDbuPerMicron(double value) { dbuPerMicron_ = value; }
 
-    std::vector<LayerSpec> &layers() { return layers_; }
-    const std::vector<LayerSpec> &layers() const { return layers_; }
-
     std::vector<Property> &properties() { return properties_; }
     const std::vector<Property> &properties() const { return properties_; }
 
@@ -29,7 +24,6 @@ public:
 private:
     ViewType viewType_;
     double dbuPerMicron_;
-    std::vector<LayerSpec> layers_;
     std::vector<Property> properties_;
     Block block_;
 };

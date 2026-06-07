@@ -186,7 +186,7 @@
   LayerSpec(std::uint16_t ln, std::uint16_t dt, std::string n,
             LayerPurpose p = LayerPurpose::Drawing);
 };</div>
-      <p>GDS layer description. The index in <code>CellContent::layers()</code> is used as <code>layerId</code> in shapes.</p>
+      <p>GDS layer description. The index in <code><a href="lib.html">Lib::layers()</a></code> is used as <code>layerId</code> in shapes and terms.</p>
 
       <div class="fn-block">
         <h3 class="fn-title">LayerSpec(std::uint16_t ln, std::uint16_t dt, std::string n, LayerPurpose p)</h3>
@@ -271,7 +271,7 @@ box.expand(2000, 3000);
 core::Transform xf{2000, 2000, core::Orient::R90, 1.0};
 
 core::LayerSpec layer{2, 0, "MET1", core::LayerPurpose::Drawing};
-// layerId 0 = first entry in CellContent::layers()</code></pre>
+// layerId 0 = first entry in Lib::layers()</code></pre>
     </main>
   </div>
 </body>

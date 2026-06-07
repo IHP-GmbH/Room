@@ -250,7 +250,9 @@ Shape readShape(schema::Shape::Reader r)
     case schema::Shape::POLYGON: {
         const auto pr = r.getPolygon();
         Shape::PolygonData data;
-        for (const auto pt : pr.getPoints()) {
+        const auto points = pr.getPoints();
+        data.points.reserve(points.size());
+        for (const auto pt : points) {
             data.points.push_back(readPoint(pt));
         }
         data.layerId = pr.getLayerId();
@@ -260,7 +262,9 @@ Shape readShape(schema::Shape::Reader r)
     case schema::Shape::PATH: {
         const auto pr = r.getPath();
         Shape::PathData data;
-        for (const auto pt : pr.getPoints()) {
+        const auto points = pr.getPoints();
+        data.points.reserve(points.size());
+        for (const auto pt : points) {
             data.points.push_back(readPoint(pt));
         }
         data.width = pr.getWidth();
@@ -318,17 +322,26 @@ void writeBlock(schema::Block::Builder b, const Block &block)
 Block readBlock(schema::Block::Reader r)
 {
     Block block;
-    for (const auto shape : r.getShapes()) {
+    const auto shapes = r.getShapes();
+    const auto instances = r.getInstances();
+    const auto nets = r.getNets();
+    block.shapes().reserve(shapes.size());
+    block.instances().reserve(instances.size());
+    block.nets().reserve(nets.size());
+
+    for (const auto shape : shapes) {
         block.shapes().push_back(readShape(shape));
     }
-    for (const auto inst : r.getInstances()) {
+    for (const auto inst : instances) {
         Instance instance(inst.getCellName().cStr(), readTransform(inst.getTransform()));
         instance.properties() = readProperties(inst.getProperties());
         block.instances().push_back(std::move(instance));
     }
-    for (const auto net : r.getNets()) {
+    for (const auto net : nets) {
         Net n(net.getName().cStr(), fromSchemaSigType(net.getSigType()));
-        for (const auto term : net.getTerms()) {
+        const auto terms = net.getTerms();
+        n.terms().reserve(terms.size());
+        for (const auto term : terms) {
             n.terms().emplace_back(term.getName().cStr(), term.getLayerId(), readPoint(term.getPosition()));
         }
         block.nets().push_back(std::move(n));
@@ -340,10 +353,6 @@ void writeCellContent(schema::CellContent::Builder b, const CellContent &content
 {
     b.setViewType(toSchemaViewType(content.viewType()));
     b.setDbuPerMicron(content.dbuPerMicron());
-    auto layers = b.initLayers(content.layers().size());
-    for (std::size_t i = 0; i < content.layers().size(); ++i) {
-        writeLayerSpec(layers[i], content.layers()[i]);
-    }
     writeProperties(b.initProperties(content.properties().size()), content.properties());
     writeBlock(b.initBlock(), content.block());
 }
@@ -351,12 +360,35 @@ void writeCellContent(schema::CellContent::Builder b, const CellContent &content
 CellContent readCellContent(schema::CellContent::Reader r)
 {
     CellContent content(fromSchemaViewType(r.getViewType()), r.getDbuPerMicron());
-    for (const auto layer : r.getLayers()) {
-        content.layers().push_back(readLayerSpec(layer));
-    }
     content.properties() = readProperties(r.getProperties());
     content.block() = readBlock(r.getBlock());
     return content;
+}
+
+void readLegacyLayers(Lib &lib, schema::Lib::Reader libReader)
+{
+    const auto libLayers = libReader.getLayers();
+    lib.layers().reserve(libLayers.size());
+    for (const auto layer : libLayers) {
+        lib.layers().push_back(readLayerSpec(layer));
+    }
+    if (!lib.layers().empty()) {
+        return;
+    }
+
+    for (const auto cellReader : libReader.getCells()) {
+        for (const auto contentReader : cellReader.getContents()) {
+            const auto legacyLayers = contentReader.getLegacyLayers();
+            if (legacyLayers.size() == 0) {
+                continue;
+            }
+            lib.layers().reserve(legacyLayers.size());
+            for (const auto layer : legacyLayers) {
+                lib.layers().push_back(readLayerSpec(layer));
+            }
+            return;
+        }
+    }
 }
 
 } // namespace
@@ -370,6 +402,11 @@ void writeDatabase(schema::Database::Builder root, const Database &db)
     auto libBuilder = root.initLib();
     libBuilder.setName(db.lib().name());
     writeProperties(libBuilder.initProperties(db.lib().properties().size()), db.lib().properties());
+
+    auto layers = libBuilder.initLayers(db.lib().layers().size());
+    for (std::size_t i = 0; i < db.lib().layers().size(); ++i) {
+        writeLayerSpec(layers[i], db.lib().layers()[i]);
+    }
 
     auto cells = libBuilder.initCells(db.lib().cells().size());
     for (std::size_t ci = 0; ci < db.lib().cells().size(); ++ci) {
@@ -395,11 +432,16 @@ Database readDatabase(schema::Database::Reader root)
     const auto libReader = root.getLib();
     db.lib() = Lib(libReader.getName().cStr());
     db.lib().properties() = readProperties(libReader.getProperties());
+    readLegacyLayers(db.lib(), libReader);
 
-    for (const auto cellReader : libReader.getCells()) {
+    const auto cellsReader = libReader.getCells();
+    db.lib().cells().reserve(cellsReader.size());
+    for (const auto cellReader : cellsReader) {
         Cell cell(cellReader.getName().cStr());
         cell.properties() = readProperties(cellReader.getProperties());
-        for (const auto contentReader : cellReader.getContents()) {
+        const auto contentsReader = cellReader.getContents();
+        cell.contents().reserve(contentsReader.size());
+        for (const auto contentReader : contentsReader) {
             cell.contents().push_back(readCellContent(contentReader));
         }
         db.lib().cells().push_back(std::move(cell));
