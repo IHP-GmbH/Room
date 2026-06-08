@@ -1,0 +1,15 @@
+# Convert between layout formats using KLayout (auto-detect by file extension).
+#
+# Usage:
+#   klayout -b -rd in=input.oas -rd out=output.gds -r scripts/klayout_convert_layout.drc
+
+in_path = $in
+out_path = $out
+
+layout = RBA::Layout::new
+layout.read(in_path)
+layout.write(out_path)
+
+cell_count = 0
+layout.each_cell { cell_count += 1 }
+log("Converted #{in_path} -> #{out_path} (#{cell_count} cells)")

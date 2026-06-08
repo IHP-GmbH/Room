@@ -1,0 +1,59 @@
+# Geometric compare of two OASIS layouts using KLayout DRC XOR.
+#
+# Usage:
+#   klayout -b -rd oas1=orig.oas -rd oas2=roundtrip.oas -r scripts/klayout_compare_oas.drc
+
+oas1 = $oas1
+oas2 = $oas2
+skip_text = defined?($skip_text) && ($skip_text.to_i != 0)
+
+rba1 = RBA::Layout::new
+rba1.read(oas1)
+rba2 = RBA::Layout::new
+rba2.read(oas2)
+
+names1 = rba1.each_cell.map { |c| c.name }.sort
+names2 = rba2.each_cell.map { |c| c.name }.sort
+
+if names1 != names2
+  log("ERROR: cell lists differ")
+  log("  only in oas1: #{(names1 - names2).inspect}")
+  log("  only in oas2: #{(names2 - names1).inspect}")
+  errors(1)
+end
+
+mismatch_count = 0
+
+names1.each do |cell_name|
+  l1 = layout(oas1, cell_name)
+  l2 = layout(oas2, cell_name)
+
+  layers = []
+  [l1, l2].each do |src|
+    src.layout.layer_indices.each do |index|
+      info = src.layout.get_info(index)
+      layers << [info.layer, info.datatype]
+    end
+  end
+
+  layers.sort.uniq.each do |l, d|
+    if skip_text && l == 8 && d == 25
+      next
+    end
+
+    diff = l1.input(l, d) ^ l2.input(l, d)
+    if diff.is_empty?
+      next
+    end
+
+    log("ERROR: #{cell_name} layer #{l}/#{d} differs")
+    mismatch_count += 1
+  end
+end
+
+if mismatch_count > 0
+  log("FAILED: #{mismatch_count} cell/layer pair(s) differ between #{oas1} and #{oas2}")
+  error("layout XOR mismatch: #{mismatch_count} cell/layer pair(s)")
+else
+  log("PASSED: #{oas1} matches #{oas2}")
+end

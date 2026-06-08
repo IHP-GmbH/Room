@@ -1,5 +1,5 @@
 option(CORE_BUILD_TESTS "Build CORE tests" ON)
-option(CORE_BUILD_OAS_TESTS "Build OAS hierarchy tests (requires zlib)" ON)
+option(CORE_BUILD_OAS_TESTS "Build OAS tests (requires zlib; round-trip also needs KLayout)" ON)
 
 if(CORE_BUILD_TESTS)
     enable_testing()
@@ -53,15 +53,21 @@ if(CORE_BUILD_TESTS)
             add_library(core_oas STATIC
                 utils/oas_reader.cpp
                 utils/oas_writer.cpp
+                utils/klayout_util.cpp
+                utils/oas_importer.cpp
+                utils/oas_exporter.cpp
             )
             target_include_directories(core_oas PUBLIC
                 "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/utils>"
             )
-            target_link_libraries(core_oas PUBLIC ZLIB::ZLIB)
+            target_link_libraries(core_oas PUBLIC core_utils ZLIB::ZLIB)
             target_compile_definitions(core_oas PRIVATE OAS_TRACE=0)
 
             add_executable(oas_hierarchy tests/oas_hierarchy.cpp)
             target_link_libraries(oas_hierarchy PRIVATE core_oas)
+
+            add_executable(oas_core_roundtrip tests/oas_core_roundtrip.cpp)
+            target_link_libraries(oas_core_roundtrip PRIVATE core_oas)
 
             add_test(
                 NAME oas_hierarchy
@@ -74,13 +80,30 @@ if(CORE_BUILD_TESTS)
                 LABELS "oas;hierarchy"
                 TIMEOUT 120
             )
+
+            if(KLAYOUT_EXECUTABLE)
+                add_test(
+                    NAME oas_core_roundtrip
+                    COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_core_roundtrip_test.sh"
+                            "${CMAKE_BINARY_DIR}"
+                            ""
+                            "${_sg13g2_gds}"
+                    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                )
+                set_tests_properties(oas_core_roundtrip PROPERTIES
+                    LABELS "oas;roundtrip"
+                    TIMEOUT 300
+                )
+            else()
+                message(STATUS "KLayout not found; oas_core_roundtrip test not registered")
+            endif()
         else()
-            message(STATUS "zlib not found; OAS hierarchy test not registered")
+            message(STATUS "zlib not found; OAS tests not registered")
         endif()
     endif()
 
     add_custom_target(check-gds
-        COMMAND ${CMAKE_CTEST_COMMAND} --test-dir "${CMAKE_BINARY_DIR}" -V -R "roundtrip|oas_hierarchy"
+        COMMAND ${CMAKE_CTEST_COMMAND} --test-dir "${CMAKE_BINARY_DIR}" -V -R "roundtrip|oas_"
         COMMENT "Run GDS/OAS tests with timing output"
         USES_TERMINAL
     )
