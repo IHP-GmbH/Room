@@ -57,9 +57,21 @@ jobs:
     name: Tests
     needs: build-ubuntu
     runs-on: ubuntu-latest
+    env:
+      LD_LIBRARY_PATH: ${{ github.workspace }}/third_party/capnp-install/lib
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache Cap'n Proto
+        uses: actions/cache@v4
+        with:
+          path: |
+            third_party/capnproto
+            third_party/capnp-install
+          key: capnp-linux-${{ hashFiles('scripts/build_capnp_linux.sh', 'scripts/mkcapnp.sh') }}
+          restore-keys: |
+            capnp-linux-
 
       - name: Install test dependencies
         run: |
@@ -69,6 +81,8 @@ jobs:
             scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh \
             scripts/run_oas_hierarchy_test.sh \
             scripts/render_ci_test_summary.sh
+          ls third_party/capnp-install/lib/libcapnp*.so >/dev/null || \
+            (echo "Cap'n Proto libs missing; restore build cache or rebuild capnp." >&2; exit 1)
 
       - name: Download build
         uses: actions/download-artifact@v4
