@@ -236,6 +236,38 @@
       }
     },
     {
+      "label": "Build: oas_hierarchy",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build", "--target", "oas_hierarchy"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: Configure Debug"],
+      "problemMatcher": "$gcc",
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "Test: OAS hierarchy",
+      "type": "shell",
+      "command": "scripts\\run_oas_hierarchy_test.cmd",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
+      "dependsOn": ["Build: oas_hierarchy"],
+      "problemMatcher": [],
+      "group": { "kind": "test", "isDefault": false },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "showReuseMessage": false,
+        "close": false
+      }
+    },
+    {
       "label": "Test: sg13g2_stdcell GDS round-trip",
       "type": "shell",
       "command": "scripts\\run_sg13g2_stdcell_gds_roundtrip_test.cmd",

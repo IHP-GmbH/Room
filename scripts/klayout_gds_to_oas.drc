@@ -1,0 +1,15 @@
+# Convert a GDS layout to OASIS using KLayout.
+#
+# Usage:
+#   klayout -b -rd gds=in.gds -rd oas=out.oas -r scripts/klayout_gds_to_oas.drc
+
+gds = $gds
+oas = $oas
+
+layout = RBA::Layout::new
+layout.read(gds)
+layout.write(oas)
+
+cell_count = 0
+layout.each_cell { cell_count += 1 }
+log("Wrote OASIS: #{oas} (#{cell_count} cells)")

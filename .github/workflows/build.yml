@@ -37,10 +37,8 @@ jobs:
             automake \
             libtool \
             pkg-config \
-            klayout
-          chmod +x scripts/mkcapnp.sh scripts/build_capnp_linux.sh \
-            scripts/run_sample_gds_roundtrip_test.sh \
-            scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh
+            zlib1g-dev
+          chmod +x scripts/mkcapnp.sh scripts/build_capnp_linux.sh
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
@@ -48,11 +46,53 @@ jobs:
       - name: Build
         run: cmake --build build -j"$(nproc)"
 
-      - name: "Test: sample GDS round-trip"
-        run: ./scripts/run_sample_gds_roundtrip_test.sh build
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-build-ubuntu
+          path: build/
+          retention-days: 1
 
-      - name: "Test: sg13g2 stdcell GDS round-trip"
-        run: ./scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh build
+  tests-ubuntu:
+    name: Tests
+    needs: build-ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y klayout zlib1g
+          chmod +x scripts/run_sample_gds_roundtrip_test.sh \
+            scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh \
+            scripts/run_oas_hierarchy_test.sh \
+            scripts/render_ci_test_summary.sh
+
+      - name: Download build
+        uses: actions/download-artifact@v4
+        with:
+          name: core-build-ubuntu
+          path: build
+
+      - name: Prepare binaries
+        run: |
+          chmod +x build/gds_core_roundtrip build/make_sample_gds build/oas_hierarchy 2>/dev/null || true
+          mkdir -p build/logs
+
+      - name: "sample GDS round-trip"
+        run: ./scripts/run_sample_gds_roundtrip_test.sh build 2>&1 | tee build/logs/sample_gds_roundtrip.log
+
+      - name: "sg13g2 stdcell GDS round-trip"
+        run: ./scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh build 2>&1 | tee build/logs/sg13g2_stdcell_gds_roundtrip.log
+
+      - name: "OAS hierarchy"
+        run: ./scripts/run_oas_hierarchy_test.sh build 2>&1 | tee build/logs/oas_hierarchy.log
+
+      - name: Summary
+        if: always()
+        run: ./scripts/render_ci_test_summary.sh build/logs
 
   build-windows:
     runs-on: windows-latest
