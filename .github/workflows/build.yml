@@ -114,7 +114,8 @@ jobs:
         run: ./scripts/render_ci_test_summary.sh build/logs
 
   coverage-ubuntu:
-    name: Coverage
+    name: Coverage (Ubuntu)
+    needs: tests-ubuntu
     runs-on: ubuntu-latest
     env:
       CAPNP_SKIP_CHECK: 1

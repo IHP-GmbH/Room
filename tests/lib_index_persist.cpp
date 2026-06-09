@@ -2,6 +2,7 @@
 #include "gds_importer.h"
 #include "lib_index.h"
 
+#include <filesystem>
 #include <iostream>
 #include <string>
 
@@ -74,6 +75,7 @@ int main(int argc, char *argv[])
     }
 
     const core::LibIndex expectedIndex = core::LibIndex::build(original.lib());
+    std::filesystem::create_directories(std::filesystem::path(corePath).parent_path());
     original.saveToFile(corePath);
 
     const core::Database reloaded = core::Database::loadFromFile(corePath);

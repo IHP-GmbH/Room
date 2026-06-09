@@ -24,7 +24,9 @@ chmod +x "$ROOT_DIR"/scripts/run_sample_gds_roundtrip_test.sh \
     "$ROOT_DIR"/scripts/run_oas_hierarchy_test.sh \
     "$ROOT_DIR"/scripts/run_oas_core_roundtrip_test.sh 2>/dev/null || true
 
-echo "Running tests..."
+mkdir -p "$BUILD_DIR/tests"
+
+echo "Running tests (Ubuntu coverage build: $BUILD_DIR)..."
 pushd "$ROOT_DIR" >/dev/null || exit 1
 ctest --test-dir "$BUILD_DIR" --output-on-failure
 TEST_EXIT=$?

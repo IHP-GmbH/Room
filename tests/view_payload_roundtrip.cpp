@@ -9,6 +9,7 @@
 #include <kj/io.h>
 
 #include <cstdio>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -109,6 +110,7 @@ int main(int argc, char *argv[])
     }
 
     original.setVersion("1.0");
+    std::filesystem::create_directories(std::filesystem::path(corePath).parent_path());
     original.saveToFile(corePath);
 
     try {

@@ -6,6 +6,7 @@ if(CORE_BUILD_TESTS)
 
     set(_sample_gds "${CMAKE_SOURCE_DIR}/testdata/sample.gds")
     set(_sg13g2_gds "${CMAKE_SOURCE_DIR}/examples/gds_to_core/data/sg13g2_stdcell.gds")
+    set(_ctest_out "${CMAKE_BINARY_DIR}/tests")
 
     add_executable(gds_core_roundtrip tests/gds_core_roundtrip.cpp)
     target_link_libraries(gds_core_roundtrip PRIVATE core_utils)
@@ -40,7 +41,7 @@ if(CORE_BUILD_TESTS)
 
     add_test(
         NAME view_payload_roundtrip
-        COMMAND view_payload_roundtrip "${_sample_gds}"
+        COMMAND view_payload_roundtrip "${_sample_gds}" "${_ctest_out}/view_payload_roundtrip.core"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(view_payload_roundtrip PROPERTIES
@@ -50,7 +51,7 @@ if(CORE_BUILD_TESTS)
 
     add_test(
         NAME lib_index_persist
-        COMMAND lib_index_persist "${_sample_gds}"
+        COMMAND lib_index_persist "${_sample_gds}" "${_ctest_out}/lib_index_persist.core"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(lib_index_persist PROPERTIES

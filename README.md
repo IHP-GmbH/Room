@@ -120,7 +120,7 @@ The script configures `build-coverage/` with `-DCORE_ENABLE_COVERAGE=ON`, runs a
 cmake --build build-coverage --target coverage-report
 ```
 
-CI runs `./scripts/run_tests_coverage.sh` in the **Coverage** job and uploads `coverage.html` (+ detail pages) as the `core-coverage-html` artifact.
+CI runs `./scripts/run_tests_coverage.sh` in the **Coverage (Ubuntu)** job (after **Tests** pass) and uploads `coverage.html` (+ detail pages) as the `core-coverage-html` artifact. Windows has no coverage job yet (gcovr targets GCC/MinGW only).
 
 ## Build outputs
 
