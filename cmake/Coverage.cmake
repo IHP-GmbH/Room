@@ -33,26 +33,30 @@ function(core_add_coverage_report)
     endif()
 
     set(_report "${CMAKE_SOURCE_DIR}/coverage.html")
+    set(_by_file "${CMAKE_SOURCE_DIR}/coverage_by_file.txt")
+    set(_gcovr_base
+        -r "${CMAKE_SOURCE_DIR}"
+        --object-directory "${CMAKE_BINARY_DIR}"
+        --merge-mode-functions=merge-use-line-min
+        --gcov-ignore-errors=all
+        --filter "${CMAKE_SOURCE_DIR}/src/.*"
+        --filter "${CMAKE_SOURCE_DIR}/utils/.*"
+        --exclude "${CMAKE_SOURCE_DIR}/tests/.*"
+        --exclude ".*/build/.*"
+        --exclude ".*/build-coverage/.*"
+        --exclude ".*/third_party/.*"
+        --exclude ".*/generated/.*"
+        --exclude ".*/tools/.*"
+        --exclude ".*/examples/.*"
+    )
     add_custom_target(coverage-report
-        COMMAND ${_gcovr_cmd}
-            -r "${CMAKE_SOURCE_DIR}"
-            --object-directory "${CMAKE_BINARY_DIR}"
-            --merge-mode-functions=merge-use-line-min
-            --gcov-ignore-errors=all
-            --filter "${CMAKE_SOURCE_DIR}/src/.*"
-            --filter "${CMAKE_SOURCE_DIR}/utils/.*"
-            --exclude "${CMAKE_SOURCE_DIR}/tests/.*"
-            --exclude ".*/build/.*"
-            --exclude ".*/build-coverage/.*"
-            --exclude ".*/third_party/.*"
-            --exclude ".*/generated/.*"
-            --exclude ".*/tools/.*"
-            --exclude ".*/examples/.*"
-            --html-details
-            -o "${_report}"
-            --print-summary
+        COMMAND ${CMAKE_COMMAND} -E echo "Coverage by file:"
+        COMMAND ${_gcovr_cmd} ${_gcovr_base} --txt "${_by_file}" --sort filename
+        COMMAND ${CMAKE_COMMAND} -E cat "${_by_file}"
+        COMMAND ${CMAKE_COMMAND} -E echo "Coverage summary:"
+        COMMAND ${_gcovr_cmd} ${_gcovr_base} --html-details -o "${_report}" --print-summary
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-        COMMENT "Generating coverage report (${_report})"
+        COMMENT "Generating coverage reports (${_by_file}, ${_report})"
         USES_TERMINAL
     )
 endfunction()

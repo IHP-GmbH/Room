@@ -4,6 +4,7 @@ setlocal enabledelayedexpansion
 for %%I in ("%~dp0..") do set ROOT_DIR=%%~fI
 if not defined BUILD_DIR set BUILD_DIR=%ROOT_DIR%\build-coverage
 if not defined REPORT_NAME set REPORT_NAME=coverage.html
+if not defined BY_FILE_NAME set BY_FILE_NAME=coverage_by_file.txt
 
 echo Configuring coverage build in "%BUILD_DIR%"...
 cmake -S "%ROOT_DIR%" -B "%BUILD_DIR%" ^
@@ -41,6 +42,33 @@ echo Generating coverage report...
 
 pushd "%ROOT_DIR%"
 
+echo.
+echo ===================================
+echo COVERAGE BY FILE
+echo ===================================
+python -m gcovr -j 1 ^
+    -r "%ROOT_DIR%" ^
+    --object-directory "%BUILD_DIR%" ^
+    --merge-mode-functions=merge-use-line-min ^
+    --gcov-ignore-errors=all ^
+    --filter "%ROOT_DIR%/src/.*" ^
+    --filter "%ROOT_DIR%/utils/.*" ^
+    --exclude "%ROOT_DIR%/tests/.*" ^
+    --exclude ".*/build/.*" ^
+    --exclude ".*/build-coverage/.*" ^
+    --exclude ".*/third_party/.*" ^
+    --exclude ".*/generated/.*" ^
+    --exclude ".*/tools/.*" ^
+    --exclude ".*/examples/.*" ^
+    --txt "%BY_FILE_NAME%" ^
+    --sort filename
+if errorlevel 1 exit /b 1
+type "%BY_FILE_NAME%"
+
+echo.
+echo ===================================
+echo COVERAGE SUMMARY
+echo ===================================
 python -m gcovr -j 1 ^
     -r "%ROOT_DIR%" ^
     --object-directory "%BUILD_DIR%" ^

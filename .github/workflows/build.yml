@@ -171,6 +171,7 @@ jobs:
             coverage.*.html
             coverage.css
             coverage.js
+            coverage_by_file.txt
           if-no-files-found: warn
 
   build-windows:

@@ -5,6 +5,25 @@ set -u
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build-coverage}"
 REPORT_NAME="${REPORT_NAME:-coverage.html}"
+BY_FILE_NAME="${BY_FILE_NAME:-coverage_by_file.txt}"
+
+gcovr_common() {
+    python3 -m gcovr -j 1 \
+        -r "$ROOT_DIR" \
+        --object-directory "$BUILD_DIR" \
+        --merge-mode-functions=merge-use-line-min \
+        --gcov-ignore-errors=all \
+        --filter "$ROOT_DIR/src/.*" \
+        --filter "$ROOT_DIR/utils/.*" \
+        --exclude "$ROOT_DIR/tests/.*" \
+        --exclude ".*/build/.*" \
+        --exclude ".*/build-coverage/.*" \
+        --exclude ".*/third_party/.*" \
+        --exclude ".*/generated/.*" \
+        --exclude ".*/tools/.*" \
+        --exclude ".*/examples/.*" \
+        "$@"
+}
 
 echo "Configuring coverage build in \"$BUILD_DIR\"..."
 cmake -S "$ROOT_DIR" -B "$BUILD_DIR" \
@@ -42,23 +61,18 @@ echo "Generating coverage report..."
 
 pushd "$ROOT_DIR" >/dev/null || exit 1
 
-python3 -m gcovr -j 1 \
-    -r "$ROOT_DIR" \
-    --object-directory "$BUILD_DIR" \
-    --merge-mode-functions=merge-use-line-min \
-    --gcov-ignore-errors=all \
-    --filter "$ROOT_DIR/src/.*" \
-    --filter "$ROOT_DIR/utils/.*" \
-    --exclude "$ROOT_DIR/tests/.*" \
-    --exclude ".*/build/.*" \
-    --exclude ".*/build-coverage/.*" \
-    --exclude ".*/third_party/.*" \
-    --exclude ".*/generated/.*" \
-    --exclude ".*/tools/.*" \
-    --exclude ".*/examples/.*" \
-    --html-details \
-    -o "$REPORT_NAME" \
-    --print-summary
+echo
+echo "==================================="
+echo "COVERAGE BY FILE"
+echo "==================================="
+gcovr_common --txt "$BY_FILE_NAME" --sort filename
+cat "$BY_FILE_NAME"
+
+echo
+echo "==================================="
+echo "COVERAGE SUMMARY"
+echo "==================================="
+gcovr_common --html-details -o "$REPORT_NAME" --print-summary
 
 GCOVR_EXIT=$?
 
