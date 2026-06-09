@@ -23,17 +23,23 @@ The project is part of the **IHP** open-source IC design flow. Design data is ke
 
 ## Data model
 
+**On disk (`.core`, format v1.0):** geometry lives in `CellContent.payload`, not in a top-level `block` field.
+
 ```
 Database
  └── Lib
-      ├── layers[]           ← LayerSpec table (shared by all cells)
+      ├── layers[]              ← LayerSpec table (library-global)
+      ├── index                 ← LibIndex (derived hierarchy + bboxes, persisted)
       └── Cell[]
-           └── CellContent[] ← viewType, dbuPerMicron, payload (per-view)
-                └── ViewPayload → Block (in-memory via CellContent.block())
-                     ├── Shape[]
-                     ├── Instance[]
-                     └── Net[] / Term[]
+           └── CellContent[]     ← viewType, dbuPerMicron, properties
+                └── payload      ← ViewPayload (Cap'n Proto union)
+                     ├── layout | schematic | symbol | abstract
+                     │    ├── layers[]   (per-view layer table on disk)
+                     │    └── block      (shapes, instances, nets)
+                     └── opaque         (skip-friendly unknown views)
 ```
+
+**C++ API:** `CellContent::block()` is the in-memory accessor for topology; serialization maps it to `payload.<view>.block`. See [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
 
 ## Requirements
 

@@ -75,7 +75,7 @@ exporter.exportCell(loaded, "rc_lowpass", "schematic_roundtrip.sch");</code></pr
 QucsImporter::importFile()
    │  Components → Instance, Wires → Net/Term
    ▼
-Database  →  Cell  →  CellContent(schematic)  →  Block
+Database  →  Cell  →  CellContent(schematic).payload.schematic.block
    │
    ├─► Database::saveToFile()     →  schematic.core
    ├─► Database::loadFromFile()   →  reload check

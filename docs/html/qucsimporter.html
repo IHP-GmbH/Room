@@ -83,7 +83,7 @@
       <h2>Qucs → CORE mapping</h2>
       <table class="members">
         <tr><th>Qucs section</th><th>CORE</th></tr>
-        <tr><td><code>&lt;Components&gt;</code></td><td><a href="instance.html">Instance</a> in schematic <a href="block.html">Block</a></td></tr>
+        <tr><td><code>&lt;Components&gt;</code></td><td><a href="instance.html">Instance</a> in <code>payload.schematic.block</code> (C++: <code>CellContent::block()</code>)</td></tr>
         <tr><td><code>&lt;Wires&gt;</code></td><td><a href="net.html">Net</a> + <a href="term.html">Term</a> (union of wire endpoints)</td></tr>
         <tr><td><code>&lt;Properties&gt;</code></td><td><a href="cellcontent.html">CellContent</a> properties (<code>qucs.properties</code>)</td></tr>
         <tr><td>Header, Symbol, Diagrams, Paintings</td><td>Stored as <code>qucs.*</code> properties for round-trip export</td></tr>

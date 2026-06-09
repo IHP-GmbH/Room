@@ -58,6 +58,8 @@
       </table>
 
       <h2 id="details">Detailed Description</h2>
+      <p>A <code>core::Block</code> holds shapes, child <a href="instance.html">Instance</a> placements, and schematic <a href="net.html">Net</a> / <a href="term.html">Term</a> connectivity for one cell view.</p>
+      <p>In a <code>.core</code> file (v1.0), blocks are <strong>not</strong> stored directly on <a href="cellcontent.html">CellContent</a>. They live inside <code>CellContent.payload</code> — for example <code>payload.layout.block</code> or <code>payload.schematic.block</code> (<code>schema/views.capnp</code>). In C++, use <code>CellContent::block()</code> on the parent view; serialization maps between the in-memory block and the payload arm selected by <code>viewType</code>.</p>
 
       <h2>Member Function Documentation</h2>
 

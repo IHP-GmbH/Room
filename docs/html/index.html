@@ -77,16 +77,19 @@
       </p>
 
       <h2>Data hierarchy</h2>
+      <p>On disk (<code>.core</code>, format v1.0), each view stores geometry in <code>CellContent.payload</code> — not a top-level <code>block</code> field. The C++ API exposes the same topology via <code>CellContent::block()</code>.</p>
       <div class="diagram">Database
  └── Lib
-      ├── layers[]              ← LayerSpec table (one per library)
+      ├── layers[]              ← LayerSpec table (library-global)
+      ├── index                 ← LibIndex (derived, persisted)
       └── Cell[]
-           └── CellContent[]    ← viewType: layout | schematic | symbol | abstract
-                ├── dbuPerMicron
-                └── Block
-                     ├── Shape[]
-                     ├── Instance[]
-                     └── Net[]</div>
+           └── CellContent[]    ← viewType, dbuPerMicron, properties
+                └── payload      ← ViewPayload (on disk)
+                     ├── layout | schematic | symbol | abstract
+                     │    ├── layers[]   (per-view on disk)
+                     │    └── block      → Shape[], Instance[], Net[]
+                     └── opaque         (unknown / future views)</div>
+      <p>Format v1.0 stores only <code>payload</code> on <code>CellContent</code> (no legacy top-level <code>block</code> field).</p>
 
       <h2>Quick start (VS Code)</h2>
       <p><code>Ctrl+Shift+B</code> → Example: Build &amp; Run Full Demo</p>

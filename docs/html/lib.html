@@ -58,11 +58,16 @@
         <tr><td><a href="#findCell">Cell * findCell(const std::string &amp; name)</a></td><td>Searches for a cell by name.</td></tr>
         <tr><td><a href="#findCell-7">const Cell * findCell(const std::string &amp; name) const</a></td><td>Searches for a cell by name (const overload).</td></tr>
         <tr><td><a href="#Cell">Cell &amp; getOrCreateCell(const std::string &amp; name)</a></td><td>Returns an existing cell or appends a new one with the given name.</td></tr>
+        <tr><td><a href="#recomputeAllBBoxes">void recomputeAllBBoxes(ViewType view = Layout)</a></td><td>Recomputes cached bboxes on all layout blocks.</td></tr>
+        <tr><td><a href="#refreshIndex">void refreshIndex(ViewType view = Layout)</a></td><td>Rebuilds the derived <code>LibIndex</code> from cell contents.</td></tr>
+        <tr><td><a href="#index">const LibIndex &amp; index() const</a></td><td>Returns the persisted derived index (top cells, hierarchy, bboxes).</td></tr>
+        <tr><td><a href="#hasIndex">bool hasIndex() const</a></td><td>Whether <code>index()</code> has been built or loaded.</td></tr>
       </table>
 
       <h2 id="details">Detailed Description</h2>
       <p>A <code>core::Lib</code> is a named collection of <a href="cell.html">Cell</a> objects and a shared <a href="types.html#layerspec">LayerSpec</a> table. Each <a href="database.html">Database</a> owns exactly one library (default name <code>"default"</code>).</p>
       <p>Shapes and terminals store a <code>layerId</code> index into <code>Lib::layers()</code>, not GDS layer numbers directly. Importers such as <a href="gdsimporter.html">GdsImporter</a> build this table once per library while scanning the file.</p>
+      <p>A derived <code>LibIndex</code> (top cells, reference counts, child refs, per-cell bboxes) is stored on <code>Lib</code> in the <code>.core</code> file. Call <code>refreshIndex()</code> after edits, or <code>recomputeAllBBoxes()</code> when only geometry changed.</p>
 
       <h2>Member Function Documentation</h2>
 
@@ -145,6 +150,26 @@
           <tr><td><code>name</code></td><td>Cell name. If a cell with this name already exists, that cell is returned; otherwise a new empty cell is created.</td></tr>
         </table>
         <p class="fn-returns"><strong>Returns:</strong> Reference to the existing or newly created <a href="cell.html">Cell</a>.</p>
+      </div>
+
+      <div class="fn-block" id="recomputeAllBBoxes">
+        <h3 class="fn-title">void recomputeAllBBoxes(ViewType view = ViewType::Layout)</h3>
+        <p class="fn-desc">Walks all cells and recomputes <code>block().bbox()</code> for the given view type.</p>
+      </div>
+
+      <div class="fn-block" id="refreshIndex">
+        <h3 class="fn-title">void refreshIndex(ViewType view = ViewType::Layout)</h3>
+        <p class="fn-desc">Rebuilds <code>LibIndex</code> from instance hierarchy and layout bboxes, then marks the index present.</p>
+      </div>
+
+      <div class="fn-block" id="index">
+        <h3 class="fn-title">const LibIndex &amp; index() const</h3>
+        <p class="fn-desc">Returns the derived index persisted in <code>Lib.index</code> on save.</p>
+      </div>
+
+      <div class="fn-block" id="hasIndex">
+        <h3 class="fn-title">bool hasIndex() const</h3>
+        <p class="fn-desc">Returns whether an index is available (built, refreshed, or loaded from disk).</p>
       </div>
 
       <h2>Example</h2>

@@ -77,8 +77,9 @@
         <tr><td><a href="database.html">Database</a></td><td>src/database.h</td><td>Root of a .core file</td></tr>
         <tr><td><a href="lib.html">Lib</a></td><td>src/lib.h</td><td>Cell library</td></tr>
         <tr><td><a href="cell.html">Cell</a></td><td>src/cell.h</td><td>Named cell</td></tr>
-        <tr><td><a href="cellcontent.html">CellContent</a></td><td>src/cell_content.h</td><td>Cell data for one view type</td></tr>
-        <tr><td><a href="block.html">Block</a></td><td>src/block.h</td><td>Topology: shapes, instances, nets</td></tr>
+        <tr><td><a href="cellcontent.html">CellContent</a></td><td>src/cell_content.h</td><td>Per-view data; geometry in <code>payload</code> on disk, <code>block()</code> in C++</td></tr>
+        <tr><td><a href="block.html">Block</a></td><td>src/block.h</td><td>Topology inside <code>payload.*.block</code>; C++ via <code>CellContent::block()</code></td></tr>
+        <tr><td><a href="lib.html#index">LibIndex</a></td><td>src/lib_index.h</td><td>Derived hierarchy, placements, cell bboxes (persisted on <code>Lib</code>)</td></tr>
         <tr><td><a href="shape.html">Shape</a></td><td>src/shape.h</td><td>Geometric shape</td></tr>
         <tr><td><a href="instance.html">Instance</a></td><td>src/instance.h</td><td>Child cell placement</td></tr>
         <tr><td><a href="net.html">Net</a></td><td>src/net.h</td><td>Schematic net</td></tr>

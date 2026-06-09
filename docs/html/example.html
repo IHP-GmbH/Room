@@ -126,7 +126,7 @@ core::Database reloaded = core::Database::loadFromFile("output/sample.core");</c
 GdsImporter::importFile()
    │  STRNAME, BOUNDARY, PATH, SREF, TEXT, UNITS …
    ▼
-Database  →  Lib  →  Cell  →  CellContent(layout)  →  Block
+Database  →  Lib  →  Cell  →  CellContent(layout).payload.layout.block
    │
    ├─► Database::saveToFile()   →  sample.core
    └─► TextDumper::dumpToFile() →  sample.txt</div>
@@ -145,7 +145,7 @@ Database  →  Lib  →  Cell  →  CellContent(layout)  →  Block
 
       <h2>9. Sample dump output</h2>
       <pre class="example"><code>=== CORE text dump ===
-version: 0.1
+version: 1.0
 generator: CORE GdsImporter
 lib: gds_import
 layers: 3

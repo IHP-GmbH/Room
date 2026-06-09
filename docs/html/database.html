@@ -61,20 +61,20 @@
       </table>
 
       <h2 id="details">Detailed Description</h2>
-      <p>A <code>core::Database</code> is the top-level container for layout and schematic topology. It stores version, generator, and technology metadata plus a single <a href="lib.html">Lib</a> of cells. Persistence uses Cap'n Proto; files conventionally use the <code>.core</code> extension.</p>
+      <p>A <code>core::Database</code> is the top-level container for layout and schematic topology. It stores version, generator, and technology metadata plus a single <a href="lib.html">Lib</a> of cells. Persistence uses Cap'n Proto; files conventionally use the <code>.core</code> extension. Format v1.0 stores per-view geometry under <code>CellContent.payload</code> (see <a href="cellcontent.html">CellContent</a>).</p>
 
       <h2>Member Function Documentation</h2>
 
       <div class="fn-block" id="Database">
         <h3 class="fn-title">Database()</h3>
         <p class="fn-desc">Default constructor. Creates an empty in-memory database.</p>
-        <p class="fn-returns"><strong>Postcondition:</strong> <code>version()</code> is <code>"0.1"</code>, metadata strings are empty, and <code>lib()</code> is a library named <code>"default"</code> with no cells.</p>
+        <p class="fn-returns"><strong>Postcondition:</strong> <code>version()</code> is <code>"1.0"</code>, metadata strings are empty, and <code>lib()</code> is a library named <code>"default"</code> with no cells.</p>
       </div>
 
       <div class="fn-block" id="version">
         <h3 class="fn-title">const std::string &amp; version() const</h3>
         <p class="fn-desc">Returns the CORE file format version stored in this database.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Format version string (default <code>"0.1"</code> for a newly constructed database).</p>
+        <p class="fn-returns"><strong>Returns:</strong> Format version string (default <code>"1.0"</code> for a newly constructed database).</p>
       </div>
 
       <div class="fn-block" id="setVersion">
@@ -82,7 +82,7 @@
         <p class="fn-desc">Sets the format version written to the file header on save.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>value</code></td><td>Version string (for example <code>"0.1"</code>).</td></tr>
+          <tr><td><code>value</code></td><td>Version string (for example <code>"1.0"</code>).</td></tr>
         </table>
       </div>
 
