@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cell.h"
+#include "lib_index.h"
 #include "types.h"
 
 #include <string>
@@ -12,26 +13,34 @@ class Lib {
 public:
     explicit Lib(std::string name);
 
-    const std::string &name() const { return name_; }
+    const std::string &                                 name() const { return m_name; }
 
-    std::vector<Property> &properties() { return properties_; }
-    const std::vector<Property> &properties() const { return properties_; }
+    std::vector<Property> &                             properties() { return m_properties; }
+    const std::vector<Property> &                       properties() const { return m_properties; }
 
-    std::vector<Cell> &cells() { return cells_; }
-    const std::vector<Cell> &cells() const { return cells_; }
+    std::vector<Cell> &                                 cells() { return m_cells; }
+    const std::vector<Cell> &                           cells() const { return m_cells; }
 
-    std::vector<LayerSpec> &layers() { return layers_; }
-    const std::vector<LayerSpec> &layers() const { return layers_; }
+    std::vector<LayerSpec> &                            layers() { return m_layers; }
+    const std::vector<LayerSpec> &                      layers() const { return m_layers; }
 
-    Cell *findCell(const std::string &name);
-    const Cell *findCell(const std::string &name) const;
-    Cell &getOrCreateCell(const std::string &name);
+    Cell*                                               findCell(const std::string &name);
+    const Cell*                                         findCell(const std::string &name) const;
+    Cell&                                               getOrCreateCell(const std::string &name);
+
+    void recomputeAllBBoxes(ViewType view = ViewType::Layout);
+    void refreshIndex(ViewType view = ViewType::Layout);
+    void setIndex(LibIndex index);
+    bool                                                hasIndex() const { return m_hasIndex; }
+    const LibIndex &                                    index() const { return m_index; }
 
 private:
-    std::string name_;
-    std::vector<Property> properties_;
-    std::vector<LayerSpec> layers_;
-    std::vector<Cell> cells_;
+    std::string                                         m_name;
+    std::vector<Property>                               m_properties;
+    std::vector<LayerSpec>                              m_layers;
+    std::vector<Cell>                                   m_cells;
+    LibIndex                                            m_index;
+    bool                                                m_hasIndex = false;
 };
 
 } // namespace core

@@ -43,13 +43,13 @@ bool writeBytes(const std::string &path, const std::vector<std::uint8_t> &data, 
 } // namespace
 
 OasWriter::OasWriter(std::string fileName)
-    : fileName_(std::move(fileName))
+    : m_fileName(std::move(fileName))
 {
 }
 
 void OasWriter::createMinimalFile(const std::string &cellName)
 {
-    errors_.clear();
+    m_errors.clear();
 
     std::vector<std::uint8_t> fileData;
     const char magic[] = "%SEMI-OASIS\r\n";
@@ -84,7 +84,7 @@ void OasWriter::createMinimalFile(const std::string &cellName)
     appendUInt(endRec, 0);
     fileData.insert(fileData.end(), endRec.begin(), endRec.end());
 
-    writeBytes(fileName_, fileData, errors_);
+    writeBytes(m_fileName, fileData, m_errors);
 }
 
 } // namespace core

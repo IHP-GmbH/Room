@@ -61,17 +61,17 @@ void removeFile(const std::string &path)
 OasImporter::OasImporter() = default;
 
 OasImporter::OasImporter(const Options &options)
-    : options_(options)
+    : m_options(options)
 {
 }
 
 Database OasImporter::importFile(const std::string &oasPath) const
 {
-    warnings_.clear();
-    errors_.clear();
+    m_warnings.clear();
+    m_errors.clear();
 
     if (!fileExists(oasPath)) {
-        errors_.push_back("OAS file not found: " + oasPath);
+        m_errors.push_back("OAS file not found: " + oasPath);
         return {};
     }
 
@@ -83,22 +83,22 @@ Database OasImporter::importFile(const std::string &oasPath) const
         klayoutErrors);
 
     if (!converted) {
-        errors_.insert(errors_.end(), klayoutErrors.begin(), klayoutErrors.end());
+        m_errors.insert(m_errors.end(), klayoutErrors.begin(), klayoutErrors.end());
         return {};
     }
     if (!fileExists(tempGds)) {
-        errors_.push_back("KLayout did not create temp GDS: " + tempGds);
+        m_errors.push_back("KLayout did not create temp GDS: " + tempGds);
         return {};
     }
 
     GdsImporter::Options gdsOptions;
-    gdsOptions.libName = options_.libName;
-    gdsOptions.defaultDbuPerMicron = options_.defaultDbuPerMicron;
+    gdsOptions.libName = m_options.libName;
+    gdsOptions.defaultDbuPerMicron = m_options.defaultDbuPerMicron;
     GdsImporter gdsImporter(gdsOptions);
     Database db = gdsImporter.importFile(tempGds);
 
-    warnings_.insert(warnings_.end(), gdsImporter.warnings().begin(), gdsImporter.warnings().end());
-    errors_.insert(errors_.end(), gdsImporter.errors().begin(), gdsImporter.errors().end());
+    m_warnings.insert(m_warnings.end(), gdsImporter.warnings().begin(), gdsImporter.warnings().end());
+    m_errors.insert(m_errors.end(), gdsImporter.errors().begin(), gdsImporter.errors().end());
 
     removeFile(tempGds);
 

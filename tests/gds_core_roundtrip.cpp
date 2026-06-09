@@ -74,6 +74,10 @@ int main(int argc, char *argv[])
     const std::size_t reloadedCells = cellCount(reloaded);
     std::cout << "Reloaded " << reloadedCells << " cell(s), " << reloaded.lib().layers().size()
               << " layer(s)\n";
+    if (reloaded.lib().hasIndex()) {
+        std::cout << "index: top cells=" << reloaded.lib().index().topCells.size()
+                  << " placements=" << reloaded.lib().index().placementCount << '\n';
+    }
     if (reloadedCells != importedCells) {
         std::cerr << "error: cell count mismatch after reload (" << reloadedCells << " vs "
                   << importedCells << ")\n";

@@ -12,22 +12,22 @@ class Cell {
 public:
     explicit Cell(std::string name);
 
-    const std::string &name() const { return name_; }
+    const std::string &                                 name() const { return m_name; }
 
-    std::vector<Property> &properties() { return properties_; }
-    const std::vector<Property> &properties() const { return properties_; }
+    std::vector<Property> &                             properties() { return m_properties; }
+    const std::vector<Property> &                       properties() const { return m_properties; }
 
-    std::vector<CellContent> &contents() { return contents_; }
-    const std::vector<CellContent> &contents() const { return contents_; }
+    std::vector<CellContent> &                          contents() { return m_contents; }
+    const std::vector<CellContent> &                    contents() const { return m_contents; }
 
-    CellContent *findContent(ViewType type);
-    const CellContent *findContent(ViewType type) const;
-    CellContent &getOrCreateContent(ViewType type, double dbuPerMicron = 1000.0);
+    CellContent *                                       findContent(ViewType type);
+    const CellContent *                                 findContent(ViewType type) const;
+    CellContent &                                       getOrCreateContent(ViewType type, double dbuPerMicron = 1000.0);
 
 private:
-    std::string name_;
-    std::vector<Property> properties_;
-    std::vector<CellContent> contents_;
+    std::string                                         m_name;
+    std::vector<Property>                               m_properties;
+    std::vector<CellContent>                            m_contents;
 };
 
 } // namespace core

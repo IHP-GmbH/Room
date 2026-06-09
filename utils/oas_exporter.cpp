@@ -60,16 +60,16 @@ void removeFile(const std::string &path)
 
 void OasExporter::exportFile(const Database &db, const std::string &oasPath) const
 {
-    warnings_.clear();
-    errors_.clear();
+    m_warnings.clear();
+    m_errors.clear();
 
     const std::string tempGds = makeTempPath(".gds");
     GdsExporter gdsExporter;
     gdsExporter.exportFile(db, tempGds);
 
-    warnings_.insert(warnings_.end(), gdsExporter.warnings().begin(), gdsExporter.warnings().end());
+    m_warnings.insert(m_warnings.end(), gdsExporter.warnings().begin(), gdsExporter.warnings().end());
     if (!gdsExporter.errors().empty()) {
-        errors_.insert(errors_.end(), gdsExporter.errors().begin(), gdsExporter.errors().end());
+        m_errors.insert(m_errors.end(), gdsExporter.errors().begin(), gdsExporter.errors().end());
         removeFile(tempGds);
         return;
     }
@@ -83,11 +83,11 @@ void OasExporter::exportFile(const Database &db, const std::string &oasPath) con
     removeFile(tempGds);
 
     if (!converted) {
-        errors_.insert(errors_.end(), klayoutErrors.begin(), klayoutErrors.end());
+        m_errors.insert(m_errors.end(), klayoutErrors.begin(), klayoutErrors.end());
         return;
     }
     if (!fileExists(oasPath)) {
-        errors_.push_back("KLayout did not create OAS file: " + oasPath);
+        m_errors.push_back("KLayout did not create OAS file: " + oasPath);
     }
 }
 

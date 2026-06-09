@@ -14,8 +14,11 @@ namespace core {
 
 Database::Database() = default;
 
-void Database::saveToFile(const std::string &path) const
+void Database::saveToFile(const std::string &path)
 {
+    m_lib.recomputeAllBBoxes();
+    m_lib.refreshIndex();
+
     capnp::MallocMessageBuilder message;
     writeDatabase(message.initRoot<schema::Database>(), *this);
 

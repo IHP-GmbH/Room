@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include("${CMAKE_SOURCE_DIR}/cmake/Coverage.cmake")
+
 option(CORE_BOOTSTRAP_CAPNP "Build Cap'n Proto automatically when third_party/capnp-install is missing" ON)
 
 set(CAPNP_ROOT "${CMAKE_SOURCE_DIR}/third_party/capnp-install" CACHE PATH "Cap'n Proto prefix (bin, include, lib)")
@@ -51,7 +53,7 @@ add_custom_command(
             -o${CAPNPC_CXX_EXECUTABLE}:${GEN_DIR}
             -I${CAPNP_INCLUDE}
             -I${SCHEMA_DIR}
-            common.capnp dm.capnp design.capnp database.capnp
+            common.capnp dm.capnp design.capnp database.capnp views.capnp index.capnp
     DEPENDS ${SCHEMA_FILES}
     WORKING_DIRECTORY ${SCHEMA_DIR}
     COMMENT "Generating Cap'n Proto sources for CORE"
@@ -69,6 +71,7 @@ set(CORE_SOURCES
     src/cell_content.cpp
     src/cell.cpp
     src/lib.cpp
+    src/lib_index.cpp
     src/database.cpp
     src/serialization.cpp
     ${GENERATED_SOURCES}

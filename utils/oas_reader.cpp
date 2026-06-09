@@ -1731,7 +1731,7 @@ static bool parseBuffer(OasCursor &c,
 } // namespace
 
 OasReader::OasReader(std::string fileName)
-    : fileName_(std::move(fileName))
+    : m_fileName(std::move(fileName))
 {
 }
 
@@ -1740,23 +1740,23 @@ bool OasReader::readHierarchy(OasHierarchy &out)
     out.topCells.clear();
     out.children.clear();
     out.allCells.clear();
-    errors_.clear();
+    m_errors.clear();
 
-    if (fileName_.empty()) {
-        errors_.push_back("Empty OASIS filename.");
+    if (m_fileName.empty()) {
+        m_errors.push_back("Empty OASIS filename.");
         return false;
     }
 
-    std::ifstream input(fileName_, std::ios::binary);
+    std::ifstream input(m_fileName, std::ios::binary);
     if (!input) {
-        errors_.push_back("Failed to open OASIS for read: '" + fileName_ + "'");
+        m_errors.push_back("Failed to open OASIS for read: '" + m_fileName + "'");
         return false;
     }
 
     input.seekg(0, std::ios::end);
     const std::streamoff szOff = input.tellg();
     if (szOff < 16) {
-        errors_.push_back("OASIS file too small: '" + fileName_ + "'");
+        m_errors.push_back("OASIS file too small: '" + m_fileName + "'");
         return false;
     }
     const auto sz = static_cast<std::size_t>(szOff);
@@ -1765,7 +1765,7 @@ bool OasReader::readHierarchy(OasHierarchy &out)
     std::vector<std::uint8_t> fileBytes(sz);
     input.read(reinterpret_cast<char *>(fileBytes.data()), static_cast<std::streamsize>(sz));
     if (!input) {
-        errors_.push_back("Failed to read OASIS: '" + fileName_ + "'");
+        m_errors.push_back("Failed to read OASIS: '" + m_fileName + "'");
         return false;
     }
 
@@ -1774,7 +1774,7 @@ bool OasReader::readHierarchy(OasHierarchy &out)
 
     static const char magic[] = "%SEMI-OASIS";
     if (std::memcmp(base, magic, sizeof(magic) - 1) != 0) {
-        errors_.push_back("Not an OASIS file (missing %SEMI-OASIS magic).");
+        m_errors.push_back("Not an OASIS file (missing %SEMI-OASIS magic).");
         return false;
     }
 
@@ -1799,7 +1799,7 @@ bool OasReader::readHierarchy(OasHierarchy &out)
     st.guardStart = {};
 #endif
 
-    if (!parseBuffer(c, out, errors_, st)) {
+    if (!parseBuffer(c, out, m_errors, st)) {
         return false;
     }
 

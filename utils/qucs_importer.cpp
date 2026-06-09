@@ -324,24 +324,24 @@ void buildNetsFromWires(const std::vector<WireRec> &wires, Block &block)
 } // namespace
 
 QucsImporter::QucsImporter() = default;
-QucsImporter::QucsImporter(const Options &options) : options_(options) {}
+QucsImporter::QucsImporter(const Options &options) : m_options(options) {}
 
 Database QucsImporter::importFile(const std::string &schPath) const
 {
-    warnings_.clear();
-    errors_.clear();
+    m_warnings.clear();
+    m_errors.clear();
 
-    const std::string text = readFile(schPath, errors_);
-    if (!errors_.empty()) {
+    const std::string text = readFile(schPath, m_errors);
+    if (!m_errors.empty()) {
         return Database{};
     }
 
     const auto sections = parseSections(text);
-    const std::string cellName = options_.cellName.empty() ? stemFromPath(schPath) : options_.cellName;
+    const std::string cellName = m_options.cellName.empty() ? stemFromPath(schPath) : m_options.cellName;
 
     Database db;
     db.setGenerator("CORE QucsImporter");
-    db.lib() = Lib(options_.libName);
+    db.lib() = Lib(m_options.libName);
 
     Cell &cell = db.lib().getOrCreateCell(cellName);
     CellContent &content = cell.getOrCreateContent(ViewType::Schematic, 1.0);
@@ -370,16 +370,16 @@ Database QucsImporter::importFile(const std::string &schPath) const
 
     if (sections.count("Components")) {
         for (const std::string &line : sections.at("Components")) {
-            block.instances().push_back(parseComponentLine(line, warnings_));
+            block.instances().push_back(parseComponentLine(line, m_warnings));
         }
     } else {
-        warnings_.push_back("No <Components> section found");
+        m_warnings.push_back("No <Components> section found");
     }
 
     std::vector<WireRec> wires;
     if (sections.count("Wires")) {
         for (const std::string &line : sections.at("Wires")) {
-            wires.push_back(parseWireLine(line, warnings_));
+            wires.push_back(parseWireLine(line, m_warnings));
         }
         buildNetsFromWires(wires, block);
         for (const WireRec &wire : wires) {
@@ -390,9 +390,10 @@ Database QucsImporter::importFile(const std::string &schPath) const
             addProperty(content.properties(), "qucs.wire", oss.str());
         }
     } else {
-        warnings_.push_back("No <Wires> section found");
+        m_warnings.push_back("No <Wires> section found");
     }
 
+    db.lib().recomputeAllBBoxes(ViewType::Schematic);
     return db;
 }
 

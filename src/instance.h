@@ -11,17 +11,17 @@ class Instance {
 public:
     Instance(std::string cellName, Transform transform);
 
-    const std::string &cellName() const { return cellName_; }
-    Transform &transform() { return transform_; }
-    const Transform &transform() const { return transform_; }
+    const std::string &                                 cellName() const { return m_cellName; }
+    Transform &                                         transform() { return m_transform; }
+    const Transform &                                   transform() const { return m_transform; }
 
-    std::vector<Property> &properties() { return properties_; }
-    const std::vector<Property> &properties() const { return properties_; }
+    std::vector<Property> &                             properties() { return m_properties; }
+    const std::vector<Property> &                       properties() const { return m_properties; }
 
 private:
-    std::string cellName_;
-    Transform transform_;
-    std::vector<Property> properties_;
+    std::string                                         m_cellName;
+    Transform                                           m_transform;
+    std::vector<Property>                               m_properties;
 };
 
 } // namespace core

@@ -12,12 +12,14 @@ public:
     std::int64_t ury = 0;
 
     Box() = default;
-    Box(std::int64_t a, std::int64_t b, std::int64_t c, std::int64_t d)
-        : llx(a), lly(b), urx(c), ury(d) {}
+    Box(std::int64_t a, std::int64_t b, std::int64_t c, std::int64_t d);
 
     void expand(std::int64_t x, std::int64_t y);
     void expand(const Box &other);
     bool empty() const;
+
+private:
+    bool m_valid = false;
 };
 
 } // namespace core

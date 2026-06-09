@@ -159,28 +159,28 @@ void writeSection(std::ostream &out, const std::string &name, const std::vector<
 } // namespace
 
 QucsExporter::QucsExporter() = default;
-QucsExporter::QucsExporter(const Options &options) : options_(options) {}
+QucsExporter::QucsExporter(const Options &options) : m_options(options) {}
 
 void QucsExporter::exportCell(const Database &db, const std::string &cellName, const std::string &schPath) const
 {
-    warnings_.clear();
-    errors_.clear();
+    m_warnings.clear();
+    m_errors.clear();
 
     const Cell *cell = db.lib().findCell(cellName);
     if (!cell) {
-        errors_.push_back("Cell not found: " + cellName);
+        m_errors.push_back("Cell not found: " + cellName);
         return;
     }
 
     const CellContent *content = cell->findContent(ViewType::Schematic);
     if (!content) {
-        errors_.push_back("No schematic view for cell: " + cellName);
+        m_errors.push_back("No schematic view for cell: " + cellName);
         return;
     }
 
     std::ofstream out(schPath);
     if (!out) {
-        errors_.push_back("Cannot open file for writing: " + schPath);
+        m_errors.push_back("Cannot open file for writing: " + schPath);
         return;
     }
 
@@ -188,7 +188,7 @@ void QucsExporter::exportCell(const Database &db, const std::string &cellName, c
     if (!headers.empty()) {
         out << headers.front() << '\n';
     } else {
-        out << "<Qucs Schematic " << options_.qucsVersion << ">\n";
+        out << "<Qucs Schematic " << m_options.qucsVersion << ">\n";
     }
 
     auto propertyLines = collectProperties(content->properties(), "qucs.properties");

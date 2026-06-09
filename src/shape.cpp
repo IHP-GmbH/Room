@@ -2,29 +2,29 @@
 
 namespace core {
 
-Shape::Shape(RectData data) : type_(Type::Rect), rect_(std::move(data)) {}
-Shape::Shape(PolygonData data) : type_(Type::Polygon), polygon_(std::move(data)) {}
-Shape::Shape(PathData data) : type_(Type::Path), path_(std::move(data)) {}
-Shape::Shape(TextData data) : type_(Type::Text), text_(std::move(data)) {}
+Shape::Shape(RectData data) : m_type(Type::Rect), m_rect(std::move(data)) {}
+Shape::Shape(PolygonData data) : m_type(Type::Polygon), m_polygon(std::move(data)) {}
+Shape::Shape(PathData data) : m_type(Type::Path), m_path(std::move(data)) {}
+Shape::Shape(TextData data) : m_type(Type::Text), m_text(std::move(data)) {}
 
 const Shape::RectData *Shape::rect() const
 {
-    return type_ == Type::Rect ? &rect_ : nullptr;
+    return m_type == Type::Rect ? &m_rect : nullptr;
 }
 
 const Shape::PolygonData *Shape::polygon() const
 {
-    return type_ == Type::Polygon ? &polygon_ : nullptr;
+    return m_type == Type::Polygon ? &m_polygon : nullptr;
 }
 
 const Shape::PathData *Shape::path() const
 {
-    return type_ == Type::Path ? &path_ : nullptr;
+    return m_type == Type::Path ? &m_path : nullptr;
 }
 
 const Shape::TextData *Shape::text() const
 {
-    return type_ == Type::Text ? &text_ : nullptr;
+    return m_type == Type::Text ? &m_text : nullptr;
 }
 
 } // namespace core

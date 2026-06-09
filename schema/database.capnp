@@ -3,17 +3,17 @@
 using Cxx = import "/capnp/c++.capnp";
 $Cxx.namespace("core::schema");
 
-using Property  = import "common.capnp".Property;
-using ViewType  = import "dm.capnp".ViewType;
-using LayerSpec = import "dm.capnp".LayerSpec;
-using Block     = import "design.capnp".Block;
+using Property    = import "common.capnp".Property;
+using ViewType    = import "dm.capnp".ViewType;
+using LayerSpec   = import "dm.capnp".LayerSpec;
+using ViewPayload = import "views.capnp".ViewPayload;
+using LibIndex    = import "index.capnp".LibIndex;
 
 struct CellContent {
   viewType     @0 :ViewType;
   dbuPerMicron @1 :Float64;
-  legacyLayers @2 :List(LayerSpec);  # deprecated: use Lib.layers
-  properties   @3 :List(Property);
-  block        @4 :Block;
+  properties   @2 :List(Property);
+  payload      @3 :ViewPayload;
 }
 
 struct Cell {
@@ -27,6 +27,7 @@ struct Lib {
   properties @1 :List(Property);
   cells      @2 :List(Cell);
   layers     @3 :List(LayerSpec);
+  index      @4 :LibIndex;
 }
 
 struct Database {

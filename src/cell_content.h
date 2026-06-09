@@ -9,23 +9,23 @@ class CellContent {
 public:
     CellContent(ViewType viewType, double dbuPerMicron = 1000.0);
 
-    ViewType viewType() const { return viewType_; }
-    void setViewType(ViewType type) { viewType_ = type; }
+    ViewType                                            viewType() const { return m_viewType; }
+    void                                                setViewType(ViewType type) { m_viewType = type; }
 
-    double dbuPerMicron() const { return dbuPerMicron_; }
-    void setDbuPerMicron(double value) { dbuPerMicron_ = value; }
+    double                                              dbuPerMicron() const { return m_dbuPerMicron; }
+    void                                                setDbuPerMicron(double value) { m_dbuPerMicron = value; }
 
-    std::vector<Property> &properties() { return properties_; }
-    const std::vector<Property> &properties() const { return properties_; }
+    std::vector<Property> &                             properties() { return m_properties; }
+    const std::vector<Property> &                       properties() const { return m_properties; }
 
-    Block &block() { return block_; }
-    const Block &block() const { return block_; }
+    Block &                                             block() { return m_block; }
+    const Block &                                       block() const { return m_block; }
 
 private:
-    ViewType viewType_;
-    double dbuPerMicron_;
-    std::vector<Property> properties_;
-    Block block_;
+    ViewType                                            m_viewType;
+    double                                              m_dbuPerMicron;
+    std::vector<Property>                               m_properties;
+    Block                                               m_block;
 };
 
 } // namespace core

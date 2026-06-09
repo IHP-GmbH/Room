@@ -3,6 +3,6 @@
 namespace core {
 
 CellContent::CellContent(ViewType viewType, double dbuPerMicron)
-    : viewType_(viewType), dbuPerMicron_(dbuPerMicron) {}
+    : m_viewType(viewType), m_dbuPerMicron(dbuPerMicron) {}
 
 } // namespace core

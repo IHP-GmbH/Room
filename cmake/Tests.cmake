@@ -10,6 +10,15 @@ if(CORE_BUILD_TESTS)
     add_executable(gds_core_roundtrip tests/gds_core_roundtrip.cpp)
     target_link_libraries(gds_core_roundtrip PRIVATE core_utils)
 
+    add_executable(lib_index tests/lib_index.cpp)
+    target_link_libraries(lib_index PRIVATE core_utils)
+
+    add_executable(view_payload_roundtrip tests/view_payload_roundtrip.cpp)
+    target_link_libraries(view_payload_roundtrip PRIVATE core_utils)
+
+    add_executable(lib_index_persist tests/lib_index_persist.cpp)
+    target_link_libraries(lib_index_persist PRIVATE core_utils)
+
     find_program(KLAYOUT_EXECUTABLE
         NAMES klayout klayout.exe klayout_app klayout_app.exe
         HINTS
@@ -17,6 +26,36 @@ if(CORE_BUILD_TESTS)
             "$ENV{APPDATA}/KLayout"
             "C:/Program Files/KLayout"
             "C:/Program Files (x86)/KLayout"
+    )
+
+    add_test(
+        NAME lib_index
+        COMMAND lib_index "${_sample_gds}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(lib_index PROPERTIES
+        LABELS "gds;index"
+        TIMEOUT 60
+    )
+
+    add_test(
+        NAME view_payload_roundtrip
+        COMMAND view_payload_roundtrip "${_sample_gds}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(view_payload_roundtrip PROPERTIES
+        LABELS "core;payload"
+        TIMEOUT 60
+    )
+
+    add_test(
+        NAME lib_index_persist
+        COMMAND lib_index_persist "${_sample_gds}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(lib_index_persist PROPERTIES
+        LABELS "core;index"
+        TIMEOUT 60
     )
 
     add_test(
@@ -107,4 +146,6 @@ if(CORE_BUILD_TESTS)
         COMMENT "Run GDS/OAS tests with timing output"
         USES_TERMINAL
     )
+
+    core_add_coverage_report()
 endif()

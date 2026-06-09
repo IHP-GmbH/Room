@@ -17,15 +17,15 @@ class OasReader {
 public:
     explicit OasReader(std::string fileName);
 
-    bool readHierarchy(OasHierarchy &out);
+    bool                                                readHierarchy(OasHierarchy &out);
 
-    const std::vector<std::string> &errors() const { return errors_; }
-    const std::vector<std::string> &warnings() const { return warnings_; }
+    const std::vector<std::string> &                    errors() const { return m_errors; }
+    const std::vector<std::string> &                    warnings() const { return m_warnings; }
 
 private:
-    std::string fileName_;
-    std::vector<std::string> errors_;
-    std::vector<std::string> warnings_;
+    std::string                                         m_fileName;
+    std::vector<std::string>                            m_errors;
+    std::vector<std::string>                            m_warnings;
 };
 
 } // namespace core

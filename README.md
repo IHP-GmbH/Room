@@ -11,7 +11,9 @@
 
 ---
 
-**CORE** — **C**ommon **O**pen **R**epository for **E**DA — is a teaching and application API (`core::`) for storing chip design topology: libraries, cells, layers, shapes, instances, and nets. Layout and schematic data share one model; the view kind (`layout`, `schematic`, `symbol`, `abstract`) lives in `CellContent`.
+**CORE** — **C**ommon **O**pen **R**epository for **E**DA — is an open-source IC design database and C++ API (`core::`) aimed at **production quality**: libraries, cells, layers, shapes, instances, and nets with portable `.core` serialization. Layout and schematic data share one model; the view kind (`layout`, `schematic`, `symbol`, `abstract`) lives in `CellContent`.
+
+See [docs/PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) for the path from the current MVP to v1.
 
 The project is part of the **IHP** open-source IC design flow. Design data is kept in a format-neutral internal model and serialized to portable binary `.core` files via Cap'n Proto, so tools can load, edit, and save the same representation without tying the database to a single exchange format.
 
@@ -26,8 +28,8 @@ Database
  └── Lib
       ├── layers[]           ← LayerSpec table (shared by all cells)
       └── Cell[]
-           └── CellContent[] ← viewType, dbuPerMicron
-                └── Block
+           └── CellContent[] ← viewType, dbuPerMicron, payload (per-view)
+                └── ViewPayload → Block (in-memory via CellContent.block())
                      ├── Shape[]
                      ├── Instance[]
                      └── Net[] / Term[]
@@ -82,6 +84,38 @@ Open the folder in VS Code (CMake Tools extension recommended):
 
 Default build task: **Build: Static Libraries (.a)** (`Ctrl+Shift+B` may need to be bound to that task).
 
+## Tests and code coverage
+
+Tests are built when `CORE_BUILD_TESTS=ON` (default). Run them with CTest:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+**Code coverage** (GCC/MinGW + [gcovr](https://gcovr.com/)), same workflow as LibMan:
+
+**Windows:**
+
+```bat
+pip install gcovr
+scripts\run_tests_coverage.cmd
+```
+
+**Linux:**
+
+```bash
+pip install gcovr
+./scripts/run_tests_coverage.sh
+```
+
+The script configures `build-coverage/` with `-DCORE_ENABLE_COVERAGE=ON`, runs all CTest suites, and writes `coverage.html` in the repo root (Windows opens it in the browser). After tests, you can also regenerate the report from an existing coverage build:
+
+```bash
+cmake --build build-coverage --target coverage-report
+```
+
+CI runs `./scripts/run_tests_coverage.sh` in the **Coverage** job and uploads `coverage.html` (+ detail pages) as the `core-coverage-html` artifact.
+
 ## Build outputs
 
 | Target | Type | Description |
@@ -132,6 +166,8 @@ build\gds_to_core.exe testdata\sample.gds output\sample.core
 ## Documentation
 
 HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally in a browser after cloning).
+
+Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md)
 
 ## Project layout
 

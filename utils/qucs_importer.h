@@ -17,15 +17,15 @@ public:
     QucsImporter();
     explicit QucsImporter(const Options &options);
 
-    Database importFile(const std::string &schPath) const;
+    Database                                            importFile(const std::string &schPath) const;
 
-    const std::vector<std::string> &warnings() const { return warnings_; }
-    const std::vector<std::string> &errors() const { return errors_; }
+    const std::vector<std::string> &                    warnings() const { return m_warnings; }
+    const std::vector<std::string> &                    errors() const { return m_errors; }
 
 private:
-    Options options_;
-    mutable std::vector<std::string> warnings_;
-    mutable std::vector<std::string> errors_;
+    Options                                             m_options;
+    mutable std::vector<std::string>                    m_warnings;
+    mutable std::vector<std::string>                    m_errors;
 };
 
 } // namespace core

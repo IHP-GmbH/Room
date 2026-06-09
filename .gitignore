@@ -1,5 +1,17 @@
 /build/
+/build-coverage/
 /install/
+
+# Coverage (gcov / gcovr)
+coverage.html
+coverage.css
+coverage.js
+coverage.*.html
+*.gcda
+*.gcno
+*.gcov
+coverage_by_file.txt
+gcovr_verbose.txt
 /third_party/capnproto/
 /third_party/capnp-install/
 .cache/

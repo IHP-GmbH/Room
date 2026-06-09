@@ -2,24 +2,30 @@
 
 namespace core {
 
-void Block::recomputeBBox()
+Box Block::computeBBox(const Block &block)
 {
-    bbox_ = Box{};
-    for (const auto &shape : shapes_) {
+    Box bbox;
+    for (const auto &shape : block.shapes()) {
         if (const auto *r = shape.rect()) {
-            bbox_.expand(r->box);
+            bbox.expand(r->box);
         } else if (const auto *p = shape.polygon()) {
             for (const auto &pt : p->points) {
-                bbox_.expand(pt.x, pt.y);
+                bbox.expand(pt.x, pt.y);
             }
         } else if (const auto *path = shape.path()) {
             for (const auto &pt : path->points) {
-                bbox_.expand(pt.x, pt.y);
+                bbox.expand(pt.x, pt.y);
             }
         } else if (const auto *text = shape.text()) {
-            bbox_.expand(text->position.x, text->position.y);
+            bbox.expand(text->position.x, text->position.y);
         }
     }
+    return bbox;
+}
+
+void Block::recomputeBBox()
+{
+    m_bbox = computeBBox(*this);
 }
 
 } // namespace core

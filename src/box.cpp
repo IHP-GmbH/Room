@@ -4,11 +4,17 @@
 
 namespace core {
 
+Box::Box(std::int64_t a, std::int64_t b, std::int64_t c, std::int64_t d)
+    : llx(a), lly(b), urx(c), ury(d), m_valid(a <= c && b <= d)
+{
+}
+
 void Box::expand(std::int64_t x, std::int64_t y)
 {
-    if (empty()) {
+    if (!m_valid) {
         llx = urx = x;
         lly = ury = y;
+        m_valid = true;
         return;
     }
     llx = std::min(llx, x);
@@ -22,11 +28,12 @@ void Box::expand(const Box &other)
     if (other.empty()) {
         return;
     }
-    if (empty()) {
+    if (!m_valid) {
         llx = other.llx;
         lly = other.lly;
         urx = other.urx;
         ury = other.ury;
+        m_valid = true;
         return;
     }
     llx = std::min(llx, other.llx);
@@ -37,7 +44,7 @@ void Box::expand(const Box &other)
 
 bool Box::empty() const
 {
-    return (llx >= urx) || (lly >= ury);
+    return !m_valid;
 }
 
 } // namespace core

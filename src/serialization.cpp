@@ -1,9 +1,13 @@
 #include "serialization.h"
 
+#include "lib_index.h"
+
 #include <database.capnp.h>
 #include <design.capnp.h>
 #include <dm.capnp.h>
 #include <common.capnp.h>
+#include <views.capnp.h>
+#include <index.capnp.h>
 
 namespace core {
 namespace {
@@ -125,6 +129,13 @@ Point readPoint(schema::Point::Reader r)
 
 void writeBox(schema::Box::Builder b, const Box &box)
 {
+    if (box.empty()) {
+        b.setLlx(1);
+        b.setLly(1);
+        b.setUrx(0);
+        b.setUry(0);
+        return;
+    }
     b.setLlx(box.llx);
     b.setLly(box.lly);
     b.setUrx(box.urx);
@@ -133,7 +144,14 @@ void writeBox(schema::Box::Builder b, const Box &box)
 
 Box readBox(schema::Box::Reader r)
 {
-    return Box{r.getLlx(), r.getLly(), r.getUrx(), r.getUry()};
+    const std::int64_t llx = r.getLlx();
+    const std::int64_t lly = r.getLly();
+    const std::int64_t urx = r.getUrx();
+    const std::int64_t ury = r.getUry();
+    if (llx > urx || lly > ury) {
+        return Box{};
+    }
+    return Box{llx, lly, urx, ury};
 }
 
 void writeTransform(schema::Transform::Builder b, const Transform &t)
@@ -349,46 +367,151 @@ Block readBlock(schema::Block::Reader r)
     return block;
 }
 
-void writeCellContent(schema::CellContent::Builder b, const CellContent &content)
+template <typename ViewBuilder>
+void writeViewLayers(ViewBuilder viewBuilder, const std::vector<LayerSpec> &layers)
+{
+    auto layerList = viewBuilder.initLayers(layers.size());
+    for (std::size_t i = 0; i < layers.size(); ++i) {
+        writeLayerSpec(layerList[i], layers[i]);
+    }
+}
+
+void writeViewPayload(schema::ViewPayload::Builder payload,
+                      ViewType viewType,
+                      const std::vector<LayerSpec> &layers,
+                      const Block &block)
+{
+    switch (viewType) {
+    case ViewType::Layout: {
+        auto layout = payload.initLayout();
+        writeViewLayers(layout, layers);
+        writeBlock(layout.initBlock(), block);
+        break;
+    }
+    case ViewType::Schematic: {
+        auto schematic = payload.initSchematic();
+        writeViewLayers(schematic, layers);
+        writeBlock(schematic.initBlock(), block);
+        break;
+    }
+    case ViewType::Symbol: {
+        auto symbol = payload.initSymbol();
+        writeViewLayers(symbol, layers);
+        writeBlock(symbol.initBlock(), block);
+        break;
+    }
+    case ViewType::Abstract: {
+        auto abstract = payload.initAbstract();
+        writeViewLayers(abstract, layers);
+        writeBlock(abstract.initBlock(), block);
+        break;
+    }
+    }
+}
+
+Block readBlockFromPayload(schema::ViewPayload::Reader payload)
+{
+    switch (payload.which()) {
+    case schema::ViewPayload::LAYOUT:
+        return readBlock(payload.getLayout().getBlock());
+    case schema::ViewPayload::SCHEMATIC:
+        return readBlock(payload.getSchematic().getBlock());
+    case schema::ViewPayload::SYMBOL:
+        return readBlock(payload.getSymbol().getBlock());
+    case schema::ViewPayload::ABSTRACT:
+        return readBlock(payload.getAbstract().getBlock());
+    default:
+        return Block{};
+    }
+}
+
+void writeCellContent(schema::CellContent::Builder b,
+                      const CellContent &content,
+                      const std::vector<LayerSpec> &libLayers)
 {
     b.setViewType(toSchemaViewType(content.viewType()));
     b.setDbuPerMicron(content.dbuPerMicron());
     writeProperties(b.initProperties(content.properties().size()), content.properties());
-    writeBlock(b.initBlock(), content.block());
+    writeViewPayload(b.initPayload(), content.viewType(), libLayers, content.block());
 }
 
 CellContent readCellContent(schema::CellContent::Reader r)
 {
     CellContent content(fromSchemaViewType(r.getViewType()), r.getDbuPerMicron());
     content.properties() = readProperties(r.getProperties());
-    content.block() = readBlock(r.getBlock());
+    content.block() = readBlockFromPayload(r.getPayload());
     return content;
 }
 
-void readLegacyLayers(Lib &lib, schema::Lib::Reader libReader)
+void readLibLayers(Lib &lib, schema::Lib::Reader libReader)
 {
     const auto libLayers = libReader.getLayers();
     lib.layers().reserve(libLayers.size());
     for (const auto layer : libLayers) {
         lib.layers().push_back(readLayerSpec(layer));
     }
-    if (!lib.layers().empty()) {
-        return;
+}
+
+void writeLibIndex(schema::LibIndex::Builder builder, const Lib &lib, const LibIndex &index)
+{
+    builder.setPlacementCount(index.placementCount);
+
+    auto topCells = builder.initTopCells(index.topCells.size());
+    for (std::size_t i = 0; i < index.topCells.size(); ++i) {
+        topCells.set(i, index.topCells[i]);
     }
 
-    for (const auto cellReader : libReader.getCells()) {
-        for (const auto contentReader : cellReader.getContents()) {
-            const auto legacyLayers = contentReader.getLegacyLayers();
-            if (legacyLayers.size() == 0) {
-                continue;
-            }
-            lib.layers().reserve(legacyLayers.size());
-            for (const auto layer : legacyLayers) {
-                lib.layers().push_back(readLayerSpec(layer));
-            }
-            return;
+    auto entries = builder.initEntries(lib.cells().size());
+    for (std::size_t ci = 0; ci < lib.cells().size(); ++ci) {
+        const std::string &name = lib.cells()[ci].name();
+        auto entry = entries[ci];
+        entry.setName(name);
+
+        const auto bboxIt = index.cellBboxes.find(name);
+        writeBox(entry.initBbox(), bboxIt != index.cellBboxes.end() ? bboxIt->second : Box{});
+
+        const auto refsIt = index.childRefs.find(name);
+        static const std::vector<std::string> kEmptyChildRefs;
+        const std::vector<std::string> &refs =
+            refsIt != index.childRefs.end() ? refsIt->second : kEmptyChildRefs;
+        auto childRefs = entry.initChildRefs(refs.size());
+        for (std::size_t i = 0; i < refs.size(); ++i) {
+            childRefs.set(i, refs[i]);
         }
+
+        const auto refCountIt = index.referenceCount.find(name);
+        entry.setRefCount(static_cast<std::uint32_t>(
+            refCountIt != index.referenceCount.end() ? refCountIt->second : 0));
     }
+}
+
+LibIndex readLibIndex(schema::LibIndex::Reader reader)
+{
+    LibIndex index;
+    index.placementCount = static_cast<std::size_t>(reader.getPlacementCount());
+
+    const auto topCells = reader.getTopCells();
+    index.topCells.reserve(topCells.size());
+    for (const auto name : topCells) {
+        index.topCells.emplace_back(name.cStr());
+    }
+
+    const auto entries = reader.getEntries();
+    for (const auto entry : entries) {
+        const std::string name = entry.getName().cStr();
+        index.cellBboxes.emplace(name, readBox(entry.getBbox()));
+        index.referenceCount.emplace(name, entry.getRefCount());
+
+        std::vector<std::string> refs;
+        const auto childRefs = entry.getChildRefs();
+        refs.reserve(childRefs.size());
+        for (const auto ref : childRefs) {
+            refs.emplace_back(ref.cStr());
+        }
+        index.childRefs.emplace(name, std::move(refs));
+    }
+
+    return index;
 }
 
 } // namespace
@@ -417,8 +540,14 @@ void writeDatabase(schema::Database::Builder root, const Database &db)
 
         auto contents = cellBuilder.initContents(cell.contents().size());
         for (std::size_t i = 0; i < cell.contents().size(); ++i) {
-            writeCellContent(contents[i], cell.contents()[i]);
+            writeCellContent(contents[i], cell.contents()[i], db.lib().layers());
         }
+    }
+
+    if (db.lib().hasIndex()) {
+        writeLibIndex(libBuilder.initIndex(), db.lib(), db.lib().index());
+    } else {
+        writeLibIndex(libBuilder.initIndex(), db.lib(), LibIndex::build(db.lib()));
     }
 }
 
@@ -432,7 +561,7 @@ Database readDatabase(schema::Database::Reader root)
     const auto libReader = root.getLib();
     db.lib() = Lib(libReader.getName().cStr());
     db.lib().properties() = readProperties(libReader.getProperties());
-    readLegacyLayers(db.lib(), libReader);
+    readLibLayers(db.lib(), libReader);
 
     const auto cellsReader = libReader.getCells();
     db.lib().cells().reserve(cellsReader.size());
@@ -446,6 +575,15 @@ Database readDatabase(schema::Database::Reader root)
         }
         db.lib().cells().push_back(std::move(cell));
     }
+
+    db.lib().recomputeAllBBoxes();
+    const auto indexReader = libReader.getIndex();
+    if (indexReader.getEntries().size() > 0) {
+        db.lib().setIndex(readLibIndex(indexReader));
+    } else {
+        db.lib().refreshIndex();
+    }
+
     return db;
 }
 

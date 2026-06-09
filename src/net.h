@@ -12,17 +12,17 @@ class Net {
 public:
     explicit Net(std::string name, SigType sigType = SigType::Signal);
 
-    const std::string &name() const { return name_; }
-    SigType sigType() const { return sigType_; }
-    void setSigType(SigType type) { sigType_ = type; }
+    const std::string &                                 name() const { return m_name; }
+    SigType                                             sigType() const { return m_sigType; }
+    void                                                setSigType(SigType type) { m_sigType = type; }
 
-    std::vector<Term> &terms() { return terms_; }
-    const std::vector<Term> &terms() const { return terms_; }
+    std::vector<Term> &                                 terms() { return m_terms; }
+    const std::vector<Term> &                           terms() const { return m_terms; }
 
 private:
-    std::string name_;
-    SigType sigType_;
-    std::vector<Term> terms_;
+    std::string                                         m_name;
+    SigType                                             m_sigType;
+    std::vector<Term>                                   m_terms;
 };
 
 } // namespace core

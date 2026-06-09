@@ -314,12 +314,12 @@ void writeCell(FILE *f, const std::vector<LayerSpec> &layers, const Cell &cell)
 
 void GdsExporter::exportFile(const Database &db, const std::string &gdsPath) const
 {
-    warnings_.clear();
-    errors_.clear();
+    m_warnings.clear();
+    m_errors.clear();
 
     FILE *f = std::fopen(gdsPath.c_str(), "wb");
     if (!f) {
-        errors_.push_back("Cannot open GDS file for writing: " + gdsPath);
+        m_errors.push_back("Cannot open GDS file for writing: " + gdsPath);
         return;
     }
 

@@ -113,6 +113,65 @@ jobs:
         if: always()
         run: ./scripts/render_ci_test_summary.sh build/logs
 
+  coverage-ubuntu:
+    name: Coverage
+    runs-on: ubuntu-latest
+    env:
+      CAPNP_SKIP_CHECK: 1
+      LD_LIBRARY_PATH: ${{ github.workspace }}/third_party/capnp-install/lib
+      CORE_SOURCE_DIR: ${{ github.workspace }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Cap'n Proto
+        uses: actions/cache@v4
+        with:
+          path: |
+            third_party/capnproto
+            third_party/capnp-install
+          key: capnp-linux-${{ hashFiles('scripts/build_capnp_linux.sh', 'scripts/mkcapnp.sh') }}
+          restore-keys: |
+            capnp-linux-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            git \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            zlib1g-dev \
+            klayout \
+            python3 \
+            python3-pip
+          python3 -m pip install --upgrade pip
+          python3 -m pip install gcovr
+          chmod +x scripts/mkcapnp.sh scripts/build_capnp_linux.sh \
+            scripts/run_tests_coverage.sh \
+            scripts/run_sample_gds_roundtrip_test.sh \
+            scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh \
+            scripts/run_oas_hierarchy_test.sh \
+            scripts/run_oas_core_roundtrip_test.sh
+
+      - name: Run tests and generate coverage
+        run: ./scripts/run_tests_coverage.sh
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-coverage-html
+          path: |
+            coverage.html
+            coverage.*.html
+            coverage.css
+            coverage.js
+          if-no-files-found: warn
+
   build-windows:
     runs-on: windows-latest
     defaults:

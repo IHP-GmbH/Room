@@ -124,13 +124,13 @@ class GdsParser {
 public:
     GdsParser(const std::string &path, GdsImporter::Options options,
                 std::vector<std::string> &warnings, std::vector<std::string> &errors)
-        : path_(path), options_(std::move(options)), warnings_(warnings), errors_(errors) {}
+        : m_path(path), m_options(std::move(options)), m_warnings(warnings), m_errors(errors) {}
 
     Database parse()
     {
-        std::ifstream in(path_, std::ios::binary);
+        std::ifstream in(m_path, std::ios::binary);
         if (!in) {
-            errors_.push_back("Cannot open GDS file: " + path_);
+            m_errors.push_back("Cannot open GDS file: " + m_path);
             return Database{};
         }
 
@@ -138,42 +138,42 @@ public:
         const auto fileSize = in.tellg();
         in.seekg(0, std::ios::beg);
         if (fileSize < 4) {
-            errors_.push_back("GDS file too small: " + path_);
+            m_errors.push_back("GDS file too small: " + m_path);
             return Database{};
         }
 
         std::vector<std::uint8_t> data(static_cast<std::size_t>(fileSize));
         in.read(reinterpret_cast<char *>(data.data()), fileSize);
         if (!in) {
-            errors_.push_back("Failed to read GDS file: " + path_);
+            m_errors.push_back("Failed to read GDS file: " + m_path);
             return Database{};
         }
 
         Database db;
         db.setGenerator("CORE GdsImporter");
-        db.lib() = Lib(options_.libName);
+        db.lib() = Lib(m_options.libName);
 
         bool sawEndLib = false;
         std::size_t offset = 0;
         Cell *currentCell = nullptr;
         ElementDraft draft;
-        double dbuPerMicron = options_.defaultDbuPerMicron;
+        double dbuPerMicron = m_options.defaultDbuPerMicron;
 
         auto layerIndex = [&](std::uint16_t layer, std::uint16_t dataType) -> std::uint32_t {
             LayerKey key{layer, dataType};
-            auto it = layerMap_.find(key);
-            if (it != layerMap_.end()) {
+            auto it = m_layerMap.find(key);
+            if (it != m_layerMap.end()) {
                 return it->second;
             }
-            const std::uint32_t id = static_cast<std::uint32_t>(globalLayers_.size());
+            const std::uint32_t id = static_cast<std::uint32_t>(m_globalLayers.size());
             LayerSpec spec;
             spec.layerNum = layer;
             spec.dataType = dataType;
             std::ostringstream oss;
             oss << "L" << layer << "/D" << dataType;
             spec.name = oss.str();
-            globalLayers_.push_back(spec);
-            layerMap_[key] = id;
+            m_globalLayers.push_back(spec);
+            m_layerMap[key] = id;
             return id;
         };
 
@@ -241,7 +241,7 @@ public:
                 if (sawEndLib) {
                     break;
                 }
-                errors_.push_back("Malformed GDS record at offset " + std::to_string(offset));
+                m_errors.push_back("Malformed GDS record at offset " + std::to_string(offset));
                 break;
             }
             const std::uint8_t *payload = data.data() + offset + 4;
@@ -292,7 +292,7 @@ public:
             case GDS_AREF:
                 flushDraft();
                 draft.type = ElementDraft::Type::Aref;
-                warnings_.push_back("AREF geometry expansion is not implemented; storing as instance reference");
+                m_warnings.push_back("AREF geometry expansion is not implemented; storing as instance reference");
                 break;
             case GDS_LAYER:
                 if (payloadLen >= 2) {
@@ -354,7 +354,7 @@ public:
         }
 
         if (!sawEndLib) {
-            warnings_.push_back("ENDLIB not found; file may be truncated");
+            m_warnings.push_back("ENDLIB not found; file may be truncated");
         }
 
         for (auto &cell : db.lib().cells()) {
@@ -364,34 +364,35 @@ public:
             }
         }
 
-        db.lib().layers() = globalLayers_;
+        db.lib().layers() = m_globalLayers;
 
         return db;
     }
 
 private:
-    std::string path_;
-    GdsImporter::Options options_;
-    std::vector<std::string> &warnings_;
-    std::vector<std::string> &errors_;
-    std::vector<LayerSpec> globalLayers_;
-    std::unordered_map<LayerKey, std::uint32_t, LayerKeyHash> layerMap_;
+    std::string m_path;
+    GdsImporter::Options m_options;
+    std::vector<std::string> &m_warnings;
+    std::vector<std::string> &m_errors;
+    std::vector<LayerSpec> m_globalLayers;
+    std::unordered_map<LayerKey, std::uint32_t, LayerKeyHash> m_layerMap;
 };
 
 } // namespace
 
-GdsImporter::GdsImporter() : options_{} {}
-GdsImporter::GdsImporter(const Options &options) : options_(options) {}
+GdsImporter::GdsImporter() : m_options{} {}
+GdsImporter::GdsImporter(const Options &options) : m_options(options) {}
 
 Database GdsImporter::importFile(const std::string &gdsPath) const
 {
-    warnings_.clear();
-    errors_.clear();
-    GdsParser parser(gdsPath, options_, warnings_, errors_);
+    m_warnings.clear();
+    m_errors.clear();
+    GdsParser parser(gdsPath, m_options, m_warnings, m_errors);
     Database db = parser.parse();
-    if (!errors_.empty()) {
+    if (!m_errors.empty()) {
         return Database{};
     }
+    db.lib().recomputeAllBBoxes();
     return db;
 }
 

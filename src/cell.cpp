@@ -2,11 +2,11 @@
 
 namespace core {
 
-Cell::Cell(std::string name) : name_(std::move(name)) {}
+Cell::Cell(std::string name) : m_name(std::move(name)) {}
 
 CellContent *Cell::findContent(ViewType type)
 {
-    for (auto &content : contents_) {
+    for (auto &content : m_contents) {
         if (content.viewType() == type) {
             return &content;
         }
@@ -16,7 +16,7 @@ CellContent *Cell::findContent(ViewType type)
 
 const CellContent *Cell::findContent(ViewType type) const
 {
-    for (const auto &content : contents_) {
+    for (const auto &content : m_contents) {
         if (content.viewType() == type) {
             return &content;
         }
@@ -29,8 +29,8 @@ CellContent &Cell::getOrCreateContent(ViewType type, double dbuPerMicron)
     if (CellContent *content = findContent(type)) {
         return *content;
     }
-    contents_.emplace_back(type, dbuPerMicron);
-    return contents_.back();
+    m_contents.emplace_back(type, dbuPerMicron);
+    return m_contents.back();
 }
 
 } // namespace core

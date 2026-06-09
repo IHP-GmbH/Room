@@ -9,13 +9,13 @@ class OasWriter {
 public:
     explicit OasWriter(std::string fileName);
 
-    void createMinimalFile(const std::string &cellName);
+    void                                                createMinimalFile(const std::string &cellName);
 
-    const std::vector<std::string> &errors() const { return errors_; }
+    const std::vector<std::string> &                    errors() const { return m_errors; }
 
 private:
-    std::string fileName_;
-    std::vector<std::string> errors_;
+    std::string                                         m_fileName;
+    std::vector<std::string>                            m_errors;
 };
 
 } // namespace core

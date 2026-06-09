@@ -35,22 +35,22 @@ public:
     explicit Shape(PathData data);
     explicit Shape(TextData data);
 
-    Type type() const { return type_; }
-    const RectData *rect() const;
-    const PolygonData *polygon() const;
-    const PathData *path() const;
-    const TextData *text() const;
+    Type                                                type() const { return m_type; }
+    const RectData *                                    rect() const;
+    const PolygonData *                                 polygon() const;
+    const PathData *                                    path() const;
+    const TextData *                                    text() const;
 
-    std::vector<Property> &properties() { return properties_; }
-    const std::vector<Property> &properties() const { return properties_; }
+    std::vector<Property> &                             properties() { return m_properties; }
+    const std::vector<Property> &                       properties() const { return m_properties; }
 
 private:
-    Type type_;
-    RectData rect_;
-    PolygonData polygon_;
-    PathData path_;
-    TextData text_;
-    std::vector<Property> properties_;
+    Type                                                m_type;
+    RectData                                            m_rect;
+    PolygonData                                         m_polygon;
+    PathData                                            m_path;
+    TextData                                            m_text;
+    std::vector<Property>                               m_properties;
 };
 
 } // namespace core

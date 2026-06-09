@@ -3,6 +3,6 @@
 namespace core {
 
 Instance::Instance(std::string cellName, Transform transform)
-    : cellName_(std::move(cellName)), transform_(transform) {}
+    : m_cellName(std::move(cellName)), m_transform(transform) {}
 
 } // namespace core

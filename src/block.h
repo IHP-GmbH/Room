@@ -11,23 +11,25 @@ namespace core {
 
 class Block {
 public:
-    std::vector<Shape> &shapes() { return shapes_; }
-    const std::vector<Shape> &shapes() const { return shapes_; }
+    std::vector<Shape> &                                shapes() { return m_shapes; }
+    const std::vector<Shape> &                          shapes() const { return m_shapes; }
 
-    std::vector<Instance> &instances() { return instances_; }
-    const std::vector<Instance> &instances() const { return instances_; }
+    std::vector<Instance> &                             instances() { return m_instances; }
+    const std::vector<Instance> &                       instances() const { return m_instances; }
 
-    std::vector<Net> &nets() { return nets_; }
-    const std::vector<Net> &nets() const { return nets_; }
+    std::vector<Net> &                                  nets() { return m_nets; }
+    const std::vector<Net> &                            nets() const { return m_nets; }
 
-    const Box &bbox() const { return bbox_; }
-    void recomputeBBox();
+    const Box &                                         bbox() const { return m_bbox; }
+    void                                                recomputeBBox();
+
+    static Box                                          computeBBox(const Block &block);
 
 private:
-    std::vector<Shape> shapes_;
-    std::vector<Instance> instances_;
-    std::vector<Net> nets_;
-    Box bbox_;
+    std::vector<Shape>                                  m_shapes;
+    std::vector<Instance>                               m_instances;
+    std::vector<Net>                                    m_nets;
+    Box                                                 m_bbox;
 };
 
 } // namespace core
