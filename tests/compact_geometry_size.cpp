@@ -156,13 +156,14 @@ int main(int argc, char *argv[])
     const core::Database reloaded = core::Database::loadFromFile(compactPath);
     const Clock::time_point tLoadCompact1 = Clock::now();
 
+    const std::uintmax_t gdsSize = fileSizeBytes(gdsPath);
     const std::uintmax_t verboseSize = fileSizeBytes(verbosePath);
     const std::uintmax_t compactSize = fileSizeBytes(compactPath);
     const double ratio = verboseSize == 0
                              ? 0.0
                              : 100.0 * static_cast<double>(compactSize) / static_cast<double>(verboseSize);
 
-    std::cout << "gds:     " << gdsPath << '\n';
+    std::cout << "gds:     " << gdsSize << " bytes (" << gdsPath << ")\n";
     std::cout << "verbose: " << verboseSize << " bytes (" << verbosePath << ")\n";
     std::cout << "compact: " << compactSize << " bytes (" << compactPath << ")\n";
     std::cout << "ratio:   " << ratio << "% of verbose\n";

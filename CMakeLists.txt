@@ -75,6 +75,7 @@ set(CORE_SOURCES
     src/database.cpp
     src/serialization.cpp
     src/compact_codec.cpp
+    src/varint_codec.cpp
     ${GENERATED_SOURCES}
 )
 

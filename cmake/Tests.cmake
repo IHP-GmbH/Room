@@ -23,6 +23,19 @@ if(CORE_BUILD_TESTS)
     add_executable(compact_geometry_size tests/compact_geometry_size.cpp)
     target_link_libraries(compact_geometry_size PRIVATE core_utils)
 
+    add_executable(compact_repetition_unit tests/compact_repetition_unit.cpp)
+    target_link_libraries(compact_repetition_unit PRIVATE core)
+
+    add_test(
+        NAME compact_repetition_unit
+        COMMAND compact_repetition_unit
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(compact_repetition_unit PROPERTIES
+        LABELS "core;compact"
+        TIMEOUT 30
+    )
+
     find_program(KLAYOUT_EXECUTABLE
         NAMES klayout klayout.exe klayout_app klayout_app.exe
         HINTS

@@ -67,9 +67,10 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 ## 6. Compactness and performance
 
-- [ ] **Layout-optimized storage** — layer-grouped runs, repetitions, compressed polygon streams
-- [ ] **Benchmark suite** — load/save time, memory peak, file size vs GDS/OAS
+- [x] **Layout-optimized storage (v2)** — layer groups, delta vertices, AREF/SREF-like rect repeats, polygon/path templates, zigzag varint packed streams ([COMPACT_ENCODING.md](COMPACT_ENCODING.md))
+- [~] **Benchmark suite** — manual + `compact_geometry_size` CTest; CI table + memory peak TBD
 - [ ] **Streaming** — incremental read/write for large libraries (avoid full-RAM materialization)
+- [ ] **Optional file compression** — gzip/zstd wrapper on `.core` (varint streams done; whole-file gzip TBD)
 
 ---
 
