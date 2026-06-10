@@ -53,7 +53,7 @@ add_custom_command(
             -o${CAPNPC_CXX_EXECUTABLE}:${GEN_DIR}
             -I${CAPNP_INCLUDE}
             -I${SCHEMA_DIR}
-            common.capnp dm.capnp design.capnp database.capnp views.capnp index.capnp
+            common.capnp dm.capnp design.capnp database.capnp views.capnp index.capnp compact.capnp
     DEPENDS ${SCHEMA_FILES}
     WORKING_DIRECTORY ${SCHEMA_DIR}
     COMMENT "Generating Cap'n Proto sources for CORE"
@@ -74,6 +74,7 @@ set(CORE_SOURCES
     src/lib_index.cpp
     src/database.cpp
     src/serialization.cpp
+    src/compact_codec.cpp
     ${GENERATED_SOURCES}
 )
 

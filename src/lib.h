@@ -9,6 +9,12 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Lib class represents a design library containing cells, layers, and metadata.
+ *
+ * Each Database owns one Lib. Cells hold per-view CellContent; layers are library-global.
+ * refreshIndex() rebuilds the derived LibIndex used for hierarchy and bounding boxes.
+ *****************************************************************************************/
 class Lib {
 public:
     explicit Lib(std::string name);
@@ -28,9 +34,9 @@ public:
     const Cell*                                         findCell(const std::string &name) const;
     Cell&                                               getOrCreateCell(const std::string &name);
 
-    void recomputeAllBBoxes(ViewType view = ViewType::Layout);
-    void refreshIndex(ViewType view = ViewType::Layout);
-    void setIndex(LibIndex index);
+    void                                                recomputeAllBBoxes(ViewType view = ViewType::Layout);
+    void                                                refreshIndex(ViewType view = ViewType::Layout);
+    void                                                setIndex(LibIndex index);
     bool                                                hasIndex() const { return m_hasIndex; }
     const LibIndex &                                    index() const { return m_index; }
 

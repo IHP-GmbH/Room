@@ -7,6 +7,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The GdsExporter class writes a CORE Database to a GDSII layout file.
+ *****************************************************************************************/
 class GdsExporter {
 public:
     void                                                exportFile(const Database &db, const std::string &gdsPath) const;

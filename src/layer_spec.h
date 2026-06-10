@@ -7,6 +7,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The LayerSpec class describes a layer in the library layer table (GDS layer/datatype).
+ *****************************************************************************************/
 class LayerSpec {
 public:
     std::uint16_t layerNum = 0;

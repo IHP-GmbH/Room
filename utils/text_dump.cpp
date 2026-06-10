@@ -1,3 +1,8 @@
+/*!****************************************************************************************
+ * \file text_dump.cpp
+ * \brief Human-readable text dump of Database hierarchy and geometry summary.
+ *****************************************************************************************/
+
 #include "text_dump.h"
 
 #include "cell_content.h"
@@ -78,6 +83,11 @@ void dumpShape(std::ostream &out, const Shape &shape, int level, const std::vect
 
 } // namespace
 
+/*!****************************************************************************************
+ * \brief Writes a text summary of the database to a stream.
+ * \param db     Database to describe.
+ * \param out    Output stream.
+ *****************************************************************************************/
 void TextDumper::dump(const Database &db, std::ostream &out) const
 {
     out << "=== CORE text dump ===\n";
@@ -126,6 +136,11 @@ void TextDumper::dump(const Database &db, std::ostream &out) const
     }
 }
 
+/*!****************************************************************************************
+ * \brief Writes a text summary of the database to a file.
+ * \param db     Database to describe.
+ * \param path   Output file path.
+ *****************************************************************************************/
 void TextDumper::dumpToFile(const Database &db, const std::string &path) const
 {
     std::ofstream out(path);

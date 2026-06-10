@@ -2,6 +2,11 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief Computes the axis-aligned bounding box enclosing all shapes in a block.
+ * \param block    Block whose shapes are scanned.
+ * \return         Bounding box in database units (empty if no geometry).
+ *****************************************************************************************/
 Box Block::computeBBox(const Block &block)
 {
     Box bbox;
@@ -23,6 +28,9 @@ Box Block::computeBBox(const Block &block)
     return bbox;
 }
 
+/*!****************************************************************************************
+ * \brief Updates the cached bbox from current shapes.
+ *****************************************************************************************/
 void Block::recomputeBBox()
 {
     m_bbox = computeBBox(*this);

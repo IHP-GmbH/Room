@@ -4,6 +4,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Point class is a 2D integer coordinate in database units.
+ *****************************************************************************************/
 class Point {
 public:
     std::int64_t x = 0;

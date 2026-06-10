@@ -8,6 +8,12 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Cell class represents a named design cell with one or more view-specific bodies.
+ *
+ * A cell may contain layout, schematic, symbol, and abstract views as separate CellContent
+ * entries distinguished by ViewType.
+ *****************************************************************************************/
 class Cell {
 public:
     explicit Cell(std::string name);

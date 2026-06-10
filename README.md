@@ -35,11 +35,12 @@ Database
                 └── payload      ← ViewPayload (Cap'n Proto union)
                      ├── layout | schematic | symbol | abstract
                      │    ├── layers[]   (per-view layer table on disk)
-                     │    └── block      (shapes, instances, nets)
+                     │    ├── block      (verbose geometry, opt-in)
+                     │    └── compact    (layer-grouped geometry, default on save)
                      └── opaque         (skip-friendly unknown views)
 ```
 
-**C++ API:** `CellContent::block()` is the in-memory accessor for topology; serialization maps it to `payload.<view>.block`. See [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
+**C++ API:** `CellContent::block()` is the in-memory accessor for topology. On save, compact encoding is the default (`SaveOptions::compactGeometry`); load auto-detects `compact` vs `block`. See [docs/COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) and [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
 
 ## Requirements
 
@@ -173,7 +174,7 @@ build\gds_to_core.exe testdata\sample.gds output\sample.core
 
 HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally in a browser after cloning).
 
-Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md)
+Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md) · [COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) (size & timing benchmarks)
 
 ## Project layout
 

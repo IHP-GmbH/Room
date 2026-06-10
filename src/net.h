@@ -8,6 +8,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Net class represents a connectivity net with a signal type and terminal list.
+ *****************************************************************************************/
 class Net {
 public:
     explicit Net(std::string name, SigType sigType = SigType::Signal);

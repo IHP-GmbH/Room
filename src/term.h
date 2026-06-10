@@ -7,6 +7,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Term class is a named connection point on a net at a layer and position.
+ *****************************************************************************************/
 class Term {
 public:
     Term(std::string name, std::uint32_t layerId, Point position);

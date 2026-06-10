@@ -6,6 +6,19 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief Options controlling how a Database is serialized to a .core file.
+ *****************************************************************************************/
+struct SaveOptions {
+    bool compactGeometry = true; /*!< When true, geometry is written to payload.compact. */
+};
+
+/*!****************************************************************************************
+ * \brief The Database class is the root container for a CORE design stored in a .core file.
+ *
+ * A Database holds format metadata (version, generator, technology) and a single Lib with
+ * cells, layers, and optional derived index. Use saveToFile() and loadFromFile() for I/O.
+ *****************************************************************************************/
 class Database {
 public:
     Database();
@@ -21,7 +34,7 @@ public:
     Lib &                                               lib() { return m_lib; }
     const Lib &                                         lib() const { return m_lib; }
 
-    void                                                saveToFile(const std::string &path);
+    void                                                saveToFile(const std::string &path, SaveOptions options = {});
     static Database                                     loadFromFile(const std::string &path);
 
 private:

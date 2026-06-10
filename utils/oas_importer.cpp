@@ -1,3 +1,8 @@
+/*!****************************************************************************************
+ * \file oas_importer.cpp
+ * \brief OASIS import via KLayout conversion to GDS and GdsImporter.
+ *****************************************************************************************/
+
 #include "oas_importer.h"
 
 #include "gds_importer.h"
@@ -58,13 +63,25 @@ void removeFile(const std::string &path)
 
 } // namespace
 
+/*!****************************************************************************************
+ * \brief Constructs an OasImporter with default options.
+ *****************************************************************************************/
 OasImporter::OasImporter() = default;
 
+/*!****************************************************************************************
+ * \brief Constructs an OasImporter with custom import options.
+ * \param options    Library name and default DBU per micron.
+ *****************************************************************************************/
 OasImporter::OasImporter(const Options &options)
     : m_options(options)
 {
 }
 
+/*!****************************************************************************************
+ * \brief Imports an OASIS file into a new Database (via temporary GDS).
+ * \param oasPath    Path to the input .oas file.
+ * \return           Populated database, or partial result if errors() is non-empty.
+ *****************************************************************************************/
 Database OasImporter::importFile(const std::string &oasPath) const
 {
     m_warnings.clear();

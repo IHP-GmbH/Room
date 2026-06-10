@@ -4,6 +4,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Property class is a string key/value pair attached to cells, shapes, or instances.
+ *****************************************************************************************/
 class Property {
 public:
     std::string name;

@@ -1,5 +1,14 @@
+/*!****************************************************************************************
+ * \file serialization.cpp
+ * \brief Cap'n Proto serialization between Database and schema::Database messages.
+ *
+ * Writes and reads cells, view payloads (compact or verbose), layers, properties, and
+ * LibIndex. View topology decoding auto-selects compact vs block encoding on load.
+ *****************************************************************************************/
+
 #include "serialization.h"
 
+#include "compact_codec.h"
 #include "lib_index.h"
 
 #include <database.capnp.h>
@@ -376,34 +385,73 @@ void writeViewLayers(ViewBuilder viewBuilder, const std::vector<LayerSpec> &laye
     }
 }
 
+void writeBlockShell(schema::Block::Builder b, const Block &block)
+{
+    b.initShapes(0);
+    b.initInstances(0);
+    b.initNets(0);
+    writeBox(b.initBbox(), block.bbox());
+}
+
+template <typename ViewBuilder>
+void writeViewTopology(ViewBuilder viewBuilder,
+                       const std::vector<LayerSpec> &layers,
+                       const Block &block,
+                       bool compactGeometry)
+{
+    writeViewLayers(viewBuilder, layers);
+    if (compactGeometry) {
+        writeBlockShell(viewBuilder.initBlock(), block);
+        writeCompactBlock(viewBuilder.initCompact(), block);
+    } else {
+        writeBlock(viewBuilder.initBlock(), block);
+    }
+}
+
+bool blockHasTopology(schema::Block::Reader block)
+{
+    return block.getShapes().size() > 0 || block.getInstances().size() > 0 || block.getNets().size() > 0;
+}
+
+template <typename ViewReader>
+Block readViewTopology(ViewReader viewReader)
+{
+    const auto blockReader = viewReader.getBlock();
+    const auto compactReader = viewReader.getCompact();
+    if (blockHasTopology(blockReader)) {
+        return readBlock(blockReader);
+    }
+    if (compactBlockHasGeometry(compactReader)) {
+        return readCompactBlock(compactReader);
+    }
+    return readBlock(blockReader);
+}
+
 void writeViewPayload(schema::ViewPayload::Builder payload,
                       ViewType viewType,
                       const std::vector<LayerSpec> &layers,
-                      const Block &block)
+                      const Block &block,
+                      bool compactGeometry)
 {
     switch (viewType) {
     case ViewType::Layout: {
         auto layout = payload.initLayout();
-        writeViewLayers(layout, layers);
-        writeBlock(layout.initBlock(), block);
+        writeViewTopology(layout, layers, block, compactGeometry);
         break;
     }
     case ViewType::Schematic: {
         auto schematic = payload.initSchematic();
-        writeViewLayers(schematic, layers);
-        writeBlock(schematic.initBlock(), block);
+        writeViewTopology(schematic, layers, block, compactGeometry);
         break;
     }
     case ViewType::Symbol: {
         auto symbol = payload.initSymbol();
-        writeViewLayers(symbol, layers);
-        writeBlock(symbol.initBlock(), block);
+        writeViewTopology(symbol, layers, block, compactGeometry);
         break;
     }
     case ViewType::Abstract: {
         auto abstract = payload.initAbstract();
-        writeViewLayers(abstract, layers);
-        writeBlock(abstract.initBlock(), block);
+        writeViewTopology(abstract, layers, block, compactGeometry);
         break;
     }
     }
@@ -413,13 +461,13 @@ Block readBlockFromPayload(schema::ViewPayload::Reader payload)
 {
     switch (payload.which()) {
     case schema::ViewPayload::LAYOUT:
-        return readBlock(payload.getLayout().getBlock());
+        return readViewTopology(payload.getLayout());
     case schema::ViewPayload::SCHEMATIC:
-        return readBlock(payload.getSchematic().getBlock());
+        return readViewTopology(payload.getSchematic());
     case schema::ViewPayload::SYMBOL:
-        return readBlock(payload.getSymbol().getBlock());
+        return readViewTopology(payload.getSymbol());
     case schema::ViewPayload::ABSTRACT:
-        return readBlock(payload.getAbstract().getBlock());
+        return readViewTopology(payload.getAbstract());
     default:
         return Block{};
     }
@@ -427,12 +475,13 @@ Block readBlockFromPayload(schema::ViewPayload::Reader payload)
 
 void writeCellContent(schema::CellContent::Builder b,
                       const CellContent &content,
-                      const std::vector<LayerSpec> &libLayers)
+                      const std::vector<LayerSpec> &libLayers,
+                      bool compactGeometry)
 {
     b.setViewType(toSchemaViewType(content.viewType()));
     b.setDbuPerMicron(content.dbuPerMicron());
     writeProperties(b.initProperties(content.properties().size()), content.properties());
-    writeViewPayload(b.initPayload(), content.viewType(), libLayers, content.block());
+    writeViewPayload(b.initPayload(), content.viewType(), libLayers, content.block(), compactGeometry);
 }
 
 CellContent readCellContent(schema::CellContent::Reader r)
@@ -516,7 +565,13 @@ LibIndex readLibIndex(schema::LibIndex::Reader reader)
 
 } // namespace
 
-void writeDatabase(schema::Database::Builder root, const Database &db)
+/*!****************************************************************************************
+ * \brief Serializes a Database to the Cap'n Proto root message.
+ * \param root     Database builder to populate.
+ * \param db       Source in-memory database.
+ * \param options  Compact vs verbose geometry per view.
+ *****************************************************************************************/
+void writeDatabase(schema::Database::Builder root, const Database &db, SaveOptions options)
 {
     root.setVersion(db.version());
     root.setGenerator(db.generator());
@@ -540,7 +595,7 @@ void writeDatabase(schema::Database::Builder root, const Database &db)
 
         auto contents = cellBuilder.initContents(cell.contents().size());
         for (std::size_t i = 0; i < cell.contents().size(); ++i) {
-            writeCellContent(contents[i], cell.contents()[i], db.lib().layers());
+            writeCellContent(contents[i], cell.contents()[i], db.lib().layers(), options.compactGeometry);
         }
     }
 
@@ -551,6 +606,11 @@ void writeDatabase(schema::Database::Builder root, const Database &db)
     }
 }
 
+/*!****************************************************************************************
+ * \brief Deserializes a Database from the Cap'n Proto root message.
+ * \param root     Database reader from a loaded .core file.
+ * \return         Reconstructed in-memory database with index refreshed if absent.
+ *****************************************************************************************/
 Database readDatabase(schema::Database::Reader root)
 {
     Database db;

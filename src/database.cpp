@@ -12,15 +12,26 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief Constructs an empty Database with default format version and library name.
+ *****************************************************************************************/
 Database::Database() = default;
 
-void Database::saveToFile(const std::string &path)
+/*!****************************************************************************************
+ * \brief Serializes this database to a binary .core file.
+ *
+ * Recomputes cell bounding boxes and refreshes the library index before writing.
+ *
+ * \param path     Output file path.
+ * \param options  Encoding options; compact geometry is the default.
+ *****************************************************************************************/
+void Database::saveToFile(const std::string &path, SaveOptions options)
 {
     m_lib.recomputeAllBBoxes();
     m_lib.refreshIndex();
 
     capnp::MallocMessageBuilder message;
-    writeDatabase(message.initRoot<schema::Database>(), *this);
+    writeDatabase(message.initRoot<schema::Database>(), *this, options);
 
     std::ofstream out(path, std::ios::binary);
     if (!out) {
@@ -30,6 +41,14 @@ void Database::saveToFile(const std::string &path)
     capnp::writeMessage(kjOut, message);
 }
 
+/*!****************************************************************************************
+ * \brief Loads a database from a binary .core file.
+ *
+ * Auto-detects compact vs verbose geometry in each view payload.
+ *
+ * \param path     Input .core file path.
+ * \return         Deserialized database.
+ *****************************************************************************************/
 Database Database::loadFromFile(const std::string &path)
 {
     std::ifstream in(path, std::ios::binary | std::ios::ate);

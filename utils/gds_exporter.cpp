@@ -1,3 +1,8 @@
+/*!****************************************************************************************
+ * \file gds_exporter.cpp
+ * \brief GDSII writer: exports layout views from a CORE Database.
+ *****************************************************************************************/
+
 #include "gds_exporter.h"
 
 #include "cell.h"
@@ -312,6 +317,11 @@ void writeCell(FILE *f, const std::vector<LayerSpec> &layers, const Cell &cell)
 
 } // namespace
 
+/*!****************************************************************************************
+ * \brief Exports all layout cells from a Database to a GDSII file.
+ * \param db         Source database.
+ * \param gdsPath    Output .gds path.
+ *****************************************************************************************/
 void GdsExporter::exportFile(const Database &db, const std::string &gdsPath) const
 {
     m_warnings.clear();

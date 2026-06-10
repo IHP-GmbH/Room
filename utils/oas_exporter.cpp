@@ -1,3 +1,8 @@
+/*!****************************************************************************************
+ * \file oas_exporter.cpp
+ * \brief OASIS export via GdsExporter and KLayout conversion from temporary GDS.
+ *****************************************************************************************/
+
 #include "oas_exporter.h"
 
 #include "gds_exporter.h"
@@ -58,6 +63,11 @@ void removeFile(const std::string &path)
 
 } // namespace
 
+/*!****************************************************************************************
+ * \brief Exports a Database to an OASIS file (via temporary GDS).
+ * \param db         Source database.
+ * \param oasPath    Output .oas path.
+ *****************************************************************************************/
 void OasExporter::exportFile(const Database &db, const std::string &oasPath) const
 {
     m_warnings.clear();

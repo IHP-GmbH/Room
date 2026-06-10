@@ -4,6 +4,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Box class is an axis-aligned bounding box in integer database units.
+ *****************************************************************************************/
 class Box {
 public:
     std::int64_t llx = 0;

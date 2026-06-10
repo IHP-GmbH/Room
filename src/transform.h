@@ -6,6 +6,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Transform class describes placement: translation, orientation, and magnification.
+ *****************************************************************************************/
 class Transform {
 public:
     std::int64_t x = 0;

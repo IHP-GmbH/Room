@@ -7,8 +7,12 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The GdsImporter class reads GDSII layout files into a CORE Database.
+ *****************************************************************************************/
 class GdsImporter {
 public:
+    /*! \brief Import options for library name and DBU scale. */
     struct Options {
         std::string libName = "gds_import";
         double defaultDbuPerMicron = 1000.0;

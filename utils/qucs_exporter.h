@@ -7,8 +7,12 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The QucsExporter class writes a schematic cell from a CORE Database to a .sch file.
+ *****************************************************************************************/
 class QucsExporter {
 public:
+    /*! \brief Export options such as Qucs version string in the output header. */
     struct Options {
         std::string qucsVersion = "0.0.19";
     };

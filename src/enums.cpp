@@ -2,6 +2,11 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief Converts a ViewType to a stable lowercase string.
+ * \param type     View type enum value.
+ * \return         String name for serialization and logging.
+ *****************************************************************************************/
 std::string viewTypeToString(ViewType type)
 {
     switch (type) {
@@ -13,6 +18,11 @@ std::string viewTypeToString(ViewType type)
     return "unknown";
 }
 
+/*!****************************************************************************************
+ * \brief Converts a LayerPurpose to a stable lowercase string.
+ * \param purpose  Layer purpose enum value.
+ * \return         String name for serialization and logging.
+ *****************************************************************************************/
 std::string layerPurposeToString(LayerPurpose purpose)
 {
     switch (purpose) {
@@ -28,6 +38,11 @@ std::string layerPurposeToString(LayerPurpose purpose)
     return "unknown";
 }
 
+/*!****************************************************************************************
+ * \brief Converts a SigType to a stable lowercase string.
+ * \param type     Signal type enum value.
+ * \return         String name for serialization and logging.
+ *****************************************************************************************/
 std::string sigTypeToString(SigType type)
 {
     switch (type) {

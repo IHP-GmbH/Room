@@ -6,6 +6,11 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Shape class is a tagged union of rect, polygon, path, and text geometry.
+ *
+ * Each shape belongs to a layer (layerId) and may carry string key/value properties.
+ *****************************************************************************************/
 class Shape {
 public:
     enum class Type { Rect, Polygon, Path, Text };

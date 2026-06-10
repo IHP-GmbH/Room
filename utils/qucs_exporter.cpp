@@ -1,3 +1,8 @@
+/*!****************************************************************************************
+ * \file qucs_exporter.cpp
+ * \brief Qucs .sch exporter from CORE schematic views.
+ *****************************************************************************************/
+
 #include "qucs_exporter.h"
 
 #include "cell_content.h"
@@ -158,9 +163,23 @@ void writeSection(std::ostream &out, const std::string &name, const std::vector<
 
 } // namespace
 
+/*!****************************************************************************************
+ * \brief Constructs a QucsExporter with default options.
+ *****************************************************************************************/
 QucsExporter::QucsExporter() = default;
+
+/*!****************************************************************************************
+ * \brief Constructs a QucsExporter with custom export options.
+ * \param options    Qucs version string written into the output file.
+ *****************************************************************************************/
 QucsExporter::QucsExporter(const Options &options) : m_options(options) {}
 
+/*!****************************************************************************************
+ * \brief Exports one schematic cell to a Qucs .sch file.
+ * \param db         Source database.
+ * \param cellName   Name of the cell to export.
+ * \param schPath    Output .sch path.
+ *****************************************************************************************/
 void QucsExporter::exportCell(const Database &db, const std::string &cellName, const std::string &schPath) const
 {
     m_warnings.clear();

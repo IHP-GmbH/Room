@@ -7,6 +7,9 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Instance class places a reference to another cell with a transform and properties.
+ *****************************************************************************************/
 class Instance {
 public:
     Instance(std::string cellName, Transform transform);

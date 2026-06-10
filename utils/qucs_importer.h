@@ -7,11 +7,15 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The QucsImporter class reads Qucs schematic (.sch) files into a CORE Database.
+ *****************************************************************************************/
 class QucsImporter {
 public:
+    /*! \brief Import options for library and cell naming. */
     struct Options {
         std::string libName = "qucs_import";
-        std::string cellName; // empty = derive from .sch file name
+        std::string cellName; /*!< Empty = derive cell name from .sch file name. */
     };
 
     QucsImporter();

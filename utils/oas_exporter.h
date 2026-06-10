@@ -7,6 +7,11 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The OasExporter class writes a CORE Database to an OASIS layout file.
+ *
+ * Currently encodes via a temporary GDS conversion using KLayout and GdsExporter.
+ *****************************************************************************************/
 class OasExporter {
 public:
     void                                                exportFile(const Database &db, const std::string &oasPath) const;

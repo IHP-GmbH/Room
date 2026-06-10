@@ -1,3 +1,8 @@
+/*!****************************************************************************************
+ * \file qucs_importer.cpp
+ * \brief Qucs .sch schematic parser into CORE schematic views.
+ *****************************************************************************************/
+
 #include "qucs_importer.h"
 
 #include "cell.h"
@@ -323,9 +328,22 @@ void buildNetsFromWires(const std::vector<WireRec> &wires, Block &block)
 
 } // namespace
 
+/*!****************************************************************************************
+ * \brief Constructs a QucsImporter with default options.
+ *****************************************************************************************/
 QucsImporter::QucsImporter() = default;
+
+/*!****************************************************************************************
+ * \brief Constructs a QucsImporter with custom import options.
+ * \param options    Library name and optional cell name override.
+ *****************************************************************************************/
 QucsImporter::QucsImporter(const Options &options) : m_options(options) {}
 
+/*!****************************************************************************************
+ * \brief Imports a Qucs schematic file into a new Database.
+ * \param schPath    Path to the input .sch file.
+ * \return           Database with schematic CellContent, or empty on error.
+ *****************************************************************************************/
 Database QucsImporter::importFile(const std::string &schPath) const
 {
     m_warnings.clear();

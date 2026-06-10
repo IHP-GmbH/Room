@@ -7,11 +7,14 @@
 
 namespace core {
 
-// OAS -> CORE import. File I/O currently uses KLayout to decode/encode OAS geometry;
-// data is stored in the native CORE Database via GdsImporter/GdsExporter internally.
-
+/*!****************************************************************************************
+ * \brief The OasImporter class reads OASIS layout files into a CORE Database.
+ *
+ * Currently decodes OAS via a temporary GDS conversion using KLayout, then uses GdsImporter.
+ *****************************************************************************************/
 class OasImporter {
 public:
+    /*! \brief Import options for library name and DBU scale. */
     struct Options {
         std::string libName = "oas_import";
         double defaultDbuPerMicron = 1000.0;

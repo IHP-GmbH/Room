@@ -20,6 +20,9 @@ if(CORE_BUILD_TESTS)
     add_executable(lib_index_persist tests/lib_index_persist.cpp)
     target_link_libraries(lib_index_persist PRIVATE core_utils)
 
+    add_executable(compact_geometry_size tests/compact_geometry_size.cpp)
+    target_link_libraries(compact_geometry_size PRIVATE core_utils)
+
     find_program(KLAYOUT_EXECUTABLE
         NAMES klayout klayout.exe klayout_app klayout_app.exe
         HINTS
@@ -57,6 +60,18 @@ if(CORE_BUILD_TESTS)
     set_tests_properties(lib_index_persist PROPERTIES
         LABELS "core;index"
         TIMEOUT 60
+    )
+
+    add_test(
+        NAME compact_geometry_size
+        COMMAND compact_geometry_size "${_sg13g2_gds}"
+                "${_ctest_out}/compact_compare_verbose.core"
+                "${_ctest_out}/compact_compare_compact.core"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(compact_geometry_size PROPERTIES
+        LABELS "core;compact"
+        TIMEOUT 120
     )
 
     add_test(

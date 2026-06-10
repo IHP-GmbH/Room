@@ -22,6 +22,12 @@ void addChildRef(std::unordered_map<std::string, std::vector<std::string>> &chil
 
 } // namespace
 
+/*!****************************************************************************************
+ * \brief Builds a LibIndex by scanning all cells and instances in the given view.
+ * \param lib      Source library.
+ * \param view     View type for hierarchy and bboxes (default: layout).
+ * \return         Populated index with top cells, child refs, and placement counts.
+ *****************************************************************************************/
 LibIndex LibIndex::build(const Lib &lib, ViewType view)
 {
     LibIndex index;

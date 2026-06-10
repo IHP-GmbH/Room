@@ -5,6 +5,12 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The CellContent class holds one view of a cell: type, DBU scale, properties, and topology.
+ *
+ * In C++, block() is the ergonomic accessor for shapes, instances, and nets. On disk, topology
+ * is stored in payload (compact or verbose block) according to SaveOptions.
+ *****************************************************************************************/
 class CellContent {
 public:
     CellContent(ViewType viewType, double dbuPerMicron = 1000.0);

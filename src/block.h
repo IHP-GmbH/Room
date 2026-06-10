@@ -9,6 +9,11 @@
 
 namespace core {
 
+/*!****************************************************************************************
+ * \brief The Block class holds flat view topology: shapes, instances, nets, and a cached bbox.
+ *
+ * Blocks are owned by CellContent and serialized either directly (verbose) or via CompactBlock.
+ *****************************************************************************************/
 class Block {
 public:
     std::vector<Shape> &                                shapes() { return m_shapes; }

@@ -3,31 +3,36 @@
 using Cxx = import "/capnp/c++.capnp";
 $Cxx.namespace("core::schema");
 
-using LayerSpec = import "dm.capnp".LayerSpec;
-using Property  = import "common.capnp".Property;
-using Block     = import "design.capnp".Block;
+using LayerSpec    = import "dm.capnp".LayerSpec;
+using Property     = import "common.capnp".Property;
+using Block        = import "design.capnp".Block;
+using CompactBlock = import "compact.capnp".CompactBlock;
 
 # Per-view payloads stored in CellContent.payload. Tools may skip union arms they do not understand.
 # C++ API maps payload.*.block to CellContent.block() in memory; see docs/SCHEMA_EVOLUTION.md.
 
 struct LayoutViewData {
-  layers @0 :List(LayerSpec);
-  block  @1 :Block;
+  layers  @0 :List(LayerSpec);
+  block   @1 :Block;
+  compact @2 :CompactBlock;
 }
 
 struct SchematicViewData {
-  layers @0 :List(LayerSpec);
-  block  @1 :Block;
+  layers  @0 :List(LayerSpec);
+  block   @1 :Block;
+  compact @2 :CompactBlock;
 }
 
 struct SymbolViewData {
-  layers @0 :List(LayerSpec);
-  block  @1 :Block;
+  layers  @0 :List(LayerSpec);
+  block   @1 :Block;
+  compact @2 :CompactBlock;
 }
 
 struct AbstractViewData {
-  layers @0 :List(LayerSpec);
-  block  @1 :Block;
+  layers  @0 :List(LayerSpec);
+  block   @1 :Block;
+  compact @2 :CompactBlock;
 }
 
 # Opaque bytes for unknown or future view types — copy without decode.

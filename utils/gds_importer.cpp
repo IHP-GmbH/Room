@@ -1,3 +1,8 @@
+/*!****************************************************************************************
+ * \file gds_importer.cpp
+ * \brief GDSII reader: parses records into a CORE Database with layout views.
+ *****************************************************************************************/
+
 #include "gds_importer.h"
 
 #include "cell.h"
@@ -380,9 +385,22 @@ private:
 
 } // namespace
 
+/*!****************************************************************************************
+ * \brief Constructs a GdsImporter with default options.
+ *****************************************************************************************/
 GdsImporter::GdsImporter() : m_options{} {}
+
+/*!****************************************************************************************
+ * \brief Constructs a GdsImporter with custom import options.
+ * \param options    Library name and default DBU per micron.
+ *****************************************************************************************/
 GdsImporter::GdsImporter(const Options &options) : m_options(options) {}
 
+/*!****************************************************************************************
+ * \brief Imports a GDSII file into a new Database.
+ * \param gdsPath    Path to the input .gds file.
+ * \return           Populated database, or partial result if errors() is non-empty.
+ *****************************************************************************************/
 Database GdsImporter::importFile(const std::string &gdsPath) const
 {
     m_warnings.clear();
