@@ -11,10 +11,10 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 ## Priority order
 
 1. Charter + v1 Definition of Done  
-2. Per-view schema + versioning policy  
-3. Derived hierarchy / bbox indices + regression tests  
-4. Native OAS geometry codec (remove KLayout from hot path)  
-5. Compact layout encoding + benchmarks  
+2. Skip-friendly opaque views + extension registry  
+3. Native OAS geometry codec (remove KLayout from hot path)  
+4. Streaming + optional `.core` compression  
+5. Benchmark CI table + large-design stress tests  
 6. API stability + licensing strategy  
 
 ---
@@ -40,9 +40,9 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 ## 3. Encapsulation (layers, views)
 
-- [ ] **Per-view layer tables** (or lib + per-view mapping)
-- [ ] **Layer semantics** — layout vs schematic; pin / label / wire / blockage purposes
-- [ ] **Cell identity** — names, aliases, PCell parameters for PDK flows
+- [x] **Per-view layer tables** — `CellContent.layers()` + per-view payload; lib master catalog; GDS/Qucs importers populate view tables
+- [x] **Layer semantics** — `LayerPurpose` on `LayerSpec`; GDS (boundary/wire/label) and schematic (wire/pin/label) heuristics; round-trip test `encapsulation_roundtrip`
+- [x] **Cell identity** — `Cell.aliases`, `PCellInfo` (master + parameters) in schema/C++; serialization round-trip
 
 ---
 
@@ -68,7 +68,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 ## 6. Compactness and performance
 
 - [x] **Layout-optimized storage (v2)** — layer groups, delta vertices, AREF/SREF-like rect repeats, polygon/path templates, zigzag varint packed streams ([COMPACT_ENCODING.md](COMPACT_ENCODING.md))
-- [~] **Benchmark suite** — manual + `compact_geometry_size` CTest; CI table + memory peak TBD
+- [~] **Benchmark suite** — `compact_geometry_size` + [COMPACT_ENCODING.md](COMPACT_ENCODING.md) (Debug, June 2026); CI table + memory peak TBD
 - [ ] **Streaming** — incremental read/write for large libraries (avoid full-RAM materialization)
 - [ ] **Optional file compression** — gzip/zstd wrapper on `.core` (varint streams done; whole-file gzip TBD)
 
@@ -112,8 +112,8 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 ## Suggested response to reviewers (Matthias)
 
-> CORE is early, but the target is a **production-grade open-source IC database**, not a minimal teaching schema. The current model validated API and round-trips quickly. Gaps you noted — skip-friendly view payloads, per-view encapsulation, derived indices, compact geometry — are on the roadmap before v1. Which of these would you treat as blocking for a production layout archive?
+> CORE is early, but the target is a **production-grade open-source IC database**, not a minimal teaching schema. Per-view payloads, encapsulation (layers + `LayerPurpose` + cell aliases/PCell), derived indices, and compact geometry v2 are implemented with regression tests. Remaining v1 gaps: opaque skip-friendly round-trip, native OAS geometry, streaming. Which of these would you treat as blocking for a production layout archive?
 
 ---
 
-*Last updated: 2026-06-03*
+*Last updated: 2026-06-10*

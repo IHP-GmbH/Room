@@ -7,6 +7,7 @@
 
 #include "cell_content.h"
 #include "enums.h"
+#include "layer_utils.h"
 
 #include <fstream>
 #include <iomanip>
@@ -101,11 +102,34 @@ void TextDumper::dump(const Database &db, std::ostream &out) const
     const auto &layers = db.lib().layers();
     for (const auto &cell : db.lib().cells()) {
         out << "cell \"" << cell.name() << "\"\n";
+        if (!cell.aliases().empty()) {
+            indent(out, 1);
+            out << "aliases:";
+            for (const auto &alias : cell.aliases()) {
+                out << ' ' << alias;
+            }
+            out << "\n";
+        }
+        if (cell.pCell().isPCell()) {
+            indent(out, 1);
+            out << "pcell master=\"" << cell.pCell().masterName()
+                << "\" params=" << cell.pCell().parameters().size() << "\n";
+        }
         for (const auto &content : cell.contents()) {
             indent(out, 1);
             out << "type " << viewTypeToString(content.viewType())
                 << " dbuPerMicron=" << std::fixed << std::setprecision(3) << content.dbuPerMicron()
                 << "\n";
+
+            const auto &viewLayers = resolveViewLayers(content, db.lib());
+            indent(out, 1);
+            out << "view layers=" << viewLayers.size() << "\n";
+            for (std::size_t li = 0; li < viewLayers.size(); ++li) {
+                indent(out, 2);
+                out << '[' << li << "] L" << viewLayers[li].layerNum << "/D" << viewLayers[li].dataType
+                    << " purpose=" << layerPurposeToString(viewLayers[li].purpose)
+                    << " name=\"" << viewLayers[li].name << "\"\n";
+            }
 
             const auto &block = content.block();
             indent(out, 1);
@@ -119,7 +143,7 @@ void TextDumper::dump(const Database &db, std::ostream &out) const
                 << " nets=" << block.nets().size() << "\n";
 
             for (const auto &shape : block.shapes()) {
-                dumpShape(out, shape, 2, layers);
+                dumpShape(out, shape, 2, viewLayers);
             }
             for (const auto &inst : block.instances()) {
                 indent(out, 2);

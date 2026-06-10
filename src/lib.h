@@ -12,7 +12,8 @@ namespace core {
 /*!****************************************************************************************
  * \brief The Lib class represents a design library containing cells, layers, and metadata.
  *
- * Each Database owns one Lib. Cells hold per-view CellContent; layers are library-global.
+ * Each Database owns one Lib. Cells hold per-view CellContent with per-view layer tables;
+ * Lib.layers() is the library-wide master catalog.
  * refreshIndex() rebuilds the derived LibIndex used for hierarchy and bounding boxes.
  *****************************************************************************************/
 class Lib {

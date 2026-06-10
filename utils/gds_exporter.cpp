@@ -6,6 +6,7 @@
 #include "gds_exporter.h"
 
 #include "cell.h"
+#include "layer_utils.h"
 
 #include <cstdio>
 #include <cstring>
@@ -349,7 +350,11 @@ void GdsExporter::exportFile(const Database &db, const std::string &gdsPath) con
     writeUnits(f, dbuPerMicron);
 
     for (const Cell &cell : db.lib().cells()) {
-        writeCell(f, db.lib().layers(), cell);
+        const CellContent *content = cell.findContent(ViewType::Layout);
+        if (!content) {
+            continue;
+        }
+        writeCell(f, resolveViewLayers(*content, db.lib()), cell);
     }
 
     writeEmptyRec(f, GDS_ENDLIB);

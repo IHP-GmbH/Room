@@ -57,7 +57,7 @@ Exact numeric budgets (file size, seconds, cell counts) to be set when reference
 
 ## Comparison with LStream (positioning)
 
-LStream targets an **extensible layout archive** alternative to GDS/OAS. CORE shares that long-term direction but started with a **minimal unified model** to validate API and IHP integration. Gaps called out by LStream reviewers (per-view schemas, skip-friendly payloads, compact geometry, per-view layers) are tracked in [PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md) as v1 requirements, not optional nice-to-haves.
+LStream targets an **extensible layout archive** alternative to GDS/OAS. CORE shares that long-term direction but started with a **minimal unified model** to validate API and IHP integration. Per-view payloads, compact geometry, and per-view layer encapsulation are in place; remaining v1 gaps (skip-friendly opaque round-trip, native OAS geometry, streaming) are tracked in [PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md).
 
 ## Governance
 

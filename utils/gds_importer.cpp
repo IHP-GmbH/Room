@@ -6,6 +6,7 @@
 #include "gds_importer.h"
 
 #include "cell.h"
+#include "layer_utils.h"
 
 #include <cmath>
 #include <cstdint>
@@ -164,22 +165,30 @@ public:
         ElementDraft draft;
         double dbuPerMicron = m_options.defaultDbuPerMicron;
 
-        auto layerIndex = [&](std::uint16_t layer, std::uint16_t dataType) -> std::uint32_t {
+        auto ensureViewLayer = [&](CellContent &content,
+                                   std::uint16_t layer,
+                                   std::uint16_t dataType,
+                                   LayerPurpose purpose) -> std::uint32_t {
             LayerKey key{layer, dataType};
             auto it = m_layerMap.find(key);
-            if (it != m_layerMap.end()) {
-                return it->second;
+            if (it == m_layerMap.end()) {
+                LayerSpec spec;
+                spec.layerNum = layer;
+                spec.dataType = dataType;
+                std::ostringstream oss;
+                oss << "L" << layer << "/D" << dataType;
+                spec.name = oss.str();
+                spec.purpose = purpose;
+                const std::uint32_t libId = static_cast<std::uint32_t>(m_globalLayers.size());
+                m_globalLayers.push_back(spec);
+                m_layerMap[key] = libId;
+            } else {
+                mergeLayerPurpose(m_globalLayers[it->second], purpose);
             }
-            const std::uint32_t id = static_cast<std::uint32_t>(m_globalLayers.size());
-            LayerSpec spec;
-            spec.layerNum = layer;
-            spec.dataType = dataType;
-            std::ostringstream oss;
-            oss << "L" << layer << "/D" << dataType;
-            spec.name = oss.str();
-            m_globalLayers.push_back(spec);
-            m_layerMap[key] = id;
-            return id;
+
+            LayerSpec viewSpec = m_globalLayers[m_layerMap[key]];
+            viewSpec.purpose = purpose;
+            return findOrAddViewLayer(content, viewSpec, m_globalLayers);
         };
 
         auto flushDraft = [&]() {
@@ -195,7 +204,7 @@ public:
             case ElementDraft::Type::Box: {
                 if (draft.points.size() >= 3) {
                     Shape::PolygonData poly;
-                    poly.layerId = layerIndex(draft.layer, draft.dataType);
+                    poly.layerId = ensureViewLayer(content, draft.layer, draft.dataType, LayerPurpose::Boundary);
                     poly.points = draft.points;
                     if (!poly.points.empty() && poly.points.front().x == poly.points.back().x &&
                         poly.points.front().y == poly.points.back().y) {
@@ -208,7 +217,7 @@ public:
             case ElementDraft::Type::Path: {
                 if (!draft.points.empty()) {
                     Shape::PathData path;
-                    path.layerId = layerIndex(draft.layer, draft.dataType);
+                    path.layerId = ensureViewLayer(content, draft.layer, draft.dataType, LayerPurpose::Wire);
                     path.points = draft.points;
                     path.width = draft.width;
                     block.shapes().emplace_back(path);
@@ -217,7 +226,7 @@ public:
             }
             case ElementDraft::Type::Text: {
                 Shape::TextData text;
-                text.layerId = layerIndex(draft.layer, draft.dataType);
+                text.layerId = ensureViewLayer(content, draft.layer, draft.dataType, LayerPurpose::Label);
                 text.text = draft.text;
                 text.height = draft.width;
                 if (!draft.points.empty()) {

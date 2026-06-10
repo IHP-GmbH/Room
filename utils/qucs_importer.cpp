@@ -6,6 +6,7 @@
 #include "qucs_importer.h"
 
 #include "cell.h"
+#include "layer_spec.h"
 
 #include <cctype>
 #include <fstream>
@@ -365,6 +366,19 @@ Database QucsImporter::importFile(const std::string &schPath) const
     CellContent &content = cell.getOrCreateContent(ViewType::Schematic, 1.0);
     content.setDbuPerMicron(1.0);
     Block &block = content.block();
+
+    auto addSchematicLayer = [&](const std::string &name, LayerPurpose purpose) {
+        LayerSpec spec;
+        spec.layerNum = static_cast<std::uint16_t>(content.layers().size());
+        spec.dataType = 0;
+        spec.name = name;
+        spec.purpose = purpose;
+        content.layers().push_back(spec);
+        db.lib().layers().push_back(spec);
+    };
+    addSchematicLayer("wire", LayerPurpose::Wire);
+    addSchematicLayer("instance", LayerPurpose::Pin);
+    addSchematicLayer("label", LayerPurpose::Label);
 
     if (sections.count("__header__")) {
         for (const std::string &line : sections.at("__header__")) {

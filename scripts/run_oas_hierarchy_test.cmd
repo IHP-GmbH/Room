@@ -10,6 +10,7 @@ set "CONVERTED_OAS=%WORK_DIR%\sg13g2_stdcell.oas"
 
 if not "%~2"=="" set "INPUT_GDS=%~2"
 if not "%~1"=="" set "BUILD=%~1"
+if not "%~3"=="" set "PATH=%~3;%PATH%"
 
 if not exist "%WORK_DIR%" mkdir "%WORK_DIR%"
 

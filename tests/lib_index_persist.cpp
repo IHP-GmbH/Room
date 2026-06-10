@@ -2,9 +2,14 @@
 #include "gds_importer.h"
 #include "lib_index.h"
 
-#include <filesystem>
 #include <iostream>
 #include <string>
+
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
 
 namespace {
 
@@ -37,6 +42,31 @@ bool indexMatches(const core::LibIndex &a, const core::LibIndex &b)
         }
     }
     return true;
+}
+
+void ensureDirectory(const std::string &dirPath)
+{
+    std::string partial;
+    partial.reserve(dirPath.size());
+    for (char ch : dirPath) {
+        partial.push_back(ch);
+        if (ch != '/' && ch != '\\') {
+            continue;
+        }
+        if (partial.size() <= 1) {
+            continue;
+        }
+#ifdef _WIN32
+        _mkdir(partial.c_str());
+#else
+        mkdir(partial.c_str(), 0755);
+#endif
+    }
+#ifdef _WIN32
+    _mkdir(partial.c_str());
+#else
+    mkdir(partial.c_str(), 0755);
+#endif
 }
 
 bool layoutBboxesValid(const core::Database &db)
@@ -75,7 +105,10 @@ int main(int argc, char *argv[])
     }
 
     const core::LibIndex expectedIndex = core::LibIndex::build(original.lib());
-    std::filesystem::create_directories(std::filesystem::path(corePath).parent_path());
+    const std::size_t slash = corePath.find_last_of("/\\");
+    if (slash != std::string::npos) {
+        ensureDirectory(corePath.substr(0, slash));
+    }
     original.saveToFile(corePath);
 
     const core::Database reloaded = core::Database::loadFromFile(corePath);

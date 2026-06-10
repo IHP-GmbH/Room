@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block.h"
+#include "layer_spec.h"
 #include "types.h"
 
 namespace core {
@@ -27,10 +28,14 @@ public:
     Block &                                             block() { return m_block; }
     const Block &                                       block() const { return m_block; }
 
+    std::vector<LayerSpec> &                            layers() { return m_layers; }
+    const std::vector<LayerSpec> &                      layers() const { return m_layers; }
+
 private:
     ViewType                                            m_viewType;
     double                                              m_dbuPerMicron;
     std::vector<Property>                               m_properties;
+    std::vector<LayerSpec>                              m_layers;
     Block                                               m_block;
 };
 

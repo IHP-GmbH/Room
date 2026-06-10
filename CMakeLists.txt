@@ -70,6 +70,7 @@ set(CORE_SOURCES
     src/block.cpp
     src/cell_content.cpp
     src/cell.cpp
+    src/layer_utils.cpp
     src/lib.cpp
     src/lib_index.cpp
     src/database.cpp

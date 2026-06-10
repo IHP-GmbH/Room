@@ -9,6 +9,7 @@
 #include "serialization.h"
 
 #include "compact_codec.h"
+#include "layer_utils.h"
 #include "lib_index.h"
 
 #include <database.capnp.h>
@@ -385,6 +386,32 @@ void writeViewLayers(ViewBuilder viewBuilder, const std::vector<LayerSpec> &laye
     }
 }
 
+template <typename ViewReader>
+std::vector<LayerSpec> readViewLayers(ViewReader viewReader)
+{
+    const auto layerReader = viewReader.getLayers();
+    std::vector<LayerSpec> layers;
+    layers.reserve(layerReader.size());
+    for (const auto layer : layerReader) {
+        layers.push_back(readLayerSpec(layer));
+    }
+    return layers;
+}
+
+void writePCellInfo(schema::PCellInfo::Builder builder, const PCellInfo &pCell)
+{
+    builder.setMasterName(pCell.masterName());
+    writeProperties(builder.initParameters(pCell.parameters().size()), pCell.parameters());
+}
+
+PCellInfo readPCellInfo(schema::PCellInfo::Reader reader)
+{
+    PCellInfo pCell;
+    pCell.setMasterName(reader.getMasterName().cStr());
+    pCell.parameters() = readProperties(reader.getParameters());
+    return pCell;
+}
+
 void writeBlockShell(schema::Block::Builder b, const Block &block)
 {
     b.initShapes(0);
@@ -481,14 +508,46 @@ void writeCellContent(schema::CellContent::Builder b,
     b.setViewType(toSchemaViewType(content.viewType()));
     b.setDbuPerMicron(content.dbuPerMicron());
     writeProperties(b.initProperties(content.properties().size()), content.properties());
-    writeViewPayload(b.initPayload(), content.viewType(), libLayers, content.block(), compactGeometry);
+    const std::vector<LayerSpec> viewLayers = layersForSerialization(content, libLayers);
+    writeViewPayload(b.initPayload(), content.viewType(), viewLayers, content.block(), compactGeometry);
 }
 
 CellContent readCellContent(schema::CellContent::Reader r)
 {
     CellContent content(fromSchemaViewType(r.getViewType()), r.getDbuPerMicron());
     content.properties() = readProperties(r.getProperties());
-    content.block() = readBlockFromPayload(r.getPayload());
+
+    const auto payload = r.getPayload();
+    switch (payload.which()) {
+    case schema::ViewPayload::LAYOUT: {
+        const auto layout = payload.getLayout();
+        content.layers() = readViewLayers(layout);
+        content.block() = readViewTopology(layout);
+        break;
+    }
+    case schema::ViewPayload::SCHEMATIC: {
+        const auto schematic = payload.getSchematic();
+        content.layers() = readViewLayers(schematic);
+        content.block() = readViewTopology(schematic);
+        break;
+    }
+    case schema::ViewPayload::SYMBOL: {
+        const auto symbol = payload.getSymbol();
+        content.layers() = readViewLayers(symbol);
+        content.block() = readViewTopology(symbol);
+        break;
+    }
+    case schema::ViewPayload::ABSTRACT: {
+        const auto abstract = payload.getAbstract();
+        content.layers() = readViewLayers(abstract);
+        content.block() = readViewTopology(abstract);
+        break;
+    }
+    default:
+        content.block() = readBlockFromPayload(payload);
+        break;
+    }
+
     return content;
 }
 
@@ -593,6 +652,12 @@ void writeDatabase(schema::Database::Builder root, const Database &db, SaveOptio
         cellBuilder.setName(cell.name());
         writeProperties(cellBuilder.initProperties(cell.properties().size()), cell.properties());
 
+        auto aliases = cellBuilder.initAliases(cell.aliases().size());
+        for (std::size_t ai = 0; ai < cell.aliases().size(); ++ai) {
+            aliases.set(ai, cell.aliases()[ai]);
+        }
+        writePCellInfo(cellBuilder.initPCell(), cell.pCell());
+
         auto contents = cellBuilder.initContents(cell.contents().size());
         for (std::size_t i = 0; i < cell.contents().size(); ++i) {
             writeCellContent(contents[i], cell.contents()[i], db.lib().layers(), options.compactGeometry);
@@ -628,6 +693,12 @@ Database readDatabase(schema::Database::Reader root)
     for (const auto cellReader : cellsReader) {
         Cell cell(cellReader.getName().cStr());
         cell.properties() = readProperties(cellReader.getProperties());
+        const auto aliasesReader = cellReader.getAliases();
+        cell.aliases().reserve(aliasesReader.size());
+        for (const auto alias : aliasesReader) {
+            cell.aliases().emplace_back(alias.cStr());
+        }
+        cell.pCell() = readPCellInfo(cellReader.getPCell());
         const auto contentsReader = cellReader.getContents();
         cell.contents().reserve(contentsReader.size());
         for (const auto contentReader : contentsReader) {

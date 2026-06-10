@@ -1,4 +1,5 @@
 #include "database.h"
+#include "compact_codec.h"
 #include "gds_importer.h"
 
 #include <database.capnp.h>
@@ -9,12 +10,17 @@
 #include <kj/io.h>
 
 #include <cstdio>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
 
 namespace {
 
@@ -28,6 +34,31 @@ std::size_t shapeCount(const core::Database &db)
         }
     }
     return total;
+}
+
+void ensureDirectory(const std::string &dirPath)
+{
+    std::string partial;
+    partial.reserve(dirPath.size());
+    for (char ch : dirPath) {
+        partial.push_back(ch);
+        if (ch != '/' && ch != '\\') {
+            continue;
+        }
+        if (partial.size() <= 1) {
+            continue;
+        }
+#ifdef _WIN32
+        _mkdir(partial.c_str());
+#else
+        mkdir(partial.c_str(), 0755);
+#endif
+    }
+#ifdef _WIN32
+    _mkdir(partial.c_str());
+#else
+    mkdir(partial.c_str(), 0755);
+#endif
 }
 
 bool payloadMatchesViewType(core::schema::ViewPayload::Reader payload, core::schema::ViewType viewType)
@@ -81,7 +112,9 @@ void verifyPayloadInFile(const std::string &corePath)
                 if (layout.getLayers().size() == 0) {
                     throw std::runtime_error("Layout payload missing layers");
                 }
-                if (layout.getBlock().getShapes().size() == 0) {
+                const bool hasBlockShapes = layout.getBlock().getShapes().size() > 0;
+                const bool hasCompactShapes = core::compactBlockHasGeometry(layout.getCompact());
+                if (!hasBlockShapes && !hasCompactShapes) {
                     throw std::runtime_error("Layout payload missing shapes");
                 }
             }
@@ -110,7 +143,10 @@ int main(int argc, char *argv[])
     }
 
     original.setVersion("1.0");
-    std::filesystem::create_directories(std::filesystem::path(corePath).parent_path());
+    const std::size_t slash = corePath.find_last_of("/\\");
+    if (slash != std::string::npos) {
+        ensureDirectory(corePath.substr(0, slash));
+    }
     original.saveToFile(corePath);
 
     try {
@@ -124,6 +160,20 @@ int main(int argc, char *argv[])
     if (shapeCount(reloaded) != shapeCount(original)) {
         std::cerr << "error: shape count mismatch after payload round-trip\n";
         return 3;
+    }
+
+    for (const auto &cell : original.lib().cells()) {
+        const core::CellContent *layout = cell.findContent(core::ViewType::Layout);
+        if (layout == nullptr) {
+            continue;
+        }
+        const core::Cell *reloadedCell = reloaded.lib().findCell(cell.name());
+        const core::CellContent *reloadedLayout =
+            reloadedCell != nullptr ? reloadedCell->findContent(core::ViewType::Layout) : nullptr;
+        if (reloadedLayout == nullptr || reloadedLayout->layers().size() != layout->layers().size()) {
+            std::cerr << "error: per-view layer count mismatch after payload round-trip\n";
+            return 4;
+        }
     }
 
     std::cout << "payload round-trip OK (" << shapeCount(reloaded) << " shapes)\n";

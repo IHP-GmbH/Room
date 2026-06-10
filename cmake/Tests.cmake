@@ -17,6 +17,9 @@ if(CORE_BUILD_TESTS)
     add_executable(view_payload_roundtrip tests/view_payload_roundtrip.cpp)
     target_link_libraries(view_payload_roundtrip PRIVATE core_utils)
 
+    add_executable(encapsulation_roundtrip tests/encapsulation_roundtrip.cpp)
+    target_link_libraries(encapsulation_roundtrip PRIVATE core_utils)
+
     add_executable(lib_index_persist tests/lib_index_persist.cpp)
     target_link_libraries(lib_index_persist PRIVATE core_utils)
 
@@ -66,6 +69,16 @@ if(CORE_BUILD_TESTS)
     )
 
     add_test(
+        NAME encapsulation_roundtrip
+        COMMAND encapsulation_roundtrip "${_sample_gds}" "${_ctest_out}/encapsulation_roundtrip.core"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(encapsulation_roundtrip PROPERTIES
+        LABELS "core;encapsulation"
+        TIMEOUT 60
+    )
+
+    add_test(
         NAME lib_index_persist
         COMMAND lib_index_persist "${_sample_gds}" "${_ctest_out}/lib_index_persist.core"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
@@ -87,26 +100,46 @@ if(CORE_BUILD_TESTS)
         TIMEOUT 120
     )
 
-    add_test(
-        NAME sample_gds_roundtrip
-        COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_sample_gds_roundtrip_test.sh"
-                "${CMAKE_BINARY_DIR}"
-                "${_sample_gds}"
-        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    )
+    if(WIN32)
+        add_test(
+            NAME sample_gds_roundtrip
+            COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_sample_gds_roundtrip_test.cmd"
+                    "${CMAKE_BINARY_DIR}"
+                    "${_sample_gds}"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        )
+    else()
+        add_test(
+            NAME sample_gds_roundtrip
+            COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_sample_gds_roundtrip_test.sh"
+                    "${CMAKE_BINARY_DIR}"
+                    "${_sample_gds}"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        )
+    endif()
     set_tests_properties(sample_gds_roundtrip PROPERTIES
         LABELS "gds;sample;roundtrip"
         TIMEOUT 60
     )
 
     if(KLAYOUT_EXECUTABLE)
-        add_test(
-            NAME sg13g2_stdcell_gds_roundtrip
-            COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh"
-                    "${CMAKE_BINARY_DIR}"
-                    "${_sg13g2_gds}"
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        )
+        if(WIN32)
+            add_test(
+                NAME sg13g2_stdcell_gds_roundtrip
+                COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_sg13g2_stdcell_gds_roundtrip_test.cmd"
+                        "${CMAKE_BINARY_DIR}"
+                        "${_sg13g2_gds}"
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            )
+        else()
+            add_test(
+                NAME sg13g2_stdcell_gds_roundtrip
+                COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh"
+                        "${CMAKE_BINARY_DIR}"
+                        "${_sg13g2_gds}"
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            )
+        endif()
         set_tests_properties(sg13g2_stdcell_gds_roundtrip PROPERTIES
             LABELS "gds;sg13g2;roundtrip"
             TIMEOUT 180
@@ -118,6 +151,15 @@ if(CORE_BUILD_TESTS)
     if(CORE_BUILD_OAS_TESTS)
         find_package(ZLIB QUIET)
         if(ZLIB_FOUND)
+            set(_zlib_bin_dir "")
+            if(WIN32)
+                get_filename_component(_zlib_lib_dir "${ZLIB_LIBRARY_RELEASE}" DIRECTORY)
+                get_filename_component(_zlib_bin_candidate "${_zlib_lib_dir}/../bin" ABSOLUTE)
+                if(EXISTS "${_zlib_bin_candidate}/zlib1.dll")
+                    set(_zlib_bin_dir "${_zlib_bin_candidate}")
+                endif()
+            endif()
+
             add_library(core_oas STATIC
                 utils/oas_reader.cpp
                 utils/oas_writer.cpp
@@ -137,27 +179,58 @@ if(CORE_BUILD_TESTS)
             add_executable(oas_core_roundtrip tests/oas_core_roundtrip.cpp)
             target_link_libraries(oas_core_roundtrip PRIVATE core_oas)
 
-            add_test(
-                NAME oas_hierarchy
-                COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_hierarchy_test.sh"
-                        "${CMAKE_BINARY_DIR}"
-                        "${_sg13g2_gds}"
-                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-            )
+            if(WIN32 AND EXISTS "${_zlib_bin_dir}/zlib1.dll")
+                foreach(_oas_tool oas_hierarchy oas_core_roundtrip)
+                    add_custom_command(TARGET ${_oas_tool} POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                                "${_zlib_bin_dir}/zlib1.dll"
+                                "$<TARGET_FILE_DIR:${_oas_tool}>"
+                        COMMENT "Copy zlib1.dll for ${_oas_tool}"
+                    )
+                endforeach()
+            endif()
+
+            if(WIN32)
+                add_test(
+                    NAME oas_hierarchy
+                    COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_hierarchy_test.cmd"
+                            "${CMAKE_BINARY_DIR}"
+                            "${_sg13g2_gds}"
+                            "${_zlib_bin_dir}"
+                    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                )
+            else()
+                add_test(
+                    NAME oas_hierarchy
+                    COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_hierarchy_test.sh"
+                            "${CMAKE_BINARY_DIR}"
+                            "${_sg13g2_gds}"
+                    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                )
+            endif()
             set_tests_properties(oas_hierarchy PROPERTIES
                 LABELS "oas;hierarchy"
                 TIMEOUT 120
             )
-
             if(KLAYOUT_EXECUTABLE)
-                add_test(
-                    NAME oas_core_roundtrip
-                    COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_core_roundtrip_test.sh"
-                            "${CMAKE_BINARY_DIR}"
-                            ""
-                            "${_sg13g2_gds}"
-                    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-                )
+                if(WIN32)
+                    add_test(
+                        NAME oas_core_roundtrip
+                        COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_core_roundtrip_test.cmd"
+                                "${CMAKE_BINARY_DIR}"
+                                "${_sg13g2_gds}"
+                        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                    )
+                else()
+                    add_test(
+                        NAME oas_core_roundtrip
+                        COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_core_roundtrip_test.sh"
+                                "${CMAKE_BINARY_DIR}"
+                                ""
+                                "${_sg13g2_gds}"
+                        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+                    )
+                endif()
                 set_tests_properties(oas_core_roundtrip PROPERTIES
                     LABELS "oas;roundtrip"
                     TIMEOUT 300

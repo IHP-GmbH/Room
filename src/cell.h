@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cell_content.h"
+#include "pcell_info.h"
 #include "types.h"
 
 #include <string>
@@ -30,10 +31,18 @@ public:
     const CellContent *                                 findContent(ViewType type) const;
     CellContent &                                       getOrCreateContent(ViewType type, double dbuPerMicron = 1000.0);
 
+    std::vector<std::string> &                          aliases() { return m_aliases; }
+    const std::vector<std::string> &                    aliases() const { return m_aliases; }
+
+    PCellInfo &                                         pCell() { return m_pCell; }
+    const PCellInfo &                                   pCell() const { return m_pCell; }
+
 private:
     std::string                                         m_name;
     std::vector<Property>                               m_properties;
     std::vector<CellContent>                            m_contents;
+    std::vector<std::string>                            m_aliases;
+    PCellInfo                                           m_pCell;
 };
 
 } // namespace core

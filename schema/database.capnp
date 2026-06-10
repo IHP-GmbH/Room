@@ -16,10 +16,17 @@ struct CellContent {
   payload      @3 :ViewPayload;
 }
 
+struct PCellInfo {
+  masterName @0 :Text;
+  parameters @1 :List(Property);
+}
+
 struct Cell {
   name       @0 :Text;
   properties @1 :List(Property);
   contents   @2 :List(CellContent);
+  aliases    @3 :List(Text);
+  pCell      @4 :PCellInfo;
 }
 
 struct Lib {

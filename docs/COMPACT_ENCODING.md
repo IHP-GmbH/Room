@@ -32,11 +32,11 @@ Command: `compact_geometry_size` + `gds_core_roundtrip` (see [Reproduce](#reprod
 | Artifact | Size | vs verbose | vs GDS |
 |----------|------|------------|--------|
 | Input GDS | 626 688 B | — | 100% |
-| Verbose `.core` | 1 226 152 B | 100% | 196% |
-| Compact v2 `.core` | **492 128 B** | **40.1%** | **78.5%** |
-| GDS round-trip `.core` | 492 128 B | 40.1% | 78.5% |
+| Verbose `.core` | 1 216 976 B | 100% | 194% |
+| Compact v2 `.core` | **485 320 B** | **39.9%** | **77.4%** |
+| GDS round-trip `.core` | 485 320 B | 39.9% | 77.4% |
 
-Compact v2 is ~60% smaller than verbose and **~21% smaller than source GDS** on this standard-cell library.
+Compact v2 is ~60% smaller than verbose and **~23% smaller than source GDS** on this standard-cell library.
 
 ### Save / load time (same in-memory database)
 
@@ -44,25 +44,25 @@ Measured by `compact_geometry_size` after GDS import (8 shapes tagged with test 
 
 | Operation | Verbose | Compact v2 |
 |-----------|---------|------------|
-| CORE save | **10.5 ms** | **58.4 ms** |
-| CORE load | **27.9 ms** | **31.2 ms** |
-| Save+load | 38.4 ms | 89.6 ms |
+| CORE save | **10.5 ms** | **61.4 ms** |
+| CORE load | **27.4 ms** | **32.5 ms** |
+| Save+load | 37.9 ms | 93.9 ms |
 
-Compact **save** is slower (repetition detection + encoding). **Load** is within ~12% of verbose.
+Compact **save** is slower (repetition detection + encoding). **Load** is within ~18% of verbose.
 
 ### Full round-trip pipeline (GDS → CORE → GDS)
 
 | Stage | Time |
 |-------|------|
-| GDS import | 38.2 ms |
-| CORE save (compact v2) | 71.8 ms |
-| CORE load | 40.7 ms |
-| GDS export | 17.6 ms |
-| **CORE total (save+load)** | **112.5 ms** |
-| **GDS total (import+export)** | **55.8 ms** |
-| **End-to-end total** | **168.3 ms** |
+| GDS import | 35.2 ms |
+| CORE save (compact v2) | 53.6 ms |
+| CORE load | 37.3 ms |
+| GDS export | 15.0 ms |
+| **CORE total (save+load)** | **91.0 ms** |
+| **GDS total (import+export)** | **50.1 ms** |
+| **End-to-end total** | **141.1 ms** |
 
-Exchange path (GDS only) is ~2.5× faster than full round-trip; most CORE overhead is on **save** (compact v2 analysis).
+Exchange path (GDS only) is ~2.8× faster than full round-trip; most CORE overhead is on **save** (compact v2 analysis).
 
 ### OAS → CORE → OAS (reference)
 
@@ -87,7 +87,7 @@ cmake --build build --target compact_geometry_size compact_repetition_unit gds_c
 build\compact_geometry_size.exe examples\gds_to_core\data\sg13g2_stdcell.gds build\tests\perf\verbose.core build\tests\perf\compact.core
 build\gds_core_roundtrip.exe examples\gds_to_core\data\sg13g2_stdcell.gds build\tests\perf\roundtrip.gds
 build\compact_repetition_unit.exe
-ctest -R compact -V
+ctest -R "compact|encapsulation" -V
 ```
 
 ## Schema

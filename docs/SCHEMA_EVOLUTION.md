@@ -21,11 +21,11 @@ Cap'n Proto schemas live under `schema/`. This document defines how they change 
 ## Current model (v1.0)
 
 ```
-Database → Lib → Cell → CellContent(viewType, payload)
-                → layers[]   (library-global in C++ API; also copied per-view in payload)
+Database → Lib → Cell(aliases[], pCell) → CellContent(viewType, payload)
+                → layers[]   (library master catalog)
 ```
 
-On disk, geometry lives only in `CellContent.payload.*.block`. The C++ API still exposes `CellContent.block()` as the in-memory view body.
+Each `CellContent` owns a per-view `layers[]` table in C++ and in `payload.*.layers` on disk. Geometry lives in `payload.*.block` (verbose) or `payload.*.compact` (default). The C++ API exposes `CellContent.block()` and `CellContent.layers()` as the in-memory view body.
 
 ```
 CellContent.payload :union

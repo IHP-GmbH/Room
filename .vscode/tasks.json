@@ -15,30 +15,22 @@
         "-DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/mingw810_64/bin/mingw32-make.exe"
       ],
       "options": { "cwd": "${workspaceFolder}" },
-      "group": { "kind": "build", "isDefault": false },
       "problemMatcher": "$cmake",
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": { "reveal": "silent", "panel": "shared", "close": true }
     },
     {
-      "label": "CMake: Configure Release",
+      "label": "Build All",
       "type": "shell",
       "command": "cmake",
-      "args": [
-        "-S", ".",
-        "-B", "build",
-        "-G", "MinGW Makefiles",
-        "-DCMAKE_BUILD_TYPE=Release",
-        "-DCMAKE_C_COMPILER=C:/Qt/Tools/mingw810_64/bin/gcc.exe",
-        "-DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingw810_64/bin/g++.exe",
-        "-DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/mingw810_64/bin/mingw32-make.exe"
-      ],
+      "args": ["--build", "build", "-j4"],
       "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["CMake: Configure Debug"],
       "group": { "kind": "build", "isDefault": false },
-      "problemMatcher": "$cmake",
+      "problemMatcher": "$gcc",
       "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "Build: Static Libraries (.a)",
+      "label": "Build CoreDB",
       "type": "shell",
       "command": "cmake",
       "args": [
@@ -52,69 +44,35 @@
       "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "Build: Release Libraries (.a)",
+      "label": "Build Tests",
       "type": "shell",
       "command": "cmake",
       "args": [
         "--build", "build", "-j4",
-        "--target", "core", "core_utils"
+        "--target",
+        "gds_core_roundtrip",
+        "lib_index",
+        "view_payload_roundtrip",
+        "lib_index_persist",
+        "compact_geometry_size",
+        "compact_repetition_unit",
+        "oas_hierarchy",
+        "oas_core_roundtrip"
       ],
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: Configure Release"],
+      "dependsOn": ["CMake: Configure Debug"],
       "group": { "kind": "build", "isDefault": false },
       "problemMatcher": "$gcc",
       "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "Build: All Targets",
+      "label": "Run All Tests",
       "type": "shell",
-      "command": "cmake",
-      "args": ["--build", "build", "-j4"],
+      "command": "ctest",
+      "args": ["--test-dir", "build", "--output-on-failure", "-V"],
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: Configure Debug"],
-      "problemMatcher": "$gcc",
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "Install: Libraries + Headers",
-      "type": "shell",
-      "command": "cmake",
-      "args": [
-        "--install", "build",
-        "--prefix", "${workspaceFolder}/install"
-      ],
-      "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["Build: All Targets"],
-      "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "Example: Make Sample GDS",
-      "type": "shell",
-      "command": "if not exist testdata mkdir testdata & build\\make_sample_gds.exe testdata\\sample.gds",
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "shell": {
-          "executable": "cmd.exe",
-          "args": ["/d", "/c"]
-        }
-      },
-      "dependsOn": ["Build: All Targets"],
-      "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "Example: GDS to CORE",
-      "type": "shell",
-      "command": "if not exist examples\\gds_to_core\\output mkdir examples\\gds_to_core\\output & build\\gds_to_core.exe",
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "shell": {
-          "executable": "cmd.exe",
-          "args": ["/d", "/c"]
-        }
-      },
-      "dependsOn": ["Build: All Targets"],
+      "dependsOn": ["Build Tests"],
+      "group": { "kind": "test", "isDefault": true },
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
@@ -125,186 +83,115 @@
       }
     },
     {
-      "label": "Run Demo: GDS to CORE",
-      "type": "process",
-      "command": "${workspaceFolder}/build/gds_to_core.exe",
+      "label": "Run Test: compact_repetition_unit",
+      "type": "shell",
+      "command": "ctest",
+      "args": ["--test-dir", "build", "-R", "^compact_repetition_unit$", "--output-on-failure", "-V"],
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["Ensure: gds_to_core output dir"],
+      "dependsOn": ["Build Tests"],
+      "group": "test",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true,
-        "showReuseMessage": false,
-        "close": false
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
     },
     {
-      "label": "Ensure: gds_to_core output dir",
+      "label": "Run Test: lib_index",
       "type": "shell",
-      "command": "if not exist examples\\gds_to_core\\output mkdir examples\\gds_to_core\\output",
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "shell": {
-          "executable": "cmd.exe",
-          "args": ["/d", "/c"]
-        }
-      },
-      "problemMatcher": [],
-      "presentation": { "reveal": "silent", "panel": "shared", "close": true }
-    },
-    {
-      "label": "Example: Qucs to CORE",
-      "type": "shell",
-      "command": "if not exist examples\\qucs_to_core\\output mkdir examples\\qucs_to_core\\output & build\\qucs_to_core.exe",
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "shell": {
-          "executable": "cmd.exe",
-          "args": ["/d", "/c"]
-        }
-      },
-      "dependsOn": ["Build: All Targets"],
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true,
-        "showReuseMessage": false,
-        "close": false
-      }
-    },
-    {
-      "label": "Run Demo: Qucs to CORE",
-      "type": "process",
-      "command": "${workspaceFolder}/build/qucs_to_core.exe",
+      "command": "ctest",
+      "args": ["--test-dir", "build", "-R", "^lib_index$", "--output-on-failure", "-V"],
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["Ensure: qucs_to_core output dir"],
+      "dependsOn": ["Build Tests"],
+      "group": "test",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true,
-        "showReuseMessage": false,
-        "close": false
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
     },
     {
-      "label": "Ensure: qucs_to_core output dir",
+      "label": "Run Test: view_payload_roundtrip",
       "type": "shell",
-      "command": "if not exist examples\\qucs_to_core\\output mkdir examples\\qucs_to_core\\output",
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "shell": {
-          "executable": "cmd.exe",
-          "args": ["/d", "/c"]
-        }
-      },
-      "problemMatcher": [],
-      "presentation": { "reveal": "silent", "panel": "shared", "close": true }
-    },
-    {
-      "label": "Build: gds_core_roundtrip",
-      "type": "shell",
-      "command": "cmake",
-      "args": ["--build", "build", "--target", "gds_core_roundtrip"],
+      "command": "ctest",
+      "args": ["--test-dir", "build", "-R", "^view_payload_roundtrip$", "--output-on-failure", "-V"],
       "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: Configure Debug"],
-      "problemMatcher": "$gcc",
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "dependsOn": ["Build Tests"],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
     },
     {
-      "label": "Test: sample GDS round-trip",
+      "label": "Run Test: lib_index_persist",
+      "type": "shell",
+      "command": "ctest",
+      "args": ["--test-dir", "build", "-R", "^lib_index_persist$", "--output-on-failure", "-V"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["Build Tests"],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
+    },
+    {
+      "label": "Run Test: compact_geometry_size",
+      "type": "shell",
+      "command": "ctest",
+      "args": ["--test-dir", "build", "-R", "^compact_geometry_size$", "--output-on-failure", "-V"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": ["Build Tests"],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
+    },
+    {
+      "label": "Run Test: sample_gds_roundtrip",
       "type": "shell",
       "command": "scripts\\run_sample_gds_roundtrip_test.cmd",
+      "args": ["build"],
       "options": {
         "cwd": "${workspaceFolder}",
-        "shell": {
-          "executable": "cmd.exe",
-          "args": ["/d", "/c"]
-        }
+        "shell": { "executable": "cmd.exe", "args": ["/d", "/c"] }
       },
-      "dependsOn": ["Build: gds_core_roundtrip"],
+      "dependsOn": ["Build Tests"],
+      "group": "test",
       "problemMatcher": [],
-      "group": { "kind": "test", "isDefault": false },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true,
-        "showReuseMessage": false,
-        "close": false
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
     },
     {
-      "label": "Build: oas_hierarchy",
-      "type": "shell",
-      "command": "cmake",
-      "args": ["--build", "build", "--target", "oas_hierarchy"],
-      "options": { "cwd": "${workspaceFolder}" },
-      "dependsOn": ["CMake: Configure Debug"],
-      "problemMatcher": "$gcc",
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "Test: OAS hierarchy",
-      "type": "shell",
-      "command": "scripts\\run_oas_hierarchy_test.cmd",
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "shell": {
-          "executable": "cmd.exe",
-          "args": ["/d", "/c"]
-        }
-      },
-      "dependsOn": ["Build: oas_hierarchy"],
-      "problemMatcher": [],
-      "group": { "kind": "test", "isDefault": false },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true,
-        "showReuseMessage": false,
-        "close": false
-      }
-    },
-    {
-      "label": "Test: sg13g2_stdcell GDS round-trip",
+      "label": "Run Test: sg13g2_stdcell_gds_roundtrip",
       "type": "shell",
       "command": "scripts\\run_sg13g2_stdcell_gds_roundtrip_test.cmd",
+      "args": ["build"],
       "options": {
         "cwd": "${workspaceFolder}",
-        "shell": {
-          "executable": "cmd.exe",
-          "args": ["/d", "/c"]
-        }
+        "shell": { "executable": "cmd.exe", "args": ["/d", "/c"] }
       },
-      "dependsOn": ["Build: gds_core_roundtrip"],
+      "dependsOn": ["Build Tests"],
+      "group": "test",
       "problemMatcher": [],
-      "group": { "kind": "test", "isDefault": false },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true,
-        "showReuseMessage": false,
-        "close": false
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
     },
     {
-      "label": "Example: Build & Run Full Demo",
-      "dependsOrder": "sequence",
-      "dependsOn": [
-        "Build: All Targets",
-        "Run Demo: GDS to CORE"
-      ],
+      "label": "Run Test: oas_hierarchy",
+      "type": "shell",
+      "command": "scripts\\run_oas_hierarchy_test.cmd",
+      "args": ["build"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": { "executable": "cmd.exe", "args": ["/d", "/c"] }
+      },
+      "dependsOn": ["Build Tests"],
+      "group": "test",
       "problemMatcher": [],
-      "group": { "kind": "test", "isDefault": true },
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "focus": true,
-        "showReuseMessage": false,
-        "close": false
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
+    },
+    {
+      "label": "Run Test: oas_core_roundtrip",
+      "type": "shell",
+      "command": "scripts\\run_oas_core_roundtrip_test.cmd",
+      "args": ["build"],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": { "executable": "cmd.exe", "args": ["/d", "/c"] }
+      },
+      "dependsOn": ["Build Tests"],
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
     }
   ]
 }
