@@ -1,0 +1,15 @@
+# Write OAS with cells named in a text file (one name per line).
+out = $out
+list = $list
+
+names = []
+File.readlines(list).each do |line|
+  n = line.strip
+  names << n if !n.empty?
+end
+
+ly = RBA::Layout::new
+ly.dbu = 0.001
+names.each { |n| ly.create_cell(n) }
+ly.write(out)
+log("Wrote " + out + " cells=" + names.size.to_s)

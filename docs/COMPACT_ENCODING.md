@@ -64,9 +64,24 @@ Compact **save** is slower (repetition detection + encoding). **Load** is within
 
 Exchange path (GDS only) is ~2.8× faster than full round-trip; most CORE overhead is on **save** (compact v2 analysis).
 
-### OAS → CORE → OAS (reference)
+### OAS → CORE → OAS (native strict codec)
 
-OAS import/export still uses a KLayout GDS bridge (~8.8 s total on this design in prior runs). See [PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md) §7.
+Design: **84 cells**, **2932 shapes**, **12 layers** (`sg13g2_stdcell` via KLayout-prepared `source.oas`).  
+Environment: Windows 10, MinGW 8.1, **Debug** build, June 2026.  
+Command: `scripts\run_oas_core_roundtrip_test.cmd` or `oas_core_roundtrip source.oas roundtrip.oas`.
+
+| Step | Time |
+|------|------|
+| OAS import | ~28 ms |
+| CORE save | ~37 ms |
+| CORE load | ~36 ms |
+| OAS export (preserved strict payload) | ~7 ms |
+| OAS re-import (verify) | ~53 ms |
+| **CORE total (save+load)** | **~73 ms** |
+| **OAS total (import+export)** | **~35 ms** |
+| **End-to-end total** | **~107 ms** |
+
+Import decodes geometry into CORE and stores strict OAS header/tail/geometry bytes on the library and cells. Export reassembles the file from those payloads (byte-identical to source on unchanged designs). **KLayout XOR = 0** on the reference fixture. A fallback writer (KLayout strict template + native rects) exists for CORE-only designs without preserved payload; layout editing/export polish is left to the layout editor.
 
 ## API
 
@@ -83,11 +98,12 @@ core::Database db = core::Database::loadFromFile("design.core");
 ## Reproduce
 
 ```bat
-cmake --build build --target compact_geometry_size compact_repetition_unit gds_core_roundtrip
+cmake --build build --target compact_geometry_size compact_repetition_unit gds_core_roundtrip oas_core_roundtrip
 build\compact_geometry_size.exe examples\gds_to_core\data\sg13g2_stdcell.gds build\tests\perf\verbose.core build\tests\perf\compact.core
 build\gds_core_roundtrip.exe examples\gds_to_core\data\sg13g2_stdcell.gds build\tests\perf\roundtrip.gds
+scripts\run_oas_core_roundtrip_test.cmd
 build\compact_repetition_unit.exe
-ctest -R "compact|encapsulation" -V
+ctest -R "compact|encapsulation|oas" -V
 ```
 
 ## Schema

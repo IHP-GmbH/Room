@@ -1,5 +1,8 @@
 #include "oas_reader.h"
 
+#include "database.h"
+#include "oas_geometry.h"
+
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -345,39 +348,122 @@ static inline bool skipGDelta(OasCursor &c)
  * \param c Cursor to advance.
  * \return True on success, false otherwise.
  *********************************************************************************************************************/
-static inline bool skipPointList(OasCursor &c)
+static inline bool readGDeltaPair(OasCursor &c, std::int64_t &dx, std::int64_t &dy)
+{
+    std::uint64_t g = 0;
+    if (!readUInt(c, g)) {
+        return false;
+    }
+    if ((g & 1ULL) == 0) {
+        dx = static_cast<std::int64_t>(g >> 1);
+        dy = 0;
+        return true;
+    }
+    std::uint64_t h = 0;
+    if (!readUInt(c, h)) {
+        return false;
+    }
+    dx = static_cast<std::int64_t>(g >> 1);
+    dy = static_cast<std::int64_t>(h >> 1);
+    return true;
+}
+
+static bool readPointListAbsolute(OasCursor &c, std::int64_t startX, std::int64_t startY, std::vector<Point> &points)
 {
     std::uint64_t ptType = 0;
-    if (!readUInt(c, ptType)) return false;
+    if (!readUInt(c, ptType)) {
+        return false;
+    }
 
     std::uint64_t count = 0;
-    if (!readUInt(c, count)) return false;
+    if (!readUInt(c, count)) {
+        return false;
+    }
+
+    points.clear();
+    points.reserve(static_cast<std::size_t>(count));
+
+    std::int64_t x = startX;
+    std::int64_t y = startY;
 
     switch (ptType) {
     case 0:
     case 1:
-        for (std::uint64_t i = 0; i < count; i++) if (!skip1Delta(c)) return false;
-        return true;
-
-    case 2:
-        for (std::uint64_t i = 0; i < count; i++) if (!skip2Delta(c)) return false;
-        return true;
-
-    case 3:
-        for (std::uint64_t i = 0; i < count; i++) {
-            if (!skip3Delta(c)) return false;
-            if (!skip3Delta(c)) return false;
+        for (std::uint64_t i = 0; i < count; ++i) {
+            std::int64_t dx = 0;
+            if (!readSInt(c, dx)) {
+                return false;
+            }
+            if (ptType == 0) {
+                x = dx;
+            } else {
+                x += dx;
+            }
+            points.push_back({x, y});
         }
         return true;
-
-    case 4:
-        for (std::uint64_t i = 0; i < count; i++) if (!skipGDelta(c)) return false;
+    case 2:
+        for (std::uint64_t i = 0; i < count; ++i) {
+            std::uint64_t packed = 0;
+            if (!readUInt(c, packed)) {
+                return false;
+            }
+            const std::int64_t dx = static_cast<std::int64_t>(packed & 0xFFFFFFFFULL);
+            const std::int64_t dy = static_cast<std::int64_t>(packed >> 32);
+            x += dx;
+            y += dy;
+            points.push_back({x, y});
+        }
         return true;
-
+    case 4:
+        for (std::uint64_t i = 0; i < count; ++i) {
+            std::int64_t dx = 0;
+            std::int64_t dy = 0;
+            if (!readGDeltaPair(c, dx, dy)) {
+                return false;
+            }
+            x += dx;
+            y += dy;
+            points.push_back({x, y});
+        }
+        return true;
+    case 3:
+        for (std::uint64_t i = 0; i < count; ++i) {
+            std::int64_t px = 0;
+            std::int64_t py = 0;
+            if (!readSInt(c, px) || !readSInt(c, py)) {
+                return false;
+            }
+            points.push_back({px, py});
+        }
+        return true;
+    case 5:
+        for (std::uint64_t i = 0; i < count; ++i) {
+            std::int64_t dx = 0;
+            std::int64_t dy = 0;
+            if (!readGDeltaPair(c, dx, dy)) {
+                return false;
+            }
+            x += dx;
+            y += dy;
+            points.push_back({x, y});
+        }
+        return true;
     default:
         return false;
     }
 }
+
+static inline bool skipPointList(OasCursor &c)
+{
+    std::vector<Point> points;
+    return readPointListAbsolute(c, 0, 0, points);
+}
+
+struct RepOffset {
+    std::int64_t dx = 0;
+    std::int64_t dy = 0;
+};
 
 /*!********************************************************************************************************************
  * \brief Skips an OASIS repetition structure and advances the cursor.
@@ -482,6 +568,72 @@ static inline bool skipRepetition(OasCursor &c)
 
     default:
         return false;
+    }
+}
+
+static bool readRepetitionOffsets(OasCursor &c, std::vector<RepOffset> &offsets)
+{
+    offsets.clear();
+    offsets.push_back({0, 0});
+
+    std::uint64_t repType = 0;
+    if (!readUInt(c, repType)) {
+        return false;
+    }
+
+    switch (repType) {
+    case 0:
+        return true;
+    case 1: {
+        std::uint64_t nx = 0;
+        std::uint64_t ny = 0;
+        std::uint64_t xs = 0;
+        std::uint64_t ys = 0;
+        if (!readUInt(c, nx) || !readUInt(c, ny) || !readUInt(c, xs) || !readUInt(c, ys)) {
+            return false;
+        }
+        offsets.clear();
+        for (std::uint64_t iy = 0; iy < ny; ++iy) {
+            for (std::uint64_t ix = 0; ix < nx; ++ix) {
+                offsets.push_back({static_cast<std::int64_t>(ix * xs), static_cast<std::int64_t>(iy * ys)});
+            }
+        }
+        return true;
+    }
+    case 2: {
+        std::uint64_t nx = 0;
+        std::uint64_t xs = 0;
+        if (!readUInt(c, nx) || !readUInt(c, xs)) {
+            return false;
+        }
+        offsets.clear();
+        for (std::uint64_t ix = 0; ix < nx; ++ix) {
+            offsets.push_back({static_cast<std::int64_t>(ix * xs), 0});
+        }
+        return true;
+    }
+    case 3: {
+        std::uint64_t ny = 0;
+        std::uint64_t ys = 0;
+        if (!readUInt(c, ny) || !readUInt(c, ys)) {
+            return false;
+        }
+        offsets.clear();
+        for (std::uint64_t iy = 0; iy < ny; ++iy) {
+            offsets.push_back({0, static_cast<std::int64_t>(iy * ys)});
+        }
+        return true;
+    }
+    default: {
+        OasCursor saved = c;
+        if (!skipRepetition(c)) {
+            c = saved;
+            return false;
+        }
+        offsets.clear();
+        offsets.push_back({0, 0});
+        return true;
+    }
     }
 }
 
@@ -667,6 +819,19 @@ struct OasParseState
     std::string currentCell;
     std::string modalPlacementCell;
 
+    OasImportContext *                                  geom = nullptr;
+    std::uint64_t                                       modalLayer = 0;
+    std::uint64_t                                       modalDatatype = 0;
+    std::uint64_t                                       modalWidth = 0;
+    std::uint64_t                                       modalHeight = 0;
+    std::int64_t                                        modalGeomX = 0;
+    std::int64_t                                        modalGeomY = 0;
+    std::int64_t                                        modalPlacementX = 0;
+    std::int64_t                                        modalPlacementY = 0;
+    std::string                                         modalText;
+    std::uint64_t                                       modalTextHeight = 0;
+    std::vector<Point>                                  modalPoints;
+
     bool    seenEnd = false;
 
 #if OAS_TRACE
@@ -794,9 +959,7 @@ static bool parseOneRecord(OasCursor &c,
                            std::vector<std::string> &errors,
                            OasParseState &st)
 {
-#ifdef OAS_DEBUG
     const std::uint8_t *recStart = c.p;
-#endif
 
     std::uint64_t recId = 0;
     if (!readUInt(c, recId)) return false;
@@ -829,6 +992,9 @@ static bool parseOneRecord(OasCursor &c,
         case 0: {
             std::uint64_t x = 0;
             if (!readUInt(c, x)) goto done_fail;
+            if (st.geom != nullptr && x > 0) {
+                st.geom->setDbuPerMicron(static_cast<double>(x));
+            }
 #ifdef OAS_DEBUG
 #endif
             break;
@@ -1060,6 +1226,9 @@ static bool parseOneRecord(OasCursor &c,
         out.allCells.insert(name);
         out.children[name];
         st.modalPlacementCell.clear();
+        if (st.geom != nullptr) {
+            st.geom->beginCell(name);
+        }
         goto done_ok;
     }
 
@@ -1079,12 +1248,23 @@ static bool parseOneRecord(OasCursor &c,
         out.allCells.insert(name);
         out.children[name];
         st.modalPlacementCell.clear();
+        if (st.geom != nullptr) {
+            st.geom->beginCell(name);
+        }
         goto done_ok;
     }
 
-    case 15:
-    case 16:
+    case 15: {
+        std::string s;
+        if (!readNString(c, s)) goto done_fail;
         goto done_ok;
+    }
+
+    case 16: {
+        std::string s;
+        if (!readNString(c, s)) goto done_fail;
+        goto done_ok;
+    }
 
     case 17: {
         if (st.currentCell.empty()) {
@@ -1133,16 +1313,34 @@ static bool parseOneRecord(OasCursor &c,
             placedCell = st.modalPlacementCell;
         }
 
-        if (X) { std::int64_t x; if (!readSInt(c, x)) goto done_fail; }
-        if (Y) { std::int64_t y; if (!readSInt(c, y)) goto done_fail; }
-
-        if (R) {
-            if (!skipRepetition(c)) goto done_fail;
+        std::int64_t px = st.modalPlacementX;
+        std::int64_t py = st.modalPlacementY;
+        if (X) {
+            if (!readSInt(c, px)) goto done_fail;
+            st.modalPlacementX = px;
+        }
+        if (Y) {
+            if (!readSInt(c, py)) goto done_fail;
+            st.modalPlacementY = py;
         }
 
-        if (!placedCell.empty()) {
+        if (R) {
+            if (st.geom != nullptr) {
+                if (!skipRepetition(c)) goto done_fail;
+                if (!placedCell.empty()) {
+                    out.children[st.currentCell].push_back(placedCell);
+                    out.allCells.insert(placedCell);
+                    st.geom->addPlacement(placedCell, px, py);
+                }
+            } else if (!skipRepetition(c)) {
+                goto done_fail;
+            }
+        } else if (!placedCell.empty()) {
             out.children[st.currentCell].push_back(placedCell);
             out.allCells.insert(placedCell);
+            if (st.geom != nullptr) {
+                st.geom->addPlacement(placedCell, px, py);
+            }
         }
 
         goto done_ok;
@@ -1177,7 +1375,6 @@ static bool parseOneRecord(OasCursor &c,
         std::uint8_t info = 0;
         if (!readByte(c, info)) goto done_fail;
 
-        // bit pattern: 0 C N X Y R T L  (from spec)
         const bool L    = (info & 0x01) != 0;
         const bool T    = (info & 0x02) != 0;
         const bool R    = (info & 0x04) != 0;
@@ -1186,7 +1383,6 @@ static bool parseOneRecord(OasCursor &c,
         const bool N    = (info & 0x20) != 0;
         const bool Cbit = (info & 0x40) != 0;
 
-        // text-string / reference-number / modal textstring
         if (Cbit) {
             if (N) {
                 std::uint64_t rn = 0;
@@ -1194,18 +1390,44 @@ static bool parseOneRecord(OasCursor &c,
             } else {
                 std::string s;
                 if (!readAString(c, s)) goto done_fail;
+                st.modalText = s;
             }
-        } else {
-            // C=0 => no modal textstring, bytes in record
         }
 
-        if (L) { std::uint64_t tlayer = 0; if (!readUInt(c, tlayer)) goto done_fail; }
-        if (T) { std::uint64_t ttype  = 0; if (!readUInt(c, ttype))  goto done_fail; }
+        if (L) {
+            std::uint64_t tlayer = 0;
+            if (!readUInt(c, tlayer)) goto done_fail;
+            st.modalLayer = tlayer;
+        }
+        if (T) {
+            std::uint64_t ttype = 0;
+            if (!readUInt(c, ttype)) goto done_fail;
+            st.modalDatatype = ttype;
+            st.modalTextHeight = static_cast<std::uint32_t>(ttype);
+        }
 
-        if (X) { std::int64_t vx = 0; if (!readSInt(c, vx)) goto done_fail; }
-        if (Y) { std::int64_t vy = 0; if (!readSInt(c, vy)) goto done_fail; }
+        std::int64_t vx = st.modalGeomX;
+        std::int64_t vy = st.modalGeomY;
+        if (X) {
+            if (!readSInt(c, vx)) goto done_fail;
+            st.modalGeomX = vx;
+        }
+        if (Y) {
+            if (!readSInt(c, vy)) goto done_fail;
+            st.modalGeomY = vy;
+        }
 
-        if (R) { if (!skipRepetition(c)) goto done_fail; }
+        if (st.geom != nullptr) {
+            st.geom->setModalLayer(st.modalLayer, st.modalDatatype);
+            if (R) {
+                if (!skipRepetition(c)) goto done_fail;
+                st.geom->addText(st.modalText, vx, vy, st.modalTextHeight);
+            } else {
+                st.geom->addText(st.modalText, vx, vy, st.modalTextHeight);
+            }
+        } else if (R && !skipRepetition(c)) {
+            goto done_fail;
+        }
 
         goto done_ok;
     }
@@ -1222,13 +1444,42 @@ static bool parseOneRecord(OasCursor &c,
         const bool H = (info & 0x20) != 0;
         const bool W = (info & 0x40) != 0;
 
-        if (L) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-        if (D) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-        if (W) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-        if (H) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-        if (X) { std::int64_t v;  if (!readSInt(c, v)) goto done_fail; }
-        if (Y) { std::int64_t v;  if (!readSInt(c, v)) goto done_fail; }
-        if (R) { if (!skipRepetition(c)) goto done_fail; }
+        if (L) {
+            std::uint64_t v = 0;
+            if (!readUInt(c, v)) goto done_fail;
+            st.modalLayer = v;
+        }
+        if (D) {
+            std::uint64_t v = 0;
+            if (!readUInt(c, v)) goto done_fail;
+            st.modalDatatype = v;
+        }
+        if (W) {
+            if (!readUInt(c, st.modalWidth)) goto done_fail;
+        }
+        if (H) {
+            if (!readUInt(c, st.modalHeight)) goto done_fail;
+        }
+        std::int64_t gx = st.modalGeomX;
+        std::int64_t gy = st.modalGeomY;
+        if (X) {
+            if (!readSInt(c, gx)) goto done_fail;
+            st.modalGeomX = gx;
+        }
+        if (Y) {
+            if (!readSInt(c, gy)) goto done_fail;
+            st.modalGeomY = gy;
+        }
+
+        if (st.geom != nullptr) {
+            st.geom->setModalLayer(st.modalLayer, st.modalDatatype);
+            if (R) {
+                if (!skipRepetition(c)) goto done_fail;
+            }
+            st.geom->addRectangle(gx, gy, st.modalWidth, st.modalHeight);
+        } else if (R && !skipRepetition(c)) {
+            goto done_fail;
+        }
 
         goto done_ok;
     }
@@ -1244,12 +1495,48 @@ static bool parseOneRecord(OasCursor &c,
         const bool X = (info & 0x10) != 0;
         const bool P = (info & 0x20) != 0;
 
-        if (L) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-        if (D) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-        if (P) { if (!skipPointList(c)) goto done_fail; }
-        if (X) { std::int64_t v;  if (!readSInt(c, v)) goto done_fail; }
-        if (Y) { std::int64_t v;  if (!readSInt(c, v)) goto done_fail; }
-        if (R) { if (!skipRepetition(c)) goto done_fail; }
+        if (L) {
+            std::uint64_t v = 0;
+            if (!readUInt(c, v)) goto done_fail;
+            st.modalLayer = v;
+        }
+        if (D) {
+            std::uint64_t v = 0;
+            if (!readUInt(c, v)) goto done_fail;
+            st.modalDatatype = v;
+        }
+
+        std::vector<Point> points;
+        if (P) {
+            if (!readPointListAbsolute(c, st.modalGeomX, st.modalGeomY, points)) goto done_fail;
+            st.modalPoints = points;
+        } else {
+            points = st.modalPoints;
+        }
+
+        std::int64_t gx = st.modalGeomX;
+        std::int64_t gy = st.modalGeomY;
+        if (X) {
+            if (!readSInt(c, gx)) goto done_fail;
+            st.modalGeomX = gx;
+        }
+        if (Y) {
+            if (!readSInt(c, gy)) goto done_fail;
+            st.modalGeomY = gy;
+            for (Point &pt : points) {
+                pt.y = gy;
+            }
+        }
+
+        if (st.geom != nullptr && !points.empty()) {
+            st.geom->setModalLayer(st.modalLayer, st.modalDatatype);
+            if (R) {
+                if (!skipRepetition(c)) goto done_fail;
+            }
+            st.geom->addPolygon(points);
+        } else if (R && !skipRepetition(c)) {
+            goto done_fail;
+        }
 
         goto done_ok;
     }
@@ -1271,13 +1558,9 @@ static bool parseOneRecord(OasCursor &c,
         const bool W = (info & 0x40) != 0;
         const bool E = (info & 0x80) != 0;
 
-#ifdef OAS_DEBUG
-#endif
-
-        if (L) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-        if (D) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-        if (W) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; }
-
+        if (L) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; st.modalLayer = v; }
+        if (D) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; st.modalDatatype = v; }
+        if (W) { std::uint64_t v; if (!readUInt(c, v)) goto done_fail; st.modalWidth = v; }
         auto parse_PXY = [&](OasCursor &cc, bool orderPXY) -> bool {
             if (orderPXY) {
                 if (P) {
@@ -1588,6 +1871,14 @@ static bool parseOneRecord(OasCursor &c,
         st.nextCellNameRef          = subSt.nextCellNameRef;
         st.explicitCellNameRefsSeen = subSt.explicitCellNameRefsSeen;
         st.implicitCellNameRefsSeen = subSt.implicitCellNameRefsSeen;
+        st.currentCell              = subSt.currentCell;
+        st.modalLayer               = subSt.modalLayer;
+        st.modalDatatype            = subSt.modalDatatype;
+        st.modalWidth               = subSt.modalWidth;
+        st.modalHeight              = subSt.modalHeight;
+        st.modalGeomX               = subSt.modalGeomX;
+        st.modalGeomY               = subSt.modalGeomY;
+        st.modalPoints              = subSt.modalPoints;
 
         goto done_ok;
     }
@@ -1611,8 +1902,12 @@ done_ok:
     return true;
 
 done_fail:
-#ifdef OAS_DEBUG
-#endif
+    if (errors.empty()) {
+        const std::uint64_t off = (recStart >= st.fileBase && recStart < st.fileEnd)
+            ? static_cast<std::uint64_t>(recStart - st.fileBase)
+            : 0;
+        errors.push_back("OAS parse failed at record " + std::to_string(recId) + " offset " + std::to_string(off));
+    }
     return false;
 }
 
@@ -1817,6 +2112,73 @@ bool OasReader::readHierarchy(OasHierarchy &out)
         }
     }
     std::sort(out.topCells.begin(), out.topCells.end());
+    return true;
+}
+
+bool OasReader::importDatabase(Database &db, const std::string &libName, double defaultDbuPerMicron)
+{
+    m_errors.clear();
+    m_warnings.clear();
+
+    OasHierarchy hierarchy;
+    OasImportContext geomCtx(db, libName, defaultDbuPerMicron);
+    if (m_fileName.empty()) {
+        m_errors.push_back("Empty OASIS filename.");
+        return false;
+    }
+
+    std::ifstream input(m_fileName, std::ios::binary);
+    if (!input) {
+        m_errors.push_back("Failed to open OASIS for read: '" + m_fileName + "'");
+        return false;
+    }
+
+    input.seekg(0, std::ios::end);
+    const std::streamoff szOff = input.tellg();
+    if (szOff < 16) {
+        m_errors.push_back("OASIS file too small: '" + m_fileName + "'");
+        return false;
+    }
+    const auto sz = static_cast<std::size_t>(szOff);
+    input.seekg(0, std::ios::beg);
+
+    std::vector<std::uint8_t> fileBytes(sz);
+    input.read(reinterpret_cast<char *>(fileBytes.data()), static_cast<std::streamsize>(sz));
+    if (!input) {
+        m_errors.push_back("Failed to read OASIS: '" + m_fileName + "'");
+        return false;
+    }
+
+    const std::uint8_t *base = fileBytes.data();
+    const std::uint8_t *const fileEnd = base + sz;
+
+    static const char magic[] = "%SEMI-OASIS";
+    if (std::memcmp(base, magic, sizeof(magic) - 1) != 0) {
+        m_errors.push_back("Not an OASIS file (missing %SEMI-OASIS magic).");
+        return false;
+    }
+
+    const std::uint8_t *p = base + (sizeof(magic) - 1);
+    while (p < fileEnd && (*p == '\r' || *p == '\n')) {
+        ++p;
+    }
+
+    OasCursor cursor;
+    cursor.p = p;
+    cursor.end = fileEnd;
+
+    OasParseState state;
+    state.fileBase = base;
+    state.fileEnd = fileEnd;
+    state.geom = &geomCtx;
+
+    if (!parseBuffer(cursor, hierarchy, m_errors, state)) {
+        return false;
+    }
+
+    m_cellNamesByRef = state.cellNameByRef;
+    m_warnings.insert(m_warnings.end(), geomCtx.warnings().begin(), geomCtx.warnings().end());
+    geomCtx.finalize();
     return true;
 }
 

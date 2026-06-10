@@ -10,7 +10,7 @@ namespace core {
 /*!****************************************************************************************
  * \brief The OasExporter class writes a CORE Database to an OASIS layout file.
  *
- * Currently encodes via a temporary GDS conversion using KLayout and GdsExporter.
+ * Exports strict-mode OASIS via OasWriter (KLayout-compatible START + native geometry).
  *****************************************************************************************/
 class OasExporter {
 public:

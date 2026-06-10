@@ -163,6 +163,8 @@ if(CORE_BUILD_TESTS)
             add_library(core_oas STATIC
                 utils/oas_reader.cpp
                 utils/oas_writer.cpp
+                utils/oas_geometry.cpp
+                utils/oas_strict.cpp
                 utils/klayout_util.cpp
                 utils/oas_importer.cpp
                 utils/oas_exporter.cpp

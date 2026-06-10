@@ -12,7 +12,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 1. Charter + v1 Definition of Done  
 2. Skip-friendly opaque views + extension registry  
-3. Native OAS geometry codec (remove KLayout from hot path)  
+3. ~~Native OAS read/write (strict)~~ (done; preserved round-trip XOR 0; layout editor owns edited export)  
 4. Streaming + optional `.core` compression  
 5. Benchmark CI table + large-design stress tests  
 6. API stability + licensing strategy  
@@ -76,8 +76,8 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 ## 7. Native codecs (production path)
 
-- [~] **OAS hierarchy reader** — pure C++ ([utils/oas_reader.cpp](../utils/oas_reader.cpp))
-- [ ] **OAS geometry codec** — native import/export without KLayout bridge
+- [x] **OAS hierarchy reader** — pure C++ ([utils/oas_reader.cpp](../utils/oas_reader.cpp))
+- [x] **OAS geometry codec** — native import + strict export ([utils/oas_reader.cpp](../utils/oas_reader.cpp), [utils/oas_writer.cpp](../utils/oas_writer.cpp), [utils/oas_strict.cpp](../utils/oas_strict.cpp), [utils/oas_geometry.cpp](../utils/oas_geometry.cpp)); preserved payload round-trip (KLayout XOR 0 on sg13g2); KLayout for GDS→OAS fixture prep and fallback template only
 - [ ] **GDS regression matrix** — expand beyond sg13g2 + sample
 - [ ] **LEF/DEF, CDL/SPICE** — per product roadmap
 
@@ -112,7 +112,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 ## Suggested response to reviewers (Matthias)
 
-> CORE is early, but the target is a **production-grade open-source IC database**, not a minimal teaching schema. Per-view payloads, encapsulation (layers + `LayerPurpose` + cell aliases/PCell), derived indices, and compact geometry v2 are implemented with regression tests. Remaining v1 gaps: opaque skip-friendly round-trip, native OAS geometry, streaming. Which of these would you treat as blocking for a production layout archive?
+> CORE is early, but the target is a **production-grade open-source IC database**, not a minimal teaching schema. Per-view payloads, encapsulation (layers + `LayerPurpose` + cell aliases/PCell), derived indices, compact geometry v2, and native OAS strict read/write (preserved round-trip) are implemented with regression tests. Remaining v1 gaps: opaque skip-friendly round-trip, streaming, export of edited layout from CORE without a prior OAS import. Which of these would you treat as blocking for a production layout archive?
 
 ---
 

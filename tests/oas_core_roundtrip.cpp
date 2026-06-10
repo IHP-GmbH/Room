@@ -23,6 +23,17 @@ std::size_t cellCount(const core::Database &db)
     return db.lib().cells().size();
 }
 
+std::size_t shapeCount(const core::Database &db)
+{
+    std::size_t count = 0;
+    for (const core::Cell &cell : db.lib().cells()) {
+        if (const core::CellContent *content = cell.findContent(core::ViewType::Layout)) {
+            count += content->block().shapes().size();
+        }
+    }
+    return count;
+}
+
 } // namespace
 
 int main(int argc, char *argv[])
@@ -110,5 +121,32 @@ int main(int argc, char *argv[])
 
     std::cout << "\nExported full library (" << reloadedCells << " cells) to " << outputOas << '\n';
 
+    const Clock::time_point t5 = Clock::now();
+    core::Database exported = importer.importFile(outputOas);
+    const Clock::time_point t6 = Clock::now();
+    printMs("  OAS re-import", t6 - t5);
+
+    for (const auto &msg : importer.errors()) {
+        std::cerr << "error: " << msg << '\n';
+    }
+    if (!importer.errors().empty()) {
+        return 6;
+    }
+
+    const std::size_t exportedCells = cellCount(exported);
+    const std::size_t exportedShapes = shapeCount(exported);
+    const std::size_t reloadedShapes = shapeCount(reloaded);
+    std::cout << "Re-imported " << exportedCells << " cell(s), " << exportedShapes << " shape(s)\n";
+    if (exportedCells != reloadedCells) {
+        std::cerr << "error: exported cell count mismatch (" << exportedCells << " vs "
+                  << reloadedCells << ")\n";
+        return 7;
+    }
+    if (exportedShapes != reloadedShapes) {
+        std::cerr << "warning: shape count changed after export (" << exportedShapes << " vs "
+                  << reloadedShapes << ")\n";
+    }
+
+    std::cout << "Native round-trip OK (" << exportedShapes << " shapes)\n";
     return 0;
 }

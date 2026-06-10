@@ -10,7 +10,7 @@ namespace core {
 /*!****************************************************************************************
  * \brief The OasImporter class reads OASIS layout files into a CORE Database.
  *
- * Currently decodes OAS via a temporary GDS conversion using KLayout, then uses GdsImporter.
+ * Decodes OASIS natively via OasReader::importDatabase (no KLayout on the hot path).
  *****************************************************************************************/
 class OasImporter {
 public:
