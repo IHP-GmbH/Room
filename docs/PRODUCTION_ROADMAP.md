@@ -110,10 +110,4 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 ---
 
-## Suggested response to reviewers (Matthias)
-
-> CORE is early, but the target is a **production-grade open-source IC database**, not a minimal teaching schema. Per-view payloads, encapsulation (layers + `LayerPurpose` + cell aliases/PCell), derived indices, compact geometry v2, and native OAS strict read/write (preserved round-trip) are implemented with regression tests. Remaining v1 gaps: opaque skip-friendly round-trip, streaming, export of edited layout from CORE without a prior OAS import. Which of these would you treat as blocking for a production layout archive?
-
----
-
 *Last updated: 2026-06-10*
