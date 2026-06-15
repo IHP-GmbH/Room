@@ -29,6 +29,22 @@ if(CORE_BUILD_TESTS)
     add_executable(compact_repetition_unit tests/compact_repetition_unit.cpp)
     target_link_libraries(compact_repetition_unit PRIVATE core)
 
+    add_executable(gds_properties_roundtrip tests/gds_properties_roundtrip.cpp)
+    target_link_libraries(gds_properties_roundtrip PRIVATE core_utils)
+
+    add_test(
+        NAME gds_properties_roundtrip
+        COMMAND gds_properties_roundtrip
+                "${_ctest_out}/gds_props_fixture.gds"
+                "${_ctest_out}/gds_props_roundtrip.gds"
+                "${_ctest_out}/gds_props_roundtrip.core"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(gds_properties_roundtrip PROPERTIES
+        LABELS "gds;properties"
+        TIMEOUT 30
+    )
+
     add_test(
         NAME compact_repetition_unit
         COMMAND compact_repetition_unit

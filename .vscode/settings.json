@@ -15,12 +15,32 @@
   "cmake.parallelJobs": 4,
 
   "files.exclude": {
-    "**/build": true
+    "**/build": true,
+    "**/build-coverage": true,
+    "coverage.html": true,
+    "coverage.css": true,
+    "coverage.js": true,
+    "coverage_by_file.txt": true,
+    "gcovr_verbose.txt": true,
+    "coverage.*.html": true,
+    "**/*.gcda": true,
+    "**/*.gcno": true,
+    "**/*.gcov": true
   },
 
   "search.exclude": {
     "**/build": true,
-    "**/install": true
+    "**/build-coverage": true,
+    "**/install": true,
+    "coverage.html": true,
+    "coverage.css": true,
+    "coverage.js": true,
+    "coverage_by_file.txt": true,
+    "gcovr_verbose.txt": true,
+    "coverage.*.html": true,
+    "**/*.gcda": true,
+    "**/*.gcno": true,
+    "**/*.gcov": true
   },
 
   "terminal.integrated.showExitAlert": false

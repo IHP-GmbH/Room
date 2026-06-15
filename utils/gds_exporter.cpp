@@ -6,11 +6,13 @@
 #include "gds_exporter.h"
 
 #include "cell.h"
+#include "gds_property_codec.h"
 #include "layer_utils.h"
 
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <optional>
 #include <vector>
 
 namespace core {
@@ -38,6 +40,11 @@ constexpr std::uint16_t GDS_SNAME    = 0x1206;
 constexpr std::uint16_t GDS_STRANS   = 0x1A01;
 constexpr std::uint16_t GDS_MAG      = 0x1B05;
 constexpr std::uint16_t GDS_STRING   = 0x1906;
+constexpr std::uint16_t GDS_PROPATTR = 0x2B02;
+constexpr std::uint16_t GDS_PROPVALUE_I2 = 0x2C02;
+constexpr std::uint16_t GDS_PROPVALUE_I4 = 0x2C03;
+constexpr std::uint16_t GDS_PROPVALUE_REAL = 0x2C05;
+constexpr std::uint16_t GDS_PROPVALUE_STRING = 0x2C06;
 
 void writeRec(FILE *f, std::uint16_t recType, const void *data, int dataLen)
 {
@@ -120,6 +127,78 @@ void writeString(FILE *f, std::uint16_t recType, const std::string &s)
         padded.push_back('\0');
     }
     writeRec(f, recType, padded.data(), static_cast<int>(padded.size()));
+}
+
+std::vector<std::uint8_t> hexDecode(const std::string &hex)
+{
+    auto nibble = [](char c) -> int {
+        if (c >= '0' && c <= '9') {
+            return c - '0';
+        }
+        if (c >= 'A' && c <= 'F') {
+            return c - 'A' + 10;
+        }
+        if (c >= 'a' && c <= 'f') {
+            return c - 'a' + 10;
+        }
+        return -1;
+    };
+
+    if (hex.size() % 2 != 0) {
+        return {};
+    }
+    std::vector<std::uint8_t> out(hex.size() / 2);
+    for (std::size_t i = 0; i < out.size(); ++i) {
+        const int hi = nibble(hex[i * 2]);
+        const int lo = nibble(hex[i * 2 + 1]);
+        if (hi < 0 || lo < 0) {
+            return {};
+        }
+        out[i] = static_cast<std::uint8_t>((hi << 4) | lo);
+    }
+    return out;
+}
+
+void writeGdsProperty(FILE *f, const Property &prop)
+{
+    const std::optional<std::int16_t> attr = gds_prop::attrOf(prop);
+    if (!attr) {
+        return;
+    }
+
+    const std::string &value = prop.value;
+    if (value.compare(0, 3, "i2:") == 0) {
+        writeInt16(f, GDS_PROPATTR, *attr);
+        writeInt16(f, GDS_PROPVALUE_I2, static_cast<std::int16_t>(std::stoi(value.substr(3))));
+        return;
+    }
+    if (value.compare(0, 3, "i4:") == 0) {
+        writeInt16(f, GDS_PROPATTR, *attr);
+        writeInt32(f, GDS_PROPVALUE_I4, std::stoi(value.substr(3)));
+        return;
+    }
+    if (value.compare(0, 5, "rhex:") == 0) {
+        const std::vector<std::uint8_t> bytes = hexDecode(value.substr(5));
+        if (bytes.size() != 8) {
+            return;
+        }
+        writeInt16(f, GDS_PROPATTR, *attr);
+        writeRec(f, GDS_PROPVALUE_REAL, bytes.data(), 8);
+        return;
+    }
+    if (value.compare(0, 2, "s:") == 0) {
+        writeInt16(f, GDS_PROPATTR, *attr);
+        writeString(f, GDS_PROPVALUE_STRING, value.substr(2));
+    }
+}
+
+void writeGdsProperties(FILE *f, const std::vector<Property> &properties)
+{
+    for (const Property &prop : properties) {
+        if (gds_prop::isGdsProperty(prop)) {
+            writeGdsProperty(f, prop);
+        }
+    }
 }
 
 void writeTime(FILE *f, std::uint16_t recType)
@@ -232,6 +311,7 @@ void writeShape(FILE *f, const std::vector<LayerSpec> &layers, const Shape &shap
             writeLayerDatatype(f, layers, rect->layerId);
             const Box &b = rect->box;
             writeXY(f, {{b.llx, b.lly}, {b.urx, b.lly}, {b.urx, b.ury}, {b.llx, b.ury}, {b.llx, b.lly}});
+            writeGdsProperties(f, shape.properties());
             writeEmptyRec(f, GDS_ENDEL);
         }
         break;
@@ -241,6 +321,7 @@ void writeShape(FILE *f, const std::vector<LayerSpec> &layers, const Shape &shap
             writeEmptyRec(f, GDS_BOUNDARY);
             writeLayerDatatype(f, layers, poly->layerId);
             writeXY(f, closedRing(poly->points));
+            writeGdsProperties(f, shape.properties());
             writeEmptyRec(f, GDS_ENDEL);
         }
         break;
@@ -256,6 +337,7 @@ void writeShape(FILE *f, const std::vector<LayerSpec> &layers, const Shape &shap
                 writeInt32(f, GDS_WIDTH, static_cast<std::int32_t>(path->width));
             }
             writeXY(f, path->points);
+            writeGdsProperties(f, shape.properties());
             writeEmptyRec(f, GDS_ENDEL);
         }
         break;
@@ -273,6 +355,7 @@ void writeShape(FILE *f, const std::vector<LayerSpec> &layers, const Shape &shap
             }
             writeXY(f, {text->position});
             writeString(f, GDS_STRING, text->text);
+            writeGdsProperties(f, shape.properties());
             writeEmptyRec(f, GDS_ENDEL);
         }
         break;
@@ -293,6 +376,7 @@ void writeInstance(FILE *f, const Instance &inst)
         writeGdsReal(f, GDS_MAG, t.mag);
     }
     writeXY(f, {Point{t.x, t.y}});
+    writeGdsProperties(f, inst.properties());
     writeEmptyRec(f, GDS_ENDEL);
 }
 
@@ -305,6 +389,7 @@ void writeCell(FILE *f, const std::vector<LayerSpec> &layers, const Cell &cell)
 
     writeTime(f, GDS_BGNSTR);
     writeString(f, GDS_STRNAME, cell.name());
+    writeGdsProperties(f, cell.properties());
 
     for (const Shape &shape : content->block().shapes()) {
         writeShape(f, layers, shape);

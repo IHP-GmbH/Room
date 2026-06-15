@@ -6,11 +6,13 @@
 #include "gds_importer.h"
 
 #include "cell.h"
+#include "gds_property_codec.h"
 #include "layer_utils.h"
 
 #include <cmath>
 #include <cstdint>
 #include <fstream>
+#include <optional>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -37,6 +39,11 @@ constexpr std::uint16_t GDS_SNAME    = 0x1206;
 constexpr std::uint16_t GDS_STRANS   = 0x1A01;
 constexpr std::uint16_t GDS_MAG      = 0x1B05;
 constexpr std::uint16_t GDS_STRING   = 0x1906;
+constexpr std::uint16_t GDS_PROPATTR = 0x2B02;
+constexpr std::uint16_t GDS_PROPVALUE_I2 = 0x2C02;
+constexpr std::uint16_t GDS_PROPVALUE_I4 = 0x2C03;
+constexpr std::uint16_t GDS_PROPVALUE_REAL = 0x2C05;
+constexpr std::uint16_t GDS_PROPVALUE_STRING = 0x2C06;
 constexpr std::uint16_t GDS_BOX      = 0x2D00;
 constexpr std::uint16_t GDS_BOXTYPE  = 0x2E02;
 
@@ -111,6 +118,53 @@ struct LayerKeyHash {
     }
 };
 
+std::int16_t be16s(const std::uint8_t *p)
+{
+    return static_cast<std::int16_t>(be16(p));
+}
+
+std::string hexEncode(const std::uint8_t *bytes, std::size_t len)
+{
+    static const char *digits = "0123456789ABCDEF";
+    std::string out(len * 2, '\0');
+    for (std::size_t i = 0; i < len; ++i) {
+        out[i * 2] = digits[bytes[i] >> 4];
+        out[i * 2 + 1] = digits[bytes[i] & 0x0F];
+    }
+    return out;
+}
+
+std::string encodePropValue(std::uint16_t recType, const std::uint8_t *payload, int payloadLen)
+{
+    switch (recType) {
+    case GDS_PROPVALUE_I2:
+        if (payloadLen >= 2) {
+            return "i2:" + std::to_string(be16s(payload));
+        }
+        break;
+    case GDS_PROPVALUE_I4:
+        if (payloadLen >= 4) {
+            return "i4:" + std::to_string(be32(payload));
+        }
+        break;
+    case GDS_PROPVALUE_REAL:
+        if (payloadLen >= 8) {
+            return "rhex:" + hexEncode(payload, 8);
+        }
+        break;
+    case GDS_PROPVALUE_STRING:
+        return "s:" + decodeGdsString(payload, payloadLen);
+    default:
+        break;
+    }
+    return {};
+}
+
+void applyProperties(std::vector<Property> &target, const std::vector<Property> &props)
+{
+    target = props;
+}
+
 struct ElementDraft {
     enum class Type { None, Boundary, Path, Text, Box, Sref, Aref };
 
@@ -124,6 +178,7 @@ struct ElementDraft {
     Transform transform{};
     std::uint16_t strans = 0;
     double mag = 1.0;
+    std::vector<Property> properties;
 };
 
 class GdsParser {
@@ -163,7 +218,38 @@ public:
         std::size_t offset = 0;
         Cell *currentCell = nullptr;
         ElementDraft draft;
+        std::optional<std::int16_t> pendingPropAttr;
         double dbuPerMicron = m_options.defaultDbuPerMicron;
+
+        auto propertyTarget = [&]() -> std::vector<Property> * {
+            if (draft.type != ElementDraft::Type::None) {
+                return &draft.properties;
+            }
+            if (currentCell != nullptr) {
+                return &currentCell->properties();
+            }
+            return nullptr;
+        };
+
+        auto appendPropValue = [&](std::uint16_t recType, const std::uint8_t *payload, int payloadLen) {
+            if (!pendingPropAttr) {
+                m_warnings.push_back("PROPVALUE without preceding PROPATTR");
+                return;
+            }
+            std::vector<Property> *target = propertyTarget();
+            if (!target) {
+                m_warnings.push_back("PROPVALUE outside cell or element");
+                pendingPropAttr.reset();
+                return;
+            }
+            const std::string encoded = encodePropValue(recType, payload, payloadLen);
+            if (encoded.empty()) {
+                m_warnings.push_back("Unsupported or malformed PROPVALUE record");
+            } else {
+                target->push_back(gds_prop::make(*pendingPropAttr, encoded));
+            }
+            pendingPropAttr.reset();
+        };
 
         auto ensureViewLayer = [&](CellContent &content,
                                    std::uint16_t layer,
@@ -210,7 +296,9 @@ public:
                         poly.points.front().y == poly.points.back().y) {
                         poly.points.pop_back();
                     }
-                    block.shapes().emplace_back(poly);
+                    Shape shape(poly);
+                    applyProperties(shape.properties(), draft.properties);
+                    block.shapes().push_back(std::move(shape));
                 }
                 break;
             }
@@ -220,7 +308,9 @@ public:
                     path.layerId = ensureViewLayer(content, draft.layer, draft.dataType, LayerPurpose::Wire);
                     path.points = draft.points;
                     path.width = draft.width;
-                    block.shapes().emplace_back(path);
+                    Shape shape(path);
+                    applyProperties(shape.properties(), draft.properties);
+                    block.shapes().push_back(std::move(shape));
                 }
                 break;
             }
@@ -232,20 +322,25 @@ public:
                 if (!draft.points.empty()) {
                     text.position = draft.points.front();
                 }
-                block.shapes().emplace_back(text);
+                Shape shape(text);
+                applyProperties(shape.properties(), draft.properties);
+                block.shapes().push_back(std::move(shape));
                 break;
             }
             case ElementDraft::Type::Sref:
             case ElementDraft::Type::Aref: {
                 draft.transform.orient = gdsStransToOrient(draft.strans);
                 draft.transform.mag = draft.mag;
-                block.instances().emplace_back(draft.sname, draft.transform);
+                Instance inst(draft.sname, draft.transform);
+                applyProperties(inst.properties(), draft.properties);
+                block.instances().push_back(std::move(inst));
                 break;
             }
             default:
                 break;
             }
             draft = ElementDraft{};
+            pendingPropAttr.reset();
         };
 
         while (offset + 4 <= data.size()) {
@@ -342,6 +437,17 @@ public:
                 if (payloadLen >= 8) {
                     draft.mag = readGdsReal(payload);
                 }
+                break;
+            case GDS_PROPATTR:
+                if (payloadLen >= 2) {
+                    pendingPropAttr = be16s(payload);
+                }
+                break;
+            case GDS_PROPVALUE_I2:
+            case GDS_PROPVALUE_I4:
+            case GDS_PROPVALUE_REAL:
+            case GDS_PROPVALUE_STRING:
+                appendPropValue(recType, payload, payloadLen);
                 break;
             case GDS_XY:
                 draft.points.clear();
