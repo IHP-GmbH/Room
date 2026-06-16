@@ -183,8 +183,6 @@ CORE ships a **KLayout streamer plugin** (`mcore`) that opens and saves `.core` 
 | **Smoke tests** | `klayout -b -r scripts\test_core_load.rb` (set `COMMONDB_ROOT` to repo root) |
 | **Bridge (no plugin yet)** | `scripts\open_core_in_klayout.cmd` or macro `scripts\klayout_load_core.lym` via `core_to_gds` |
 
-**Limits (current POC):** layout view only; compact geometry on save; schematic not shown in KLayout. Lib-level properties and `libname` are mapped — see the integration README for details.
-
 ## Documentation
 
 HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally in a browser after cloning).
