@@ -110,6 +110,9 @@ target_link_libraries(core_utils PUBLIC core)
 add_executable(gds_to_core examples/gds_to_core/main.cpp)
 target_link_libraries(gds_to_core PRIVATE core_utils)
 
+add_executable(core_to_gds examples/core_to_gds/main.cpp)
+target_link_libraries(core_to_gds PRIVATE core_utils)
+
 add_executable(qucs_to_core examples/qucs_to_core/main.cpp)
 target_link_libraries(qucs_to_core PRIVATE core_utils)
 
@@ -120,7 +123,7 @@ install(TARGETS core core_utils EXPORT CORETargets
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin)
 
-install(TARGETS gds_to_core qucs_to_core make_sample_gds
+install(TARGETS gds_to_core core_to_gds qucs_to_core make_sample_gds
         RUNTIME DESTINATION bin)
 
 install(DIRECTORY src/ DESTINATION include/CORE/src FILES_MATCHING PATTERN "*.h")

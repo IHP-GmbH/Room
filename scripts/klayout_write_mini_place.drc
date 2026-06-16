@@ -1,0 +1,12 @@
+# Two cells with one placement.
+out = $out
+
+ly = RBA::Layout::new
+ly.dbu = 0.001
+child = ly.create_cell("CHILD")
+parent = ly.create_cell("PARENT")
+li = ly.insert_layer(RBA::LayerInfo::new(1, 0))
+child.shapes(li).insert(RBA::Box::new(0, 0, 1000, 1000))
+parent.insert(RBA::CellInstArray::new(child.cell_index, RBA::Trans::new(5000, 6000)))
+ly.write(out)
+log("Wrote " + out)

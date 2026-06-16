@@ -1,0 +1,11 @@
+# Write strict OAS with one path.
+out = $out
+
+ly = RBA::Layout::new
+ly.dbu = 0.001
+cell = ly.create_cell("TOP")
+li = ly.insert_layer(RBA::LayerInfo::new(1, 0))
+pts = [RBA::Point::new(0, 0), RBA::Point::new(1000, 0), RBA::Point::new(1000, 1000)]
+cell.shapes(li).insert(RBA::Path::new(pts, 200))
+ly.write(out)
+log("Wrote " + out)

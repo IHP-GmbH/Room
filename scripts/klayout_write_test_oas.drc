@@ -1,0 +1,10 @@
+# Write a minimal OAS with one box for format reference.
+out = $out
+
+ly = RBA::Layout::new
+ly.dbu = 0.001
+top = ly.create_cell("TOP")
+li = ly.layer(1, 0)
+top.shapes(li).insert(RBA::Box::new(0, 0, 1000, 1000))
+ly.write(out)
+log("Wrote " + out)

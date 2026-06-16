@@ -20,3 +20,5 @@ gcovr_verbose.txt
 examples/**/output/
 output/
 *.core
+integrations/klayout/mcore/db_plugin/local.pri
+scripts/*.log

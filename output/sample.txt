@@ -1,6 +1,6 @@
-=== CommonDB text dump ===
+=== CORE text dump ===
 version: 0.1
-generator: CommonDB GdsImporter
+generator: CORE GdsImporter
 technology: 
 lib: gds_import
 cells: 2

@@ -1,0 +1,9 @@
+--- a/src/plugins/streamers/streamers.pro
++++ b/src/plugins/streamers/streamers.pro
+@@ -6,3 +6,6 @@ SUBDIR_LIST = $$files($$PWD/*)
+ SUBDIR_LIST -= $$PWD/streamers.pro
+ 
+ SUBDIRS = $$SUBDIR_LIST
++
++# CommonDB CORE reader (streamers/mcore → CommonDB/integrations/klayout/mcore)
++SUBDIRS += mcore

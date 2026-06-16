@@ -1,0 +1,11 @@
+# Write OAS with named cells (no geometry) for START/table reference.
+out = $out
+names = $names.split(",")
+
+ly = RBA::Layout::new
+ly.dbu = 0.001
+names.each do |n|
+  ly.create_cell(n)
+end
+ly.write(out)
+log("Wrote " + out + " cells=" + names.size.to_s)

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+  <description>Load CORE (.core) via core_to_gds bridge</description>
+  <version>1.0</version>
+  <category>CommonDB</category>
+  <prolog/>
+  <epilog/>
+  <doc>Converts a .core file to temporary GDS and loads it. Set COMMONDB_ROOT to your CommonDB checkout.</doc>
+  <autorun>false</autorun>
+  <autorun-early>false</autorun-early>
+  <shortcut/>
+  <show-in-menu>true</show-in-menu>
+  <group-name>CommonDB</group-name>
+  <menu-path>tools.commondb.load_core</menu-path>
+  <interpreter>ruby</interpreter>
+  <dsl-interpreter-name/>
+  <text>
+
+core_path = RBA::FileDialog.ask_open_file("CORE files (*.core)", ".")
+if core_path.nil? || core_path.empty?
+  raise "No file selected"
+end
+
+commondb = ENV["COMMONDB_ROOT"]
+if commondb.nil? || commondb.empty?
+  raise "Set COMMONDB_ROOT to your CommonDB checkout (directory containing build/core_to_gds.exe)"
+end
+
+converter = File.join(commondb, "build", "core_to_gds.exe")
+unless File.file?(converter)
+  raise "core_to_gds not found: #{converter}\nBuild: cmake --build build --target core_to_gds"
+end
+
+gds_path = File.join(ENV["TEMP"], "klayout_core_" + File.basename(core_path, ".core") + ".gds")
+system("\"#{converter}\" \"#{core_path}\" \"#{gds_path}\"")
+unless $?.success?
+  raise "core_to_gds failed (exit #{$?.exitstatus})"
+end
+
+cv = RBA::Application.instance.main_window.current_view
+if cv.nil?
+  cv = RBA::Application.instance.main_window.create_view
+end
+cv.load_layout(gds_path, 0)
+RBA::MessageBox.info("CORE loaded", "Loaded via GDS bridge:\n#{gds_path}", RBA::MessageBox.b_ok)
+
+  </text>
+</klayout-macro>
