@@ -19,7 +19,7 @@
         <li><a href="types.html#point">Point</a></li>
         <li><a href="types.html#box">Box</a></li>
         <li><a href="types.html#transform">Transform</a></li>
-        <li><a href="types.html#property">Property</a></li>
+        <li><a href="property.html">Property</a></li>
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
       </ul>
@@ -35,122 +35,185 @@
       <h3>Utilities</h3>
       <ul><li><a href="gdsimporter.html">GdsImporter</a></li><li><a href="textdumper.html">TextDumper</a></li></ul>
     </aside>
-    <main class="content">
-      <div class="breadcrumb"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Classes</a> &raquo; Shape</div>
-      <h1>core::Shape <span class="tag tag-class">class</span></h1>
-      <p class="subtitle">src/shape.h · #include "shape.h"</p>
-      <p>Layout geometry object. The kind is given by <code>Shape::Type</code> and the matching data struct.</p>
+    <div class="content-with-toc">
+      <main class="content">
+        <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Core</a> &raquo; C++ Classes &raquo; Shape</p>
 
-      <h2>enum Type</h2>
-      <table class="members">
-        <tr><th>Value</th><th>Data struct</th><th>GDS</th></tr>
-        <tr><td><code>Rect</code></td><td><code>RectData</code></td><td>BOX</td></tr>
-        <tr><td><code>Polygon</code></td><td><code>PolygonData</code></td><td>BOUNDARY</td></tr>
-        <tr><td><code>Path</code></td><td><code>PathData</code></td><td>PATH</td></tr>
-        <tr><td><code>Text</code></td><td><code>TextData</code></td><td>TEXT</td></tr>
-      </table>
+        <h1 class="title">Shape Class</h1>
+        <p class="brief">Tagged union of layout geometry (rect, polygon, path, text) with optional metadata. <a class="more" href="#details">More…</a></p>
 
-      <h2>Member functions</h2>
-
-      <div class="fn-block">
-        <h3 class="fn-title">explicit Shape(RectData data)</h3>
-        <p class="fn-desc">Constructs a rectangle shape (GDS BOX).</p>
-        <table class="fn-params">
-          <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>data</code></td><td>Bounding box and layer index (<code>layerId</code> refers to <code><a href="lib.html">Lib::layers()</a></code>).</td></tr>
+        <table class="props">
+          <tr><th>Header:</th><td><code>#include "shape.h"</code></td></tr>
+          <tr><th>CMake:</th><td><code>find_package(CORE REQUIRED)</code><br><code>target_link_libraries(mytarget PRIVATE CORE::core)</code></td></tr>
         </table>
-      </div>
 
-      <div class="fn-block">
-        <h3 class="fn-title">explicit Shape(PolygonData data)</h3>
-        <p class="fn-desc">Constructs a polygon shape (GDS BOUNDARY).</p>
-        <table class="fn-params">
-          <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>data</code></td><td>Vertex list and layer index.</td></tr>
+        <p class="members-index"><a href="classes.html">List of all members</a></p>
+
+        <h2 id="public-types">Public Types</h2>
+        <table class="memlist">
+          <tr><td class="enum-name">enum class <a href="#type-enum">Type</a></td><td>Discriminator: <code>Rect</code>, <code>Polygon</code>, <code>Path</code>, <code>Text</code>.</td></tr>
+          <tr><td><a href="#rectdata">struct RectData</a></td><td>Axis-aligned box and <code>layerId</code> (GDS BOX).</td></tr>
+          <tr><td><a href="#polygondata">struct PolygonData</a></td><td>Point hull and <code>layerId</code> (GDS BOUNDARY).</td></tr>
+          <tr><td><a href="#pathdata">struct PathData</a></td><td>Centerline, width, and <code>layerId</code> (GDS PATH).</td></tr>
+          <tr><td><a href="#textdata">struct TextData</a></td><td>Label string, position, height, and <code>layerId</code> (GDS TEXT).</td></tr>
         </table>
-      </div>
 
-      <div class="fn-block">
-        <h3 class="fn-title">explicit Shape(PathData data)</h3>
-        <p class="fn-desc">Constructs a path shape (GDS PATH).</p>
-        <table class="fn-params">
-          <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>data</code></td><td>Centerline points, path width, and layer index.</td></tr>
+        <h2 id="public-functions">Public Functions</h2>
+        <table class="memlist">
+          <tr><td><a href="#Shape-rect">explicit Shape(RectData data)</a></td><td>Constructs a rectangle shape.</td></tr>
+          <tr><td><a href="#Shape-poly">explicit Shape(PolygonData data)</a></td><td>Constructs a polygon shape.</td></tr>
+          <tr><td><a href="#Shape-path">explicit Shape(PathData data)</a></td><td>Constructs a path shape.</td></tr>
+          <tr><td><a href="#Shape-text">explicit Shape(TextData data)</a></td><td>Constructs a text shape.</td></tr>
+          <tr><td><a href="#type">Type type() const</a></td><td>Returns the active geometry kind.</td></tr>
+          <tr><td><a href="#rect">const RectData * rect() const</a></td><td>Rectangle payload when <code>type() == Rect</code>.</td></tr>
+          <tr><td><a href="#polygon">const PolygonData * polygon() const</a></td><td>Polygon payload when <code>type() == Polygon</code>.</td></tr>
+          <tr><td><a href="#path">const PathData * path() const</a></td><td>Path payload when <code>type() == Path</code>.</td></tr>
+          <tr><td><a href="#text">const TextData * text() const</a></td><td>Text payload when <code>type() == Text</code>.</td></tr>
+          <tr><td><a href="#properties">std::vector&lt;Property&gt; &amp; properties()</a></td><td>Shape metadata for modification.</td></tr>
+          <tr><td><a href="#properties-const">const std::vector&lt;Property&gt; &amp; properties() const</a></td><td>Shape metadata for read-only access.</td></tr>
         </table>
-      </div>
 
-      <div class="fn-block">
-        <h3 class="fn-title">explicit Shape(TextData data)</h3>
-        <p class="fn-desc">Constructs a text label shape (GDS TEXT).</p>
-        <table class="fn-params">
-          <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>data</code></td><td>Anchor position, string, layer index, and text height in DBU.</td></tr>
+        <h2 id="details">Detailed Description</h2>
+        <p>A <code>core::Shape</code> stores one piece of layout geometry inside a <a href="block.html">Block</a>. The active variant is selected by <code>type()</code>; use the matching accessor (<code>rect()</code>, <code>polygon()</code>, …) to read payload data. Each variant carries a <code>layerId</code> index into the view or library <a href="types.html#layerspec">LayerSpec</a> table—not a raw GDS layer number.</p>
+        <p>Shapes may carry <a href="property.html">Property</a> lists (for example GDS user attributes encoded as <code>gds.prop.&lt;attr&gt;</code> after import).</p>
+
+        <h2>Member Type Documentation</h2>
+
+        <div class="fn-block" id="type-enum">
+          <h3 class="fn-title">enum class Type { Rect, Polygon, Path, Text }</h3>
+          <table class="members">
+            <tr><th>Value</th><th>GDS record</th><th>Accessor</th></tr>
+            <tr><td><code>Rect</code></td><td>BOX</td><td><code>rect()</code></td></tr>
+            <tr><td><code>Polygon</code></td><td>BOUNDARY</td><td><code>polygon()</code></td></tr>
+            <tr><td><code>Path</code></td><td>PATH</td><td><code>path()</code></td></tr>
+            <tr><td><code>Text</code></td><td>TEXT</td><td><code>text()</code></td></tr>
+          </table>
+        </div>
+
+        <div class="fn-block" id="rectdata">
+          <h3 class="fn-title">struct RectData { Box box; std::uint32_t layerId; }</h3>
+          <p class="fn-desc">Rectangle geometry in DBU. <code>box</code> uses lower-left / upper-right corners (<a href="types.html#box">Box</a>).</p>
+        </div>
+
+        <div class="fn-block" id="polygondata">
+          <h3 class="fn-title">struct PolygonData { std::vector&lt;Point&gt; points; std::uint32_t layerId; }</h3>
+          <p class="fn-desc">Closed polygon hull in DBU vertex order.</p>
+        </div>
+
+        <div class="fn-block" id="pathdata">
+          <h3 class="fn-title">struct PathData { std::vector&lt;Point&gt; points; std::uint32_t width; std::uint32_t layerId; }</h3>
+          <p class="fn-desc">Centerline polyline; <code>width</code> is full path width in DBU (0 allowed).</p>
+        </div>
+
+        <div class="fn-block" id="textdata">
+          <h3 class="fn-title">struct TextData { Point position; std::string text; std::uint32_t layerId; std::uint32_t height; }</h3>
+          <p class="fn-desc">Text anchor, string payload, layer index, and character height in DBU.</p>
+        </div>
+
+        <h2>Member Function Documentation</h2>
+
+        <div class="fn-block" id="Shape-rect">
+          <h3 class="fn-title">explicit Shape(RectData data)</h3>
+          <p class="fn-desc">Constructs a rectangle shape.</p>
+          <table class="fn-params">
+            <tr><th>Parameter</th><th>Description</th></tr>
+            <tr><td><code>data</code></td><td>Bounding box and layer index.</td></tr>
+          </table>
+        </div>
+
+        <div class="fn-block" id="Shape-poly">
+          <h3 class="fn-title">explicit Shape(PolygonData data)</h3>
+          <p class="fn-desc">Constructs a polygon shape.</p>
+        </div>
+
+        <div class="fn-block" id="Shape-path">
+          <h3 class="fn-title">explicit Shape(PathData data)</h3>
+          <p class="fn-desc">Constructs a path shape.</p>
+        </div>
+
+        <div class="fn-block" id="Shape-text">
+          <h3 class="fn-title">explicit Shape(TextData data)</h3>
+          <p class="fn-desc">Constructs a text label shape.</p>
+        </div>
+
+        <div class="fn-block" id="type">
+          <h3 class="fn-title">Type type() const</h3>
+          <p class="fn-desc">Returns which geometry variant is stored.</p>
+          <p class="fn-returns"><strong>Returns:</strong> One of <code>Type::Rect</code>, <code>Polygon</code>, <code>Path</code>, or <code>Text</code>.</p>
+        </div>
+
+        <div class="fn-block" id="rect">
+          <h3 class="fn-title">const RectData * rect() const</h3>
+          <p class="fn-desc">Accesses rectangle data when the shape type is <code>Rect</code>.</p>
+          <p class="fn-returns"><strong>Returns:</strong> Non-null pointer if types match; otherwise <code>nullptr</code>.</p>
+        </div>
+
+        <div class="fn-block" id="polygon">
+          <h3 class="fn-title">const PolygonData * polygon() const</h3>
+          <p class="fn-desc">Accesses polygon data when the shape type is <code>Polygon</code>.</p>
+          <p class="fn-returns"><strong>Returns:</strong> Non-null pointer if types match; otherwise <code>nullptr</code>.</p>
+        </div>
+
+        <div class="fn-block" id="path">
+          <h3 class="fn-title">const PathData * path() const</h3>
+          <p class="fn-desc">Accesses path data when the shape type is <code>Path</code>.</p>
+          <p class="fn-returns"><strong>Returns:</strong> Non-null pointer if types match; otherwise <code>nullptr</code>.</p>
+        </div>
+
+        <div class="fn-block" id="text">
+          <h3 class="fn-title">const TextData * text() const</h3>
+          <p class="fn-desc">Accesses text data when the shape type is <code>Text</code>.</p>
+          <p class="fn-returns"><strong>Returns:</strong> Non-null pointer if types match; otherwise <code>nullptr</code>.</p>
+        </div>
+
+        <div class="fn-block" id="properties">
+          <h3 class="fn-title">std::vector&lt;Property&gt; &amp; properties()</h3>
+          <p class="fn-desc">Returns shape metadata for modification.</p>
+        </div>
+
+        <div class="fn-block" id="properties-const">
+          <h3 class="fn-title">const std::vector&lt;Property&gt; &amp; properties() const</h3>
+          <p class="fn-desc">Returns shape metadata for read-only access.</p>
+        </div>
+
+        <h2 id="private-members" class="private-section">Private Variables</h2>
+        <p class="note">Private members are implementation details. Do not access them from user code.</p>
+        <table class="memlist">
+          <tr><td><code>Type m_type</code></td><td>Active geometry discriminator.</td></tr>
+          <tr><td><code>RectData m_rect</code></td><td>Storage when type is <code>Rect</code>.</td></tr>
+          <tr><td><code>PolygonData m_polygon</code></td><td>Storage when type is <code>Polygon</code>.</td></tr>
+          <tr><td><code>PathData m_path</code></td><td>Storage when type is <code>Path</code>.</td></tr>
+          <tr><td><code>TextData m_text</code></td><td>Storage when type is <code>Text</code>.</td></tr>
+          <tr><td><code>std::vector&lt;Property&gt; m_properties</code></td><td>Attached metadata.</td></tr>
         </table>
-      </div>
 
-      <div class="fn-block">
-        <h3 class="fn-title">Type type() const</h3>
-        <p class="fn-desc">Returns which geometry kind this shape holds.</p>
-        <p class="fn-returns"><strong>Returns:</strong> <code>Rect</code>, <code>Polygon</code>, <code>Path</code>, or <code>Text</code>.</p>
-      </div>
+        <h2 id="example">Example</h2>
+        <pre class="example"><code>core::Block &amp; block = layout.block();
 
-      <div class="fn-block">
-        <h3 class="fn-title">const RectData * rect() const</h3>
-        <p class="fn-desc">Accesses rectangle data when the shape type is <code>Rect</code>.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Pointer to internal <code>RectData</code>, or <code>nullptr</code> if <code>type() != Type::Rect</code>.</p>
-      </div>
-
-      <div class="fn-block">
-        <h3 class="fn-title">const PolygonData * polygon() const</h3>
-        <p class="fn-desc">Accesses polygon data when the shape type is <code>Polygon</code>.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Pointer to internal <code>PolygonData</code>, or <code>nullptr</code> if the type does not match.</p>
-      </div>
-
-      <div class="fn-block">
-        <h3 class="fn-title">const PathData * path() const</h3>
-        <p class="fn-desc">Accesses path data when the shape type is <code>Path</code>.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Pointer to internal <code>PathData</code>, or <code>nullptr</code> if the type does not match.</p>
-      </div>
-
-      <div class="fn-block">
-        <h3 class="fn-title">const TextData * text() const</h3>
-        <p class="fn-desc">Accesses text data when the shape type is <code>Text</code>.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Pointer to internal <code>TextData</code>, or <code>nullptr</code> if the type does not match.</p>
-      </div>
-
-      <div class="fn-block">
-        <h3 class="fn-title">std::vector&lt;Property&gt; &amp; properties()</h3>
-        <p class="fn-desc">Returns shape metadata for modification.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Mutable reference to name/value <a href="types.html#property">Property</a> pairs.</p>
-      </div>
-
-      <div class="fn-block">
-        <h3 class="fn-title">const std::vector&lt;Property&gt; &amp; properties() const</h3>
-        <p class="fn-desc">Returns shape metadata for read-only access.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Const reference to shape properties.</p>
-      </div>
-
-      <h2>Example</h2>
-      <pre class="example"><code>// polygon
 block.shapes().emplace_back(core::Shape::PolygonData{
     {{{0,0}, {1000,0}, {1000,500}, {0,500}}}, 0});
 
-// path
 block.shapes().emplace_back(core::Shape::PathData{
     {{{500,500}, {5000,5000}}}, 200, 1});
 
-// text
-block.shapes().emplace_back(core::Shape::TextData{
-    {100, 100}, "label", 2, 100});
-
-// read back
-for (const core::Shape &amp; s : block.shapes()) {
-    if (s.type() == core::Shape::Type::Polygon) {
-        const auto *p = s.polygon();
-        // p->points, p->layerId
+for (const core::Shape &amp; shape : block.shapes()) {
+    if (shape.type() == core::Shape::Type::Polygon) {
+        const auto *poly = shape.polygon();
+        // poly-&gt;points, poly-&gt;layerId
     }
 }</code></pre>
-    </main>
+      </main>
+      <aside class="page-toc">
+        <h4>On this page</h4>
+        <ul>
+          <li><a href="#public-types">Public Types</a></li>
+          <li><a href="#public-functions">Public Functions</a></li>
+          <li><a href="#details">Detailed Description</a></li>
+          <li><a href="#private-members">Private Variables</a></li>
+          <li><a href="#example">Example</a></li>
+        </ul>
+      </aside>
+    </div>
   </div>
 </body>
 </html>

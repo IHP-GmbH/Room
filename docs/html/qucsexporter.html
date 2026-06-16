@@ -19,7 +19,7 @@
         <li><a href="types.html#point">Point</a></li>
         <li><a href="types.html#box">Box</a></li>
         <li><a href="types.html#transform">Transform</a></li>
-        <li><a href="types.html#property">Property</a></li>
+        <li><a href="property.html">Property</a></li>
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
       </ul>
@@ -30,26 +30,53 @@
         <li><a href="textdumper.html">TextDumper</a></li>
       </ul>
     </aside>
+    <div class="content-with-toc">
     <main class="content">
-      <div class="breadcrumb"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Classes</a> &raquo; QucsExporter</div>
-      <h1>core::QucsExporter <span class="tag tag-class">class</span></h1>
-      <p class="subtitle">utils/qucs_exporter.h · #include "qucs_exporter.h"</p>
-      <p>Exports a schematic <a href="cellcontent.html">CellContent</a> from a <a href="database.html">Database</a> back to Qucs <code>.sch</code> text format.</p>
+      <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Utilities</a> &raquo; C++ Classes &raquo; QucsExporter</p>
 
-      <h2>struct Options</h2>
-      <table class="members">
-        <tr><th>Field</th><th>Default</th><th>Description</th></tr>
-        <tr><td><code>qucsVersion</code></td><td><code>"0.0.19"</code></td><td>Version string written to the <code>&lt;Qucs Schematic …&gt;</code> header if none was imported</td></tr>
+      <h1 class="title">QucsExporter Class</h1>
+      <p class="brief">Writes a schematic <a href="cellcontent.html">CellContent</a> from a <a href="database.html">Database</a> back to Qucs <code>.sch</code> text. <a class="more" href="#details">More…</a></p>
+
+      <table class="props">
+        <tr><th>Header:</th><td><code>#include "qucs_exporter.h"</code></td></tr>
+        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE CORE::core_utils)</code></td></tr>
       </table>
 
-      <h2>Member functions</h2>
+      <h2 id="public-types">Public Types</h2>
+      <table class="memlist">
+        <tr><td><a href="#options">struct Options</a></td><td>Qucs version string for the output header.</td></tr>
+      </table>
 
-      <div class="fn-block">
+      <h2 id="public-functions">Public Functions</h2>
+      <table class="memlist">
+        <tr><td><a href="#QucsExporter">QucsExporter()</a></td><td>Default constructor.</td></tr>
+        <tr><td><a href="#QucsExporter-opt">explicit QucsExporter(const Options &amp; options)</a></td><td>Constructs with custom export settings.</td></tr>
+        <tr><td><a href="#exportCell">void exportCell(const Database &amp; db, const std::string &amp; cellName, const std::string &amp; schPath) const</a></td><td>Writes one cell's schematic view to a Qucs file.</td></tr>
+        <tr><td><a href="#warnings">const std::vector&lt;std::string&gt; &amp; warnings() const</a></td><td>Warnings from the last export.</td></tr>
+        <tr><td><a href="#errors">const std::vector&lt;std::string&gt; &amp; errors() const</a></td><td>Errors from the last export.</td></tr>
+      </table>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>Uses stored <code>qucs.wire</code> lines when present for lossless round-trip. Otherwise reconstructs wires from <a href="net.html">Net</a> terminals. See the <a href="example_qucs.html">Qucs import example</a> for a full workflow.</p>
+
+      <h2>Member Type Documentation</h2>
+
+      <div class="fn-block" id="options">
+        <h3 class="fn-title">struct Options</h3>
+        <table class="members">
+          <tr><th>Member</th><th>Default</th><th>Description</th></tr>
+          <tr><td><code>std::string qucsVersion</code></td><td><code>"0.0.19"</code></td><td>Version string written to the <code>&lt;Qucs Schematic …&gt;</code> header if none was imported.</td></tr>
+        </table>
+      </div>
+
+      <h2>Member Function Documentation</h2>
+
+      <div class="fn-block" id="QucsExporter">
         <h3 class="fn-title">QucsExporter()</h3>
         <p class="fn-desc">Default constructor.</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="QucsExporter-opt">
         <h3 class="fn-title">explicit QucsExporter(const Options &amp; options)</h3>
         <p class="fn-desc">Constructs an exporter with a custom Qucs version header.</p>
         <table class="fn-params">
@@ -58,7 +85,7 @@
         </table>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="exportCell">
         <h3 class="fn-title">void exportCell(const Database &amp; db, const std::string &amp; cellName, const std::string &amp; schPath) const</h3>
         <p class="fn-desc">Writes one cell's schematic view to a Qucs file.</p>
         <table class="fn-params">
@@ -70,18 +97,36 @@
         <p class="fn-desc">Uses stored <code>qucs.wire</code> lines when present (lossless round-trip). Otherwise reconstructs wires from <a href="net.html">Net</a> terminals.</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="warnings">
         <h3 class="fn-title">const std::vector&lt;std::string&gt; &amp; warnings() const</h3>
         <p class="fn-desc">Warnings from the last export.</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="errors">
         <h3 class="fn-title">const std::vector&lt;std::string&gt; &amp; errors() const</h3>
         <p class="fn-desc">Errors (missing cell, no schematic view, I/O failure).</p>
       </div>
 
+      <h2 id="private-members" class="private-section">Private Variables</h2>
+      <p class="note">Private members are implementation details.</p>
+      <table class="memlist">
+        <tr><td><code>Options m_options</code></td><td>Export settings.</td></tr>
+        <tr><td><code>mutable std::vector&lt;std::string&gt; m_warnings</code></td><td>Warnings from last <code>exportCell()</code>.</td></tr>
+        <tr><td><code>mutable std::vector&lt;std::string&gt; m_errors</code></td><td>Errors from last <code>exportCell()</code>.</td></tr>
+      </table>
+
       <p>See the <a href="example_qucs.html">Qucs import example</a> for a full round-trip workflow.</p>
     </main>
+    <aside class="page-toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#public-types">Public Types</a></li>
+        <li><a href="#public-functions">Public Functions</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#private-members">Private Variables</a></li>
+      </ul>
+    </aside>
+    </div>
   </div>
 </body>
 </html>

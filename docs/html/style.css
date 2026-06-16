@@ -69,6 +69,96 @@ a:hover { color: var(--link-hover); text-decoration: underline; }
   min-height: calc(100vh - 48px);
 }
 
+.content-with-toc {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: flex-start;
+}
+
+.content-with-toc > .content {
+  flex: 1;
+  min-width: 0;
+}
+
+.page-toc {
+  width: 11rem;
+  flex-shrink: 0;
+  padding: 1.5rem 0.75rem 2rem;
+  border-left: 1px solid var(--sidebar-border);
+  font-size: 0.82rem;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.page-toc h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.page-toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.page-toc li {
+  margin: 0.2rem 0;
+}
+
+.page-toc a {
+  color: var(--muted);
+  display: block;
+  padding: 0.15rem 0;
+}
+
+.page-toc a:hover {
+  color: var(--link);
+}
+
+.page-toc .sub {
+  padding-left: 0.75rem;
+  font-size: 0.78rem;
+}
+
+.members-index {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.9rem;
+}
+
+.members-index a {
+  margin-right: 0.35rem;
+}
+
+table.memlist td.enum-name {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.85rem;
+  width: 28%;
+}
+
+.private-section {
+  color: #444;
+}
+
+.private-section .note {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+@media (max-width: 1100px) {
+  .page-toc {
+    display: none;
+  }
+}
+
 .sidebar {
   width: 240px;
   flex-shrink: 0;

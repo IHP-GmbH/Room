@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Property Class | CORE Core | CORE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html"><svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><defs><linearGradient id="logo-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2c3e50"/><stop offset="100%" stop-color="#1a5276"/></linearGradient><linearGradient id="logo-g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#41a62a"/><stop offset="100%" stop-color="#58d68d"/></linearGradient><linearGradient id="logo-bean" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1887F"/><stop offset="100%" stop-color="#5D4037"/></linearGradient><linearGradient id="logo-cup" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#b0bec5"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="12" fill="url(#logo-bg)"/></svg>CORE</a>
+    <nav><a href="index.html">Overview</a><a href="example.html">Example</a><a href="classes.html">All Classes</a></nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Getting Started</h3>
+      <ul><li><a href="index.html">Overview</a></li><li><a href="example.html">Example</a></li><li><a href="classes.html">Class index</a></li></ul>
+      <h3>Types</h3>
+      <ul>
+        <li><a href="types.html#point">Point</a></li>
+        <li><a href="types.html#box">Box</a></li>
+        <li><a href="types.html#transform">Transform</a></li>
+        <li><a href="property.html" class="active">Property</a></li>
+        <li><a href="types.html#layerspec">LayerSpec</a></li>
+        <li><a href="types.html#enums">Enums</a></li>
+      </ul>
+      <h3>Core</h3>
+      <ul>
+        <li><a href="database.html">Database</a></li><li><a href="lib.html">Lib</a></li>
+        <li><a href="shape.html">Shape</a></li>
+      </ul>
+    </aside>
+    <div class="content-with-toc">
+      <main class="content">
+        <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Core</a> &raquo; C++ Classes &raquo; Property</p>
+
+        <h1 class="title">Property Class</h1>
+        <p class="brief">String key/value metadata attached to libraries, cells, shapes, and instances. <a class="more" href="#details">More…</a></p>
+
+        <table class="props">
+          <tr><th>Header:</th><td><code>#include "property.h"</code></td></tr>
+          <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE CORE::core)</code></td></tr>
+        </table>
+
+        <h2 id="public-types">Public Types</h2>
+        <p class="note">None.</p>
+
+        <h2 id="public-functions">Public Functions</h2>
+        <table class="memlist">
+          <tr><td><a href="#Property">Property()</a></td><td>Default constructor. Empty name and value.</td></tr>
+          <tr><td><a href="#Property-kv">Property(std::string n, std::string v)</a></td><td>Constructs a property pair.</td></tr>
+        </table>
+
+        <h2 id="public-variables">Public Variables</h2>
+        <table class="memlist">
+          <tr><td><code>std::string name</code></td><td>Property key (for example <code>"gds.prop.128"</code> or <code>"author"</code>).</td></tr>
+          <tr><td><code>std::string value</code></td><td>Property value. GDS typed values use prefixes <code>i2:</code>, <code>i4:</code>, <code>s:</code>, <code>rhex:</code>.</td></tr>
+        </table>
+
+        <h2 id="details">Detailed Description</h2>
+        <p><code>core::Property</code> is a simple POD type used throughout the database for tool-specific and interchange metadata. GDS user attributes imported by <a href="gdsimporter.html">GdsImporter</a> are stored with names <code>gds.prop.&lt;attr&gt;</code> and typed value strings. Custom tools may use arbitrary string keys.</p>
+
+        <h2>Member Function Documentation</h2>
+
+        <div class="fn-block" id="Property">
+          <h3 class="fn-title">Property()</h3>
+          <p class="fn-desc">Default constructor. Creates an empty property.</p>
+        </div>
+
+        <div class="fn-block" id="Property-kv">
+          <h3 class="fn-title">Property(std::string n, std::string v)</h3>
+          <p class="fn-desc">Constructs a property with the given name and value.</p>
+          <table class="fn-params">
+            <tr><th>Parameter</th><th>Description</th></tr>
+            <tr><td><code>n</code></td><td>Property name.</td></tr>
+            <tr><td><code>v</code></td><td>Property value.</td></tr>
+          </table>
+        </div>
+
+        <h2 id="example">Example</h2>
+        <pre class="example"><code>core::Shape::RectData rect{{0, 0, 100, 100}, 0};
+core::Shape shape(rect);
+shape.properties().push_back({"author", "team"});
+shape.properties().push_back({"gds.prop.1", "s:metal1"});
+
+core::Lib &amp; lib = db.lib();
+lib.properties().push_back({"source", "gds_import"});</code></pre>
+      </main>
+      <aside class="page-toc">
+        <h4>On this page</h4>
+        <ul>
+          <li><a href="#public-functions">Public Functions</a></li>
+          <li><a href="#public-variables">Public Variables</a></li>
+          <li><a href="#details">Detailed Description</a></li>
+          <li><a href="#example">Example</a></li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

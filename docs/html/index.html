@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CORE — Documentation</title>
+  <title>CORE � Documentation</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -30,7 +30,7 @@
         <li><a href="types.html#point">Point</a></li>
         <li><a href="types.html#box">Box</a></li>
         <li><a href="types.html#transform">Transform</a></li>
-        <li><a href="types.html#property">Property</a></li>
+        <li><a href="property.html">Property</a></li>
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
       </ul>
@@ -57,10 +57,10 @@
 
     <main class="content">
       <h1>CORE</h1>
-      <p class="subtitle">Common Open Repository for EDA · Cap'n Proto · C++17</p>
+      <p class="subtitle">Common Open Repository for EDA � Cap'n Proto � C++17</p>
 
       <p>
-        CORE — Common Open Repository for EDA — is a teaching and application API
+        CORE � Common Open Repository for EDA � is a teaching and application API
         (<code>core::</code>) for storing chip design topology: libraries, cells, layers,
         shapes, instances, and nets. Layout and schematic data share one model; the view kind
         (<code>layout</code>, <code>schematic</code>, <code>symbol</code>, <code>abstract</code>)
@@ -77,22 +77,22 @@
       </p>
 
       <h2>Data hierarchy</h2>
-      <p>On disk (<code>.core</code>, format v1.0), each view stores geometry in <code>CellContent.payload</code> — not a top-level <code>block</code> field. The C++ API exposes the same topology via <code>CellContent::block()</code>.</p>
+      <p>On disk (<code>.core</code>, format v1.0), each view stores geometry in <code>CellContent.payload</code> � not a top-level <code>block</code> field. The C++ API exposes the same topology via <code>CellContent::block()</code>.</p>
       <div class="diagram">Database
- └── Lib
-      ├── layers[]              ← LayerSpec table (library-global)
-      ├── index                 ← LibIndex (derived, persisted)
-      └── Cell[]
-           └── CellContent[]    ← viewType, dbuPerMicron, properties
-                └── payload      ← ViewPayload (on disk)
-                     ├── layout | schematic | symbol | abstract
-                     │    ├── layers[]   (per-view on disk)
-                     │    └── block      → Shape[], Instance[], Net[]
-                     └── opaque         (unknown / future views)</div>
+ +-- Lib
+      +-- layers[]              ? LayerSpec table (library-global)
+      +-- index                 ? LibIndex (derived, persisted)
+      +-- Cell[]
+           +-- CellContent[]    ? viewType, dbuPerMicron, properties
+                +-- payload      ? ViewPayload (on disk)
+                     +-- layout | schematic | symbol | abstract
+                     �    +-- layers[]   (per-view on disk)
+                     �    +-- block      ? Shape[], Instance[], Net[]
+                     +-- opaque         (unknown / future views)</div>
       <p>Format v1.0 stores only <code>payload</code> on <code>CellContent</code> (no legacy top-level <code>block</code> field).</p>
 
       <h2>Quick start (VS Code)</h2>
-      <p><code>Ctrl+Shift+B</code> → Example: Build &amp; Run Full Demo</p>
+      <p><code>Ctrl+Shift+B</code> ? Example: Build &amp; Run Full Demo</p>
       <p>Or build static libraries only: Build: Static Libraries (.a)</p>
 
       <h2>Quick start (command line)</h2>
@@ -104,12 +104,20 @@ cmake --build build
 
 .\build\qucs_to_core.exe examples\qucs_to_core\data\rc_lowpass.sch out\schematic.core</code></pre>
 
+      <h2>API reference</h2>
+      <p>
+        Class pages follow a <a href="https://doc.qt.io/qt-6/qstring.html">Qt-style</a> layout:
+        brief summary, Header/CMake, Public Types/Functions tables, detailed member docs,
+        private members, examples, and an on-page table of contents.
+        See <code>docs/DOCUMENTATION_STYLE.md</code> in the repository for authoring rules.
+      </p>
+
       <h2>Classes</h2>
       <ul class="class-list">
         <li><a href="types.html#point">Point</a></li>
         <li><a href="types.html#box">Box</a></li>
         <li><a href="types.html#transform">Transform</a></li>
-        <li><a href="types.html#property">Property</a></li>
+        <li><a href="property.html">Property</a></li>
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
         <li><a href="database.html">core::Database</a></li>
@@ -129,15 +137,15 @@ cmake --build build
 
       <h2>Examples</h2>
       <p>
-        <a href="example.html">GDS layout import</a> ·
+        <a href="example.html">GDS layout import</a> �
         <a href="example_qucs.html">Qucs schematic import</a>
       </p>
 
       <h2>Project layout</h2>
       <table class="members">
         <tr><th>Path</th><th>Purpose</th></tr>
-        <tr><td><code>src/</code></td><td>Core C++ API (Database, Cell, Shape, …)</td></tr>
-        <tr><td><code>src/point.h</code>, <code>box.h</code>, <code>box.cpp</code>, …</td><td>Basic geometry and metadata types</td></tr>
+        <tr><td><code>src/</code></td><td>Core C++ API (Database, Cell, Shape, �)</td></tr>
+        <tr><td><code>src/point.h</code>, <code>box.h</code>, <code>box.cpp</code>, �</td><td>Basic geometry and metadata types</td></tr>
         <tr><td><code>src/types.h</code></td><td>Umbrella include for basic types</td></tr>
         <tr><td><code>src/enums.h</code></td><td>ViewType, Orient, SigType, string helpers</td></tr>
         <tr><td><code>utils/</code></td><td>GdsImporter, QucsImporter, QucsExporter, TextDumper</td></tr>

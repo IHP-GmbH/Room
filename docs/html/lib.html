@@ -19,7 +19,7 @@
         <li><a href="types.html#point">Point</a></li>
         <li><a href="types.html#box">Box</a></li>
         <li><a href="types.html#transform">Transform</a></li>
-        <li><a href="types.html#property">Property</a></li>
+        <li><a href="property.html">Property</a></li>
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
       </ul>
@@ -34,6 +34,7 @@
       <h3>Utilities</h3>
       <ul><li><a href="gdsimporter.html">GdsImporter</a></li><li><a href="textdumper.html">TextDumper</a></li></ul>
     </aside>
+    <div class="content-with-toc">
     <main class="content">
             <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Core</a> &raquo; C++ Classes &raquo; Lib</p>
 
@@ -89,7 +90,7 @@
       <div class="fn-block" id="fn-2">
         <h3 class="fn-title">std::vector&lt;Property&gt; &amp; properties()</h3>
         <p class="fn-desc">Returns the library metadata list for modification.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Mutable reference to name/value <a href="types.html#property">Property</a> pairs attached to this library.</p>
+        <p class="fn-returns"><strong>Returns:</strong> Mutable reference to name/value <a href="property.html">Property</a> pairs attached to this library.</p>
       </div>
 
       <div class="fn-block" id="fn-3">
@@ -172,7 +173,18 @@
         <p class="fn-desc">Returns whether an index is available (built, refreshed, or loaded from disk).</p>
       </div>
 
-      <h2>Example</h2>
+      <h2 id="private-members" class="private-section">Private Variables</h2>
+      <p class="note">Private members are implementation details. Do not access them from user code.</p>
+      <table class="memlist">
+        <tr><td><code>std::string m_name</code></td><td>Library name.</td></tr>
+        <tr><td><code>std::vector&lt;Property&gt; m_properties</code></td><td>Library-level metadata.</td></tr>
+        <tr><td><code>std::vector&lt;LayerSpec&gt; m_layers</code></td><td>Shared layer table.</td></tr>
+        <tr><td><code>std::vector&lt;Cell&gt; m_cells</code></td><td>Cells owned by this library.</td></tr>
+        <tr><td><code>LibIndex m_index</code></td><td>Derived hierarchy and bbox index.</td></tr>
+        <tr><td><code>bool m_hasIndex</code></td><td>Whether <code>m_index</code> is valid.</td></tr>
+      </table>
+
+      <h2 id="example">Example</h2>
       <pre class="example"><code>core::Lib lib("my_pdk");
 lib.properties().push_back({"author", "team"});
 lib.layers().push_back({1, 0, "MET1", core::LayerPurpose::Drawing});
@@ -184,6 +196,16 @@ core::CellContent &amp; layout = top.getOrCreateContent(core::ViewType::Layout);
 layout.block().shapes().emplace_back(
     core::Shape::RectData{{0, 0, 1000, 1000}, 0});</code></pre>
     </main>
+    <aside class="page-toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#public-functions">Public Functions</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#private-members">Private Variables</a></li>
+        <li><a href="#example">Example</a></li>
+      </ul>
+    </aside>
+    </div>
   </div>
 </body>
 </html>

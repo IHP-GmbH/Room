@@ -19,7 +19,7 @@
         <li><a href="types.html#point">Point</a></li>
         <li><a href="types.html#box">Box</a></li>
         <li><a href="types.html#transform">Transform</a></li>
-        <li><a href="types.html#property">Property</a></li>
+        <li><a href="property.html">Property</a></li>
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
       </ul>
@@ -31,27 +31,54 @@
         <li><a href="textdumper.html">TextDumper</a></li>
       </ul>
     </aside>
+    <div class="content-with-toc">
     <main class="content">
-      <div class="breadcrumb"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Classes</a> &raquo; QucsImporter</div>
-      <h1>core::QucsImporter <span class="tag tag-class">class</span></h1>
-      <p class="subtitle">utils/qucs_importer.h · #include "qucs_importer.h"</p>
-      <p>Imports a <a href="https://qucs-help.readthedocs.io/en/latest/internal.html">Qucs</a> schematic (<code>.sch</code>) into an in-memory <a href="database.html">Database</a>. Creates one cell with <code>ViewType::Schematic</code>.</p>
+      <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Utilities</a> &raquo; C++ Classes &raquo; QucsImporter</p>
 
-      <h2>struct Options</h2>
-      <table class="members">
-        <tr><th>Field</th><th>Default</th><th>Description</th></tr>
-        <tr><td><code>libName</code></td><td><code>"qucs_import"</code></td><td>Name of the target <a href="lib.html">Lib</a></td></tr>
-        <tr><td><code>cellName</code></td><td><em>empty</em></td><td>Cell name; if empty, derived from the <code>.sch</code> file name</td></tr>
+      <h1 class="title">QucsImporter Class</h1>
+      <p class="brief">Reads a <a href="https://qucs-help.readthedocs.io/en/latest/internal.html">Qucs</a> schematic (<code>.sch</code>) into an in-memory <a href="database.html">Database</a>. <a class="more" href="#details">More…</a></p>
+
+      <table class="props">
+        <tr><th>Header:</th><td><code>#include "qucs_importer.h"</code></td></tr>
+        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE CORE::core_utils)</code></td></tr>
       </table>
 
-      <h2>Member functions</h2>
+      <h2 id="public-types">Public Types</h2>
+      <table class="memlist">
+        <tr><td><a href="#options">struct Options</a></td><td>Library and cell naming for import.</td></tr>
+      </table>
 
-      <div class="fn-block">
+      <h2 id="public-functions">Public Functions</h2>
+      <table class="memlist">
+        <tr><td><a href="#QucsImporter">QucsImporter()</a></td><td>Default constructor with default <code>Options</code>.</td></tr>
+        <tr><td><a href="#QucsImporter-opt">explicit QucsImporter(const Options &amp; options)</a></td><td>Constructs with custom import settings.</td></tr>
+        <tr><td><a href="#importFile">Database importFile(const std::string &amp; schPath) const</a></td><td>Parses a Qucs schematic and returns a database.</td></tr>
+        <tr><td><a href="#warnings">const std::vector&lt;std::string&gt; &amp; warnings() const</a></td><td>Non-fatal messages from the last import.</td></tr>
+        <tr><td><a href="#errors">const std::vector&lt;std::string&gt; &amp; errors() const</a></td><td>Fatal error messages from the last import.</td></tr>
+      </table>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>Creates one cell with <code>ViewType::Schematic</code>. Components become <a href="instance.html">Instance</a> objects; wires become <a href="net.html">Net</a> and <a href="term.html">Term</a> pairs. See the <a href="example_qucs.html">Qucs import example</a>.</p>
+
+      <h2>Member Type Documentation</h2>
+
+      <div class="fn-block" id="options">
+        <h3 class="fn-title">struct Options</h3>
+        <table class="members">
+          <tr><th>Member</th><th>Default</th><th>Description</th></tr>
+          <tr><td><code>std::string libName</code></td><td><code>"qucs_import"</code></td><td>Name of the target <a href="lib.html">Lib</a>.</td></tr>
+          <tr><td><code>std::string cellName</code></td><td><em>empty</em></td><td>Cell name; if empty, derived from the <code>.sch</code> file name.</td></tr>
+        </table>
+      </div>
+
+      <h2>Member Function Documentation</h2>
+
+      <div class="fn-block" id="QucsImporter">
         <h3 class="fn-title">QucsImporter()</h3>
         <p class="fn-desc">Default constructor with <code>Options</code> defaults.</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="QucsImporter-opt">
         <h3 class="fn-title">explicit QucsImporter(const Options &amp; options)</h3>
         <p class="fn-desc">Constructs an importer with custom library and cell naming.</p>
         <table class="fn-params">
@@ -60,7 +87,7 @@
         </table>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="importFile">
         <h3 class="fn-title">Database importFile(const std::string &amp; schPath) const</h3>
         <p class="fn-desc">Parses a Qucs schematic text file and builds a CORE database.</p>
         <table class="fn-params">
@@ -70,17 +97,17 @@
         <p class="fn-returns"><strong>Returns:</strong> Populated <a href="database.html">Database</a>, or empty on failure.</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="warnings">
         <h3 class="fn-title">const std::vector&lt;std::string&gt; &amp; warnings() const</h3>
         <p class="fn-desc">Non-fatal messages from the last <code>importFile()</code> call.</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="errors">
         <h3 class="fn-title">const std::vector&lt;std::string&gt; &amp; errors() const</h3>
         <p class="fn-desc">Fatal errors from the last import (for example file not found).</p>
       </div>
 
-      <h2>Qucs → CORE mapping</h2>
+      <h2 id="mapping">Qucs → CORE mapping</h2>
       <table class="members">
         <tr><th>Qucs section</th><th>CORE</th></tr>
         <tr><td><code>&lt;Components&gt;</code></td><td><a href="instance.html">Instance</a> in <code>payload.schematic.block</code> (C++: <code>CellContent::block()</code>)</td></tr>
@@ -89,8 +116,27 @@
         <tr><td>Header, Symbol, Diagrams, Paintings</td><td>Stored as <code>qucs.*</code> properties for round-trip export</td></tr>
       </table>
 
+      <h2 id="private-members" class="private-section">Private Variables</h2>
+      <p class="note">Private members are implementation details.</p>
+      <table class="memlist">
+        <tr><td><code>Options m_options</code></td><td>Import settings.</td></tr>
+        <tr><td><code>mutable std::vector&lt;std::string&gt; m_warnings</code></td><td>Warnings from last <code>importFile()</code>.</td></tr>
+        <tr><td><code>mutable std::vector&lt;std::string&gt; m_errors</code></td><td>Errors from last <code>importFile()</code>.</td></tr>
+      </table>
+
       <p>See the <a href="example_qucs.html">Qucs import example</a>.</p>
     </main>
+    <aside class="page-toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#public-types">Public Types</a></li>
+        <li><a href="#public-functions">Public Functions</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#mapping">Qucs mapping</a></li>
+        <li><a href="#private-members">Private Variables</a></li>
+      </ul>
+    </aside>
+    </div>
   </div>
 </body>
 </html>

@@ -19,7 +19,7 @@
         <li><a href="types.html#point">Point</a></li>
         <li><a href="types.html#box">Box</a></li>
         <li><a href="types.html#transform">Transform</a></li>
-        <li><a href="types.html#property">Property</a></li>
+        <li><a href="property.html">Property</a></li>
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
       </ul>
@@ -34,27 +34,54 @@
         <li><a href="textdumper.html">TextDumper</a></li>
       </ul>
     </aside>
+    <div class="content-with-toc">
     <main class="content">
-      <div class="breadcrumb"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Classes</a> &raquo; GdsImporter</div>
-      <h1>core::GdsImporter <span class="tag tag-class">class</span></h1>
-      <p class="subtitle">utils/gds_importer.h · #include "gds_importer.h"</p>
-      <p>Imports a GDSII file into an in-memory <a href="database.html">Database</a>. Creates cells with <code>ViewType::Layout</code>.</p>
+      <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Utilities</a> &raquo; C++ Classes &raquo; GdsImporter</p>
 
-      <h2>struct Options</h2>
-      <table class="members">
-        <tr><th>Field</th><th>Default</th><th>Description</th></tr>
-        <tr><td><code>libName</code></td><td><code>"gds_import"</code></td><td>Name of the <a href="lib.html">Lib</a></td></tr>
-        <tr><td><code>defaultDbuPerMicron</code></td><td><code>1000.0</code></td><td>DBU/µm when GDS has no UNITS record</td></tr>
+      <h1 class="title">GdsImporter Class</h1>
+      <p class="brief">Reads a GDSII layout file into an in-memory <a href="database.html">Database</a>. <a class="more" href="#details">More…</a></p>
+
+      <table class="props">
+        <tr><th>Header:</th><td><code>#include "gds_importer.h"</code></td></tr>
+        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE CORE::core_utils)</code></td></tr>
       </table>
 
-      <h2>Member functions</h2>
+      <h2 id="public-types">Public Types</h2>
+      <table class="memlist">
+        <tr><td><a href="#options">struct Options</a></td><td>Library name and default DBU scale for import.</td></tr>
+      </table>
 
-      <div class="fn-block">
+      <h2 id="public-functions">Public Functions</h2>
+      <table class="memlist">
+        <tr><td><a href="#GdsImporter">GdsImporter()</a></td><td>Default constructor with default <code>Options</code>.</td></tr>
+        <tr><td><a href="#GdsImporter-opt">explicit GdsImporter(const Options &amp; options)</a></td><td>Constructs with custom import settings.</td></tr>
+        <tr><td><a href="#importFile">Database importFile(const std::string &amp; gdsPath) const</a></td><td>Parses a GDSII file and returns a database.</td></tr>
+        <tr><td><a href="#warnings">const std::vector&lt;std::string&gt; &amp; warnings() const</a></td><td>Non-fatal messages from the last import.</td></tr>
+        <tr><td><a href="#errors">const std::vector&lt;std::string&gt; &amp; errors() const</a></td><td>Fatal error messages from the last import.</td></tr>
+      </table>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>Creates cells with <code>ViewType::Layout</code>, maps GDS layers to <a href="lib.html">Lib::layers()</a>, and attaches GDS user properties to shapes and instances. See also the <a href="example.html">gds_to_core walkthrough</a>.</p>
+
+      <h2>Member Type Documentation</h2>
+
+      <div class="fn-block" id="options">
+        <h3 class="fn-title">struct Options</h3>
+        <table class="members">
+          <tr><th>Member</th><th>Default</th><th>Description</th></tr>
+          <tr><td><code>std::string libName</code></td><td><code>"gds_import"</code></td><td>Name of the output <a href="lib.html">Lib</a>.</td></tr>
+          <tr><td><code>double defaultDbuPerMicron</code></td><td><code>1000.0</code></td><td>DBU per micron when the GDS file has no UNITS record.</td></tr>
+        </table>
+      </div>
+
+      <h2>Member Function Documentation</h2>
+
+      <div class="fn-block" id="GdsImporter">
         <h3 class="fn-title">GdsImporter()</h3>
         <p class="fn-desc">Default constructor. Creates an importer with default <code>Options</code> (<code>libName = "gds_import"</code>, <code>defaultDbuPerMicron = 1000.0</code>).</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="GdsImporter-opt">
         <h3 class="fn-title">explicit GdsImporter(const Options &amp; options)</h3>
         <p class="fn-desc">Constructs an importer with custom import settings.</p>
         <table class="fn-params">
@@ -63,7 +90,7 @@
         </table>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="importFile">
         <h3 class="fn-title">Database importFile(const std::string &amp; gdsPath) const</h3>
         <p class="fn-desc">Parses a GDSII file and builds an in-memory database. Clears previous warning and error messages before parsing.</p>
         <table class="fn-params">
@@ -73,13 +100,13 @@
         <p class="fn-returns"><strong>Returns:</strong> A populated <a href="database.html">Database</a> on success, or an empty database if parsing failed. Inspect <code>errors()</code> for failure details.</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="warnings">
         <h3 class="fn-title">const std::vector&lt;std::string&gt; &amp; warnings() const</h3>
         <p class="fn-desc">Returns non-fatal messages from the most recent <code>importFile()</code> call.</p>
         <p class="fn-returns"><strong>Returns:</strong> Const reference to warning strings (for example unsupported records or recoverable issues).</p>
       </div>
 
-      <div class="fn-block">
+      <div class="fn-block" id="errors">
         <h3 class="fn-title">const std::vector&lt;std::string&gt; &amp; errors() const</h3>
         <p class="fn-desc">Returns fatal error messages from the most recent <code>importFile()</code> call.</p>
         <p class="fn-returns"><strong>Returns:</strong> Const reference to error strings. Non-empty usually means import failed.</p>
@@ -96,7 +123,15 @@
         <tr><td>UNITS</td><td><code>dbuPerMicron</code></td></tr>
       </table>
 
-      <h2>Example</h2>
+      <h2 id="private-members" class="private-section">Private Variables</h2>
+      <p class="note">Private members are implementation details.</p>
+      <table class="memlist">
+        <tr><td><code>Options m_options</code></td><td>Import settings.</td></tr>
+        <tr><td><code>mutable std::vector&lt;std::string&gt; m_warnings</code></td><td>Warnings from last <code>importFile()</code>.</td></tr>
+        <tr><td><code>mutable std::vector&lt;std::string&gt; m_errors</code></td><td>Errors from last <code>importFile()</code>.</td></tr>
+      </table>
+
+      <h2 id="example">Example</h2>
       <pre class="example"><code>core::GdsImporter::Options opts;
 opts.libName = "demo_lib";
 opts.defaultDbuPerMicron = 1000.0;
@@ -112,6 +147,17 @@ for (const auto &amp; e : importer.errors())
 db.saveToFile("layout.core");</code></pre>
       <p>See also the <a href="example.html">gds_to_core walkthrough</a>.</p>
     </main>
+    <aside class="page-toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#public-types">Public Types</a></li>
+        <li><a href="#public-functions">Public Functions</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#private-members">Private Variables</a></li>
+        <li><a href="#example">Example</a></li>
+      </ul>
+    </aside>
+    </div>
   </div>
 </body>
 </html>

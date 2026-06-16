@@ -19,7 +19,7 @@
         <li><a href="types.html#point">Point</a></li>
         <li><a href="types.html#box">Box</a></li>
         <li><a href="types.html#transform">Transform</a></li>
-        <li><a href="types.html#property">Property</a></li>
+        <li><a href="property.html">Property</a></li>
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
       </ul>
@@ -34,6 +34,7 @@
       <h3>Utilities</h3>
       <ul><li><a href="gdsimporter.html">GdsImporter</a></li><li><a href="textdumper.html">TextDumper</a></li></ul>
     </aside>
+    <div class="content-with-toc">
     <main class="content">
       <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Core</a> &raquo; C++ Classes &raquo; Database</p>
 
@@ -43,6 +44,13 @@
       <table class="props">
         <tr><th>Header:</th><td><code>#include "database.h"</code></td></tr>
         <tr><th>CMake:</th><td><code>find_package(CORE REQUIRED)</code><br><code>target_link_libraries(mytarget PRIVATE CORE::core)</code></td></tr>
+      </table>
+
+      <p class="members-index"><a href="classes.html">List of all members</a></p>
+
+      <h2 id="public-types">Public Types</h2>
+      <table class="memlist">
+        <tr><td><a href="#saveoptions">struct SaveOptions</a></td><td>Controls compact vs verbose geometry when writing <code>.core</code> files.</td></tr>
       </table>
 
       <h2 id="public-functions">Public Functions</h2>
@@ -56,12 +64,22 @@
         <tr><td><a href="#setTechnology">void setTechnology(std::string value)</a></td><td>Associates a technology or PDK name.</td></tr>
         <tr><td><a href="#lib">Lib &amp; lib()</a></td><td>Returns the root cell library (mutable).</td></tr>
         <tr><td><a href="#lib-1">const Lib &amp; lib() const</a></td><td>Returns the root cell library (const).</td></tr>
-        <tr><td><a href="#saveToFile">void saveToFile(const std::string &amp; path) const</a></td><td>Serializes this database to a binary <code>.core</code> file.</td></tr>
+        <tr><td><a href="#saveToFile">void saveToFile(const std::string &amp; path, SaveOptions options = {})</a></td><td>Serializes this database to a binary <code>.core</code> file.</td></tr>
         <tr><td><a href="#loadFromFile">static Database loadFromFile(const std::string &amp; path)</a></td><td>Reads a database from a <code>.core</code> file.</td></tr>
       </table>
 
       <h2 id="details">Detailed Description</h2>
-      <p>A <code>core::Database</code> is the top-level container for layout and schematic topology. It stores version, generator, and technology metadata plus a single <a href="lib.html">Lib</a> of cells. Persistence uses Cap'n Proto; files conventionally use the <code>.core</code> extension. Format v1.0 stores per-view geometry under <code>CellContent.payload</code> (see <a href="cellcontent.html">CellContent</a>).</p>
+      <p>A <code>core::Database</code> is the top-level container for layout and schematic topology. It stores version, generator, and technology metadata plus a single <a href="lib.html">Lib</a> of cells. Persistence uses Cap'n Proto; files conventionally use the <code>.core</code> extension. Format v1.0 stores per-view geometry under <code>CellContent.payload</code> (see <a href="cellcontent.html">CellContent</a>). By default, <code>saveToFile()</code> writes compact geometry (<code>SaveOptions::compactGeometry = true</code>).</p>
+
+      <h2>Member Type Documentation</h2>
+
+      <div class="fn-block" id="saveoptions">
+        <h3 class="fn-title">struct SaveOptions</h3>
+        <table class="members">
+          <tr><th>Member</th><th>Default</th><th>Description</th></tr>
+          <tr><td><code>bool compactGeometry</code></td><td><code>true</code></td><td>When true, geometry is written to <code>payload.compact</code>; when false, verbose <code>payload.block</code> is used.</td></tr>
+        </table>
+      </div>
 
       <h2>Member Function Documentation</h2>
 
@@ -129,11 +147,12 @@
       </div>
 
       <div class="fn-block" id="saveToFile">
-        <h3 class="fn-title">void saveToFile(const std::string &amp; path) const</h3>
+        <h3 class="fn-title">void saveToFile(const std::string &amp; path, SaveOptions options = {})</h3>
         <p class="fn-desc">Serializes this database to a binary Cap'n Proto file.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
           <tr><td><code>path</code></td><td>Output file path. The file is created or overwritten. Conventionally uses the <code>.core</code> extension.</td></tr>
+          <tr><td><code>options</code></td><td><a href="#saveoptions">SaveOptions</a> controlling compact geometry encoding (default: compact on).</td></tr>
         </table>
         <p class="fn-throws"><strong>Throws:</strong> <code>std::runtime_error</code> if the file cannot be opened for writing.</p>
       </div>
@@ -149,7 +168,16 @@
         <p class="fn-throws"><strong>Throws:</strong> <code>std::runtime_error</code> if the file cannot be read or parsed.</p>
       </div>
 
-      <h2>Example</h2>
+      <h2 id="private-members" class="private-section">Private Variables</h2>
+      <p class="note">Private members are implementation details. Do not access them from user code.</p>
+      <table class="memlist">
+        <tr><td><code>std::string m_version</code></td><td>File format version (default <code>"1.0"</code>).</td></tr>
+        <tr><td><code>std::string m_generator</code></td><td>Creating tool name.</td></tr>
+        <tr><td><code>std::string m_technology</code></td><td>Technology or PDK identifier.</td></tr>
+        <tr><td><code>Lib m_lib</code></td><td>Root cell library owned by this database.</td></tr>
+      </table>
+
+      <h2 id="example">Example</h2>
       <pre class="example"><code>core::Database db;
 db.setGenerator("MyTool");
 db.setTechnology("sg13g2");
@@ -160,6 +188,17 @@ db.saveToFile("design.core");
 core::Database loaded = core::Database::loadFromFile("design.core");
 std::cout << loaded.lib().cells().size() << " cells\n";</code></pre>
     </main>
+    <aside class="page-toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#public-types">Public Types</a></li>
+        <li><a href="#public-functions">Public Functions</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#private-members">Private Variables</a></li>
+        <li><a href="#example">Example</a></li>
+      </ul>
+    </aside>
+    </div>
   </div>
 </body>
 </html>
