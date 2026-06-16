@@ -170,11 +170,26 @@ build\make_sample_gds.exe testdata\sample.gds
 build\gds_to_core.exe testdata\sample.gds output\sample.core
 ```
 
+## KLayout integration
+
+CORE ships a **KLayout streamer plugin** (`mcore`) that opens and saves `.core` files directly in KLayout — no GDS round-trip for viewing.
+
+| | |
+|--|--|
+| **Full guide** | [integrations/klayout/README.md](integrations/klayout/README.md) |
+| **What it does** | Read/write `.core` in KLayout; maps shapes, instances, cells, lib name, and properties |
+| **Build model** | CommonDB sources are compiled into `db_plugins/mcore.dll` inside a KLayout tree (junction + `streamers.pro` patch) |
+| **Quick setup** | `scripts\setup_klayout_mcore.cmd C:\path\to\KLayout` then rebuild KLayout |
+| **Smoke tests** | `klayout -b -r scripts\test_core_load.rb` (set `COMMONDB_ROOT` to repo root) |
+| **Bridge (no plugin yet)** | `scripts\open_core_in_klayout.cmd` or macro `scripts\klayout_load_core.lym` via `core_to_gds` |
+
+**Limits (current POC):** layout view only; compact geometry on save; schematic not shown in KLayout. Lib-level properties and `libname` are mapped — see the integration README for details.
+
 ## Documentation
 
 HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally in a browser after cloning).
 
-Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md) · [COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) (size & timing benchmarks)
+Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md) · [COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) (size & timing benchmarks) · [KLayout plugin](integrations/klayout/README.md)
 
 ## Project layout
 
@@ -185,6 +200,7 @@ Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHAR
 | `utils/` | `GdsImporter`, `QucsImporter`, `QucsExporter`, `TextDumper` |
 | `examples/gds_to_core/` | GDS import example + sample data |
 | `examples/qucs_to_core/` | Qucs import example + sample `.sch` |
+| `integrations/klayout/` | KLayout `mcore` streamer plugin (read/write `.core`) |
 | `third_party/capnp-install/` | Cap'n Proto compiler and libraries |
 | `scripts/mkcapnp.cmd` | Build Cap'n Proto on Windows |
 | `docs/html/` | Documentation and `logo.svg` |
