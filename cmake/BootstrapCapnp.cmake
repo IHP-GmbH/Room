@@ -1,6 +1,6 @@
 # Build third_party/capnp-install at configure time when missing.
 
-function(core_bootstrap_capnp capnp_root capnp_include)
+function(core_bootstrap_capnp core_root capnp_root capnp_include)
     if(NOT CORE_BOOTSTRAP_CAPNP)
         return()
     endif()
@@ -44,15 +44,15 @@ function(core_bootstrap_capnp capnp_root capnp_include)
     endif()
 
     if(WIN32)
-        set(_bootstrap_cmd cmd /c "${CMAKE_SOURCE_DIR}/scripts/mkcapnp.cmd")
+        set(_bootstrap_cmd cmd /c "${core_root}/scripts/mkcapnp.cmd")
     else()
-        set(_bootstrap_cmd bash "${CMAKE_SOURCE_DIR}/scripts/mkcapnp.sh")
+        set(_bootstrap_cmd bash "${core_root}/scripts/mkcapnp.sh")
     endif()
 
     if(_env_args)
         execute_process(
             COMMAND ${CMAKE_COMMAND} -E env "${_env_args}" ${_bootstrap_cmd}
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            WORKING_DIRECTORY "${core_root}"
             RESULT_VARIABLE _capnp_bootstrap_result
             OUTPUT_VARIABLE _capnp_bootstrap_out
             ERROR_VARIABLE _capnp_bootstrap_err
@@ -60,7 +60,7 @@ function(core_bootstrap_capnp capnp_root capnp_include)
     else()
         execute_process(
             COMMAND ${_bootstrap_cmd}
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            WORKING_DIRECTORY "${core_root}"
             RESULT_VARIABLE _capnp_bootstrap_result
             OUTPUT_VARIABLE _capnp_bootstrap_out
             ERROR_VARIABLE _capnp_bootstrap_err

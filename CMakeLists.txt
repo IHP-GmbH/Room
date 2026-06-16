@@ -6,17 +6,23 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include("${CMAKE_SOURCE_DIR}/cmake/Coverage.cmake")
+set(CORE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+set(_CORE_TOP_LEVEL "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 
-option(CORE_BOOTSTRAP_CAPNP "Build Cap'n Proto automatically when third_party/capnp-install is missing" ON)
+include("${CORE_ROOT}/cmake/Coverage.cmake")
 
-set(CAPNP_ROOT "${CMAKE_SOURCE_DIR}/third_party/capnp-install" CACHE PATH "Cap'n Proto prefix (bin, include, lib)")
+option(CORE_BOOTSTRAP_CAPNP "Build Cap'n Proto automatically when capnp-install is missing" ON)
+option(CORE_BUILD_EXAMPLES "Build CORE example command-line tools" ON)
+
+if(NOT DEFINED CAPNP_ROOT)
+    set(CAPNP_ROOT "${CORE_ROOT}/third_party/capnp-install" CACHE PATH "Cap'n Proto prefix (bin, include, lib)")
+endif()
 set(CAPNP_BIN "${CAPNP_ROOT}/bin")
 set(CAPNP_INCLUDE "${CAPNP_ROOT}/include")
 set(CAPNP_LIB "${CAPNP_ROOT}/lib")
 
-include("${CMAKE_SOURCE_DIR}/cmake/BootstrapCapnp.cmake")
-core_bootstrap_capnp("${CAPNP_ROOT}" "${CAPNP_INCLUDE}")
+include("${CORE_ROOT}/cmake/BootstrapCapnp.cmake")
+core_bootstrap_capnp("${CORE_ROOT}" "${CAPNP_ROOT}" "${CAPNP_INCLUDE}")
 
 if(NOT EXISTS "${CAPNP_INCLUDE}/capnp/message.h")
     message(FATAL_ERROR
@@ -32,8 +38,8 @@ find_program(CAPNPC_CXX_EXECUTABLE capnpc-c++ PATHS "${CAPNP_BIN}" NO_DEFAULT_PA
 find_library(CAPNP_LIBRARY capnp PATHS "${CAPNP_LIB}" NO_DEFAULT_PATH REQUIRED)
 find_library(KJ_LIBRARY kj PATHS "${CAPNP_LIB}" NO_DEFAULT_PATH REQUIRED)
 
-set(SCHEMA_DIR "${CMAKE_SOURCE_DIR}/schema")
-set(GEN_DIR "${CMAKE_BINARY_DIR}/generated")
+set(SCHEMA_DIR "${CORE_ROOT}/schema")
+set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${SCHEMA_DIR}/*.capnp")
 
@@ -81,9 +87,10 @@ set(CORE_SOURCES
 )
 
 add_library(core STATIC ${CORE_SOURCES})
+set_target_properties(core PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 
 target_include_directories(core PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>"
+    "$<BUILD_INTERFACE:${CORE_ROOT}/src>"
     "$<BUILD_INTERFACE:${GEN_DIR}>"
     "$<BUILD_INTERFACE:${CAPNP_INCLUDE}>"
     "$<INSTALL_INTERFACE:include/CORE/src>"
@@ -99,44 +106,58 @@ add_library(core_utils STATIC
     utils/qucs_exporter.cpp
     utils/text_dump.cpp
 )
+set_target_properties(core_utils PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 
 target_include_directories(core_utils PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/utils>"
+    "$<BUILD_INTERFACE:${CORE_ROOT}/utils>"
     "$<INSTALL_INTERFACE:include/CORE/utils>"
 )
 
 target_link_libraries(core_utils PUBLIC core)
 
-add_executable(gds_to_core examples/gds_to_core/main.cpp)
-target_link_libraries(gds_to_core PRIVATE core_utils)
+if(NOT TARGET CORE::core)
+    add_library(CORE::core ALIAS core)
+endif()
+if(NOT TARGET CORE::core_utils)
+    add_library(CORE::core_utils ALIAS core_utils)
+endif()
 
-add_executable(core_to_gds examples/core_to_gds/main.cpp)
-target_link_libraries(core_to_gds PRIVATE core_utils)
+if(CORE_BUILD_EXAMPLES)
+    add_executable(gds_to_core examples/gds_to_core/main.cpp)
+    target_link_libraries(gds_to_core PRIVATE core_utils)
 
-add_executable(qucs_to_core examples/qucs_to_core/main.cpp)
-target_link_libraries(qucs_to_core PRIVATE core_utils)
+    add_executable(core_to_gds examples/core_to_gds/main.cpp)
+    target_link_libraries(core_to_gds PRIVATE core_utils)
 
-add_executable(make_sample_gds tools/make_sample_gds.cpp)
+    add_executable(qucs_to_core examples/qucs_to_core/main.cpp)
+    target_link_libraries(qucs_to_core PRIVATE core_utils)
 
-install(TARGETS core core_utils EXPORT CORETargets
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin)
+    add_executable(make_sample_gds tools/make_sample_gds.cpp)
+endif()
 
-install(TARGETS gds_to_core core_to_gds qucs_to_core make_sample_gds
-        RUNTIME DESTINATION bin)
+if(_CORE_TOP_LEVEL)
+    install(TARGETS core core_utils EXPORT CORETargets
+            ARCHIVE DESTINATION lib
+            LIBRARY DESTINATION lib
+            RUNTIME DESTINATION bin)
 
-install(DIRECTORY src/ DESTINATION include/CORE/src FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY utils/ DESTINATION include/CORE/utils FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY "${GEN_DIR}/" DESTINATION include/CORE/generated
-        FILES_MATCHING PATTERN "*.h")
+    if(CORE_BUILD_EXAMPLES)
+        install(TARGETS gds_to_core core_to_gds qucs_to_core make_sample_gds
+                RUNTIME DESTINATION bin)
+    endif()
 
-install(EXPORT CORETargets
-        FILE CORETargets.cmake
-        NAMESPACE CORE::
-        DESTINATION lib/cmake/CORE)
+    install(DIRECTORY src/ DESTINATION include/CORE/src FILES_MATCHING PATTERN "*.h")
+    install(DIRECTORY utils/ DESTINATION include/CORE/utils FILES_MATCHING PATTERN "*.h")
+    install(DIRECTORY "${GEN_DIR}/" DESTINATION include/CORE/generated
+            FILES_MATCHING PATTERN "*.h")
 
-install(FILES cmake/COREConfig.cmake
-        DESTINATION lib/cmake/CORE)
+    install(EXPORT CORETargets
+            FILE CORETargets.cmake
+            NAMESPACE CORE::
+            DESTINATION lib/cmake/CORE)
 
-include("${CMAKE_SOURCE_DIR}/cmake/Tests.cmake")
+    install(FILES cmake/COREConfig.cmake
+            DESTINATION lib/cmake/CORE)
+endif()
+
+include("${CORE_ROOT}/cmake/Tests.cmake")
