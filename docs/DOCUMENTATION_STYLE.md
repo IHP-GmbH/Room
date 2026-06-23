@@ -32,10 +32,11 @@ Each function documents:
 
 | Item | Convention |
 |------|------------|
-| File | `docs/html/<lowercase>.html` (`database.html`, `shape.html`) |
+| File | `docs/html/<lowercase>.html` (`database.html`, `shape.html`, `filesummary.html`, `xschemimporter.html`) |
 | Title tag | `Database Class \| CORE Core \| CORE` |
 | Namespace in prose | `core::Database` |
 | Header path | `#include "database.h"` (from `src/`) |
+| Punctuation | Prefer HTML entities in HTML (`&middot;`, `&mdash;`, `&rarr;`, `-&gt;` in diagrams) so pages render on all Windows browsers without mojibake |
 
 ## Template
 

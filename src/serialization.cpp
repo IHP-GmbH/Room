@@ -8,9 +8,14 @@
 
 #include "serialization.h"
 
+#include "source_info.h"
+#include "file_summary.h"
+
 #include "compact_codec.h"
 #include "layer_utils.h"
 #include "lib_index.h"
+
+#include <cmath>
 
 #include <database.capnp.h>
 #include <design.capnp.h>
@@ -259,6 +264,18 @@ void writeShape(schema::Shape::Builder b, const Shape &shape)
         tb.setHeight(t.height);
         break;
     }
+    case Shape::Type::Arc: {
+        const auto &a = *shape.arc();
+        auto ab = b.initArc();
+        ab.setCenterX(static_cast<double>(a.center.x) / 1000.0);
+        ab.setCenterY(static_cast<double>(a.center.y) / 1000.0);
+        ab.setRadius(a.radius);
+        ab.setStartAngle(a.startAngle);
+        ab.setEndAngle(a.endAngle);
+        ab.setWidth(a.width);
+        ab.setLayerId(a.layerId);
+        break;
+    }
     }
     writeProperties(b.initProperties(shape.properties().size()), shape.properties());
 }
@@ -307,6 +324,19 @@ Shape readShape(schema::Shape::Reader r)
         data.text = tr.getText().cStr();
         data.layerId = tr.getLayerId();
         data.height = tr.getHeight();
+        shape = Shape(data);
+        break;
+    }
+    case schema::Shape::ARC: {
+        const auto ar = r.getArc();
+        Shape::ArcData data;
+        data.center = Point{static_cast<std::int64_t>(std::llround(ar.getCenterX() * 1000.0)),
+                            static_cast<std::int64_t>(std::llround(ar.getCenterY() * 1000.0))};
+        data.radius = ar.getRadius();
+        data.startAngle = ar.getStartAngle();
+        data.endAngle = ar.getEndAngle();
+        data.width = ar.getWidth();
+        data.layerId = ar.getLayerId();
         shape = Shape(data);
         break;
     }
@@ -507,7 +537,15 @@ void writeCellContent(schema::CellContent::Builder b,
 {
     b.setViewType(toSchemaViewType(content.viewType()));
     b.setDbuPerMicron(content.dbuPerMicron());
-    writeProperties(b.initProperties(content.properties().size()), content.properties());
+    std::vector<Property> properties = content.properties();
+    appendSourceInfoProperties(content.sourceInfo(), properties);
+    writeProperties(b.initProperties(properties.size()), properties);
+    if (content.hasOpaquePayload()) {
+        auto opaque = b.initPayload().initOpaque();
+        opaque.setMimeType(content.opaqueMimeType());
+        opaque.setData(kj::arrayPtr(content.opaqueData().data(), content.opaqueData().size()));
+        return;
+    }
     const std::vector<LayerSpec> viewLayers = layersForSerialization(content, libLayers);
     writeViewPayload(b.initPayload(), content.viewType(), viewLayers, content.block(), compactGeometry);
 }
@@ -516,6 +554,7 @@ CellContent readCellContent(schema::CellContent::Reader r)
 {
     CellContent content(fromSchemaViewType(r.getViewType()), r.getDbuPerMicron());
     content.properties() = readProperties(r.getProperties());
+    content.sourceInfo() = extractSourceInfo(content.properties());
 
     const auto payload = r.getPayload();
     switch (payload.which()) {
@@ -541,6 +580,13 @@ CellContent readCellContent(schema::CellContent::Reader r)
         const auto abstract = payload.getAbstract();
         content.layers() = readViewLayers(abstract);
         content.block() = readViewTopology(abstract);
+        break;
+    }
+    case schema::ViewPayload::OPAQUE: {
+        const auto opaque = payload.getOpaque();
+        const auto data = opaque.getData();
+        content.setOpaquePayload(opaque.getMimeType().cStr(),
+                                 std::vector<std::uint8_t>(data.begin(), data.end()));
         break;
     }
     default:
@@ -635,6 +681,7 @@ void writeDatabase(schema::Database::Builder root, const Database &db, SaveOptio
     root.setVersion(db.version());
     root.setGenerator(db.generator());
     root.setTechnology(db.technology());
+    writeFileSummary(root.initSummary(), db.fileSummary());
 
     auto libBuilder = root.initLib();
     libBuilder.setName(db.lib().name());
@@ -682,6 +729,10 @@ Database readDatabase(schema::Database::Reader root)
     db.setVersion(root.getVersion().cStr());
     db.setGenerator(root.getGenerator().cStr());
     db.setTechnology(root.getTechnology().cStr());
+    if (root.hasSummary()) {
+        db.setFileSummary(readFileSummary(root.getSummary()));
+        db.setFileView(db.fileSummary().view);
+    }
 
     const auto libReader = root.getLib();
     db.lib() = Lib(libReader.getName().cStr());
@@ -711,8 +762,19 @@ Database readDatabase(schema::Database::Reader root)
     const auto indexReader = libReader.getIndex();
     if (indexReader.getEntries().size() > 0) {
         db.lib().setIndex(readLibIndex(indexReader));
-    } else {
-        db.lib().refreshIndex();
+    }
+
+    const ViewType indexView = db.fileView();
+    db.lib().refreshIndex(indexView);
+
+    if (!root.hasSummary()) {
+        ViewType detected = ViewType::Layout;
+        for (const Cell &cell : db.lib().cells()) {
+            for (const CellContent &content : cell.contents()) {
+                detected = content.viewType();
+            }
+        }
+        db.setFileSummary(FileSummary::fromLib(db.lib(), detected));
     }
 
     return db;

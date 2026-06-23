@@ -7,6 +7,8 @@
 
 #include "cell_content.h"
 #include "enums.h"
+#include "layer_spec.h"
+#include "shape.h"
 
 #include <fstream>
 #include <sstream>
@@ -73,25 +75,24 @@ std::string quote(const std::string &value)
 
 std::string formatComponentLine(const Instance &inst)
 {
-    const std::string type = findProperty(inst.properties(), "qucs.type") ? *findProperty(inst.properties(), "qucs.type")
-                                                                          : inst.cellName();
-    const std::string instName = findProperty(inst.properties(), "qucs.instName") ? *findProperty(inst.properties(), "qucs.instName")
-                                                                                  : inst.cellName();
-    const int active = findProperty(inst.properties(), "qucs.active") ? std::stoi(*findProperty(inst.properties(), "qucs.active")) : 1;
-    const std::int64_t textX = findProperty(inst.properties(), "qucs.textX") ? std::stoll(*findProperty(inst.properties(), "qucs.textX")) : 0;
-    const std::int64_t textY = findProperty(inst.properties(), "qucs.textY") ? std::stoll(*findProperty(inst.properties(), "qucs.textY")) : 0;
-    const int mirror = findProperty(inst.properties(), "qucs.mirror") ? std::stoi(*findProperty(inst.properties(), "qucs.mirror"))
-                                                                      : orientToQucsMirror(inst.transform().orient);
-    const int rotate = findProperty(inst.properties(), "qucs.rotate") ? std::stoi(*findProperty(inst.properties(), "qucs.rotate"))
-                                                                      : orientToQucsRotate(inst.transform().orient);
+    const std::string type = inst.cellName();
+    const std::string instName = findProperty(inst.properties(), "name") ? *findProperty(inst.properties(), "name")
+                                                                         : inst.cellName();
+    const int active = findProperty(inst.properties(), "active") ? std::stoi(*findProperty(inst.properties(), "active")) : 1;
+    const std::int64_t textX = findProperty(inst.properties(), "textX") ? std::stoll(*findProperty(inst.properties(), "textX")) : 0;
+    const std::int64_t textY = findProperty(inst.properties(), "textY") ? std::stoll(*findProperty(inst.properties(), "textY")) : 0;
+    const int mirror = findProperty(inst.properties(), "mirror") ? std::stoi(*findProperty(inst.properties(), "mirror"))
+                                                                    : orientToQucsMirror(inst.transform().orient);
+    const int rotate = findProperty(inst.properties(), "rotate") ? std::stoi(*findProperty(inst.properties(), "rotate"))
+                                                                  : orientToQucsRotate(inst.transform().orient);
 
     std::ostringstream oss;
     oss << '<' << type << ' ' << instName << ' ' << active << ' ' << inst.transform().x << ' ' << inst.transform().y
         << ' ' << textX << ' ' << textY << ' ' << mirror << ' ' << rotate;
 
     for (std::size_t i = 0;; ++i) {
-        const std::string propKey = "qucs.prop." + std::to_string(i);
-        const std::string visKey = "qucs.vis." + std::to_string(i);
+        const std::string propKey = "param." + std::to_string(i);
+        const std::string visKey = "visible." + std::to_string(i);
         const std::string *prop = findProperty(inst.properties(), propKey);
         const std::string *vis = findProperty(inst.properties(), visKey);
         if (!prop || !vis) {
@@ -104,11 +105,11 @@ std::string formatComponentLine(const Instance &inst)
 }
 
 void appendWireSegment(std::vector<std::string> &lines, const Point &a, const Point &b, const std::string &label,
-                       std::int64_t labelX, std::int64_t labelY, std::int64_t dist)
+                       std::int64_t labelX, std::int64_t labelY, std::int64_t dist, const std::string &nodeSet = "")
 {
     std::ostringstream oss;
     oss << '<' << a.x << ' ' << a.y << ' ' << b.x << ' ' << b.y << ' ' << quote(label) << ' ' << labelX << ' '
-        << labelY << ' ' << dist << " \"\">";
+        << labelY << ' ' << dist << ' ' << quote(nodeSet) << '>';
     lines.push_back(oss.str());
 }
 
@@ -125,18 +126,35 @@ void connectPoints(std::vector<std::string> &lines, const Point &a, const Point 
     appendWireSegment(lines, {b.x, a.y}, b, "", 0, 0, 0);
 }
 
-std::vector<std::string> formatWiresFromNets(const Block &block, const std::vector<Property> &contentProps)
+std::vector<std::string> formatWiresFromBlock(const Block &block, const std::vector<LayerSpec> &layers)
 {
-    const auto stored = collectProperties(contentProps, "qucs.wire");
-    if (!stored.empty()) {
-        std::vector<std::string> lines;
-        for (const std::string &wire : stored) {
-            lines.push_back('<' + wire + '>');
+    std::vector<std::string> lines;
+    for (const Shape &shape : block.shapes()) {
+        if (shape.type() != Shape::Type::Path) {
+            continue;
         }
+        const Shape::PathData *path = shape.path();
+        if (path == nullptr || path->points.size() < 2) {
+            continue;
+        }
+        const LayerSpec *layer = nullptr;
+        if (path->layerId < layers.size()) {
+            layer = &layers[path->layerId];
+        }
+        if (layer != nullptr && layer->purpose != LayerPurpose::Wire) {
+            continue;
+        }
+        const std::string label = findProperty(shape.properties(), "label") ? *findProperty(shape.properties(), "label") : "";
+        const std::int64_t labelX = findProperty(shape.properties(), "labelX") ? std::stoll(*findProperty(shape.properties(), "labelX")) : 0;
+        const std::int64_t labelY = findProperty(shape.properties(), "labelY") ? std::stoll(*findProperty(shape.properties(), "labelY")) : 0;
+        const std::int64_t dist = findProperty(shape.properties(), "dist") ? std::stoll(*findProperty(shape.properties(), "dist")) : 0;
+        const std::string nodeSet = findProperty(shape.properties(), "nodeSet") ? *findProperty(shape.properties(), "nodeSet") : "";
+        appendWireSegment(lines, path->points[0], path->points[1], label, labelX, labelY, dist, nodeSet);
+    }
+    if (!lines.empty()) {
         return lines;
     }
 
-    std::vector<std::string> lines;
     for (const Net &net : block.nets()) {
         if (net.terms().empty()) {
             continue;
@@ -203,14 +221,16 @@ void QucsExporter::exportCell(const Database &db, const std::string &cellName, c
         return;
     }
 
-    const auto headers = collectProperties(content->properties(), "qucs.header");
+    const auto headers = collectProperties(content->properties(), "schematic.header");
     if (!headers.empty()) {
         out << headers.front() << '\n';
+    } else if (!content->sourceInfo().toolVersion().empty()) {
+        out << "<Qucs Schematic " << content->sourceInfo().toolVersion() << ">\n";
     } else {
         out << "<Qucs Schematic " << m_options.qucsVersion << ">\n";
     }
 
-    auto propertyLines = collectProperties(content->properties(), "qucs.properties");
+    auto propertyLines = collectProperties(content->properties(), "schematic.view");
     if (propertyLines.empty()) {
         propertyLines = {"<View=0,0,800,600,1,0,0>", "<Grid=10,10,1>"};
     }
@@ -226,10 +246,10 @@ void QucsExporter::exportCell(const Database &db, const std::string &cellName, c
             continue;
         }
         if (std::string(sectionName) == "Wires") {
-            writeSection(out, "Wires", formatWiresFromNets(content->block(), content->properties()));
+            writeSection(out, "Wires", formatWiresFromBlock(content->block(), content->layers()));
             continue;
         }
-        writeSection(out, sectionName, collectProperties(content->properties(), std::string("qucs.section.") + sectionName));
+        writeSection(out, sectionName, collectProperties(content->properties(), std::string("section.") + sectionName));
     }
 }
 

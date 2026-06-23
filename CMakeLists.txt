@@ -13,6 +13,11 @@ include("${CORE_ROOT}/cmake/Coverage.cmake")
 
 option(CORE_BOOTSTRAP_CAPNP "Build Cap'n Proto automatically when capnp-install is missing" ON)
 option(CORE_BUILD_EXAMPLES "Build CORE example command-line tools" ON)
+option(CORE_BUILD_XSCHEM_TCL "Build Tcl extension (coretcl.so) for in-process Xschem integration" OFF)
+
+if(CORE_BUILD_XSCHEM_TCL)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
 
 if(NOT DEFINED CAPNP_ROOT)
     set(CAPNP_ROOT "${CORE_ROOT}/third_party/capnp-install" CACHE PATH "Cap'n Proto prefix (bin, include, lib)")
@@ -75,11 +80,14 @@ set(CORE_SOURCES
     src/net.cpp
     src/block.cpp
     src/cell_content.cpp
+    src/source_info.cpp
     src/cell.cpp
     src/layer_utils.cpp
     src/lib.cpp
     src/lib_index.cpp
     src/database.cpp
+    src/file_summary.cpp
+    src/core_paths.cpp
     src/serialization.cpp
     src/compact_codec.cpp
     src/varint_codec.cpp
@@ -104,6 +112,11 @@ add_library(core_utils STATIC
     utils/gds_exporter.cpp
     utils/qucs_importer.cpp
     utils/qucs_exporter.cpp
+    utils/xschem_format.cpp
+    utils/xschem_io.cpp
+    utils/xschem_importer.cpp
+    utils/xschem_exporter.cpp
+    utils/xschem_bridge.cpp
     utils/text_dump.cpp
 )
 set_target_properties(core_utils PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
@@ -132,8 +145,17 @@ if(CORE_BUILD_EXAMPLES)
     add_executable(qucs_to_core examples/qucs_to_core/main.cpp)
     target_link_libraries(qucs_to_core PRIVATE core_utils)
 
+    add_executable(xschem_to_core examples/xschem_to_core/main.cpp)
+    target_link_libraries(xschem_to_core PRIVATE core_utils)
+
+    add_executable(core_to_xschem examples/core_to_xschem/main.cpp)
+    target_link_libraries(core_to_xschem PRIVATE core_utils)
+
     add_executable(make_sample_gds tools/make_sample_gds.cpp)
 endif()
+
+add_executable(make_empty_core_views tools/make_empty_core_views.cpp)
+target_link_libraries(make_empty_core_views PRIVATE core)
 
 if(_CORE_TOP_LEVEL)
     install(TARGETS core core_utils EXPORT CORETargets
@@ -142,7 +164,7 @@ if(_CORE_TOP_LEVEL)
             RUNTIME DESTINATION bin)
 
     if(CORE_BUILD_EXAMPLES)
-        install(TARGETS gds_to_core core_to_gds qucs_to_core make_sample_gds
+        install(TARGETS gds_to_core core_to_gds qucs_to_core xschem_to_core core_to_xschem make_sample_gds
                 RUNTIME DESTINATION bin)
     endif()
 
@@ -161,3 +183,7 @@ if(_CORE_TOP_LEVEL)
 endif()
 
 include("${CORE_ROOT}/cmake/Tests.cmake")
+
+if(CORE_BUILD_XSCHEM_TCL)
+    add_subdirectory(integrations/xschem_tcl)
+endif()

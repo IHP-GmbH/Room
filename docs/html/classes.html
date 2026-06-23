@@ -45,11 +45,20 @@
         <li><a href="net.html">Net</a></li>
         <li><a href="term.html">Term</a></li>
       </ul>
+      <h3>Core (metadata)</h3>
+      <ul>
+        <li><a href="sourceinfo.html">SourceInfo</a></li>
+        <li><a href="filesummary.html">File summary / sniff</a></li>
+        <li><a href="corepaths.html">CORE path helpers</a></li>
+      </ul>
       <h3>Utilities</h3>
       <ul>
         <li><a href="gdsimporter.html">GdsImporter</a></li>
         <li><a href="qucsimporter.html">QucsImporter</a></li>
         <li><a href="qucsexporter.html">QucsExporter</a></li>
+        <li><a href="xschemimporter.html">XschemImporter</a></li>
+        <li><a href="xschemexporter.html">XschemExporter</a></li>
+        <li><a href="xschembriage.html">xschem_bridge</a></li>
         <li><a href="textdumper.html">TextDumper</a></li>
       </ul>
     </aside>
@@ -84,6 +93,14 @@
         <tr><td><a href="instance.html">Instance</a></td><td>src/instance.h</td><td>Child cell placement</td></tr>
         <tr><td><a href="net.html">Net</a></td><td>src/net.h</td><td>Schematic net</td></tr>
         <tr><td><a href="term.html">Term</a></td><td>src/term.h</td><td>Net terminal (pin)</td></tr>
+        <tr><td><a href="sourceinfo.html">SourceInfo</a></td><td>src/source_info.h</td><td>Tool provenance on <code>CellContent</code></td></tr>
+      </table>
+
+      <h2>File metadata <span class="tag tag-class">struct / function</span></h2>
+      <table class="members">
+        <tr><th>Name</th><th>Header</th><th>Description</th></tr>
+        <tr><td><a href="filesummary.html">FileSummary / CoreFileInfo</a></td><td>src/file_summary.h</td><td>Denormalized header; <code>sniffCoreFile()</code></td></tr>
+        <tr><td><a href="corepaths.html">CORE path helpers</a></td><td>src/core_paths.h</td><td><code>cell.view.core</code> naming and parsing</td></tr>
       </table>
 
       <h2>Utilities</h2>
@@ -92,6 +109,9 @@
         <tr><td><a href="gdsimporter.html">GdsImporter</a></td><td>utils/gds_importer.h</td><td>GDSII layout import</td></tr>
         <tr><td><a href="qucsimporter.html">QucsImporter</a></td><td>utils/qucs_importer.h</td><td>Qucs schematic import</td></tr>
         <tr><td><a href="qucsexporter.html">QucsExporter</a></td><td>utils/qucs_exporter.h</td><td>Qucs schematic export</td></tr>
+        <tr><td><a href="xschemimporter.html">XschemImporter</a></td><td>utils/xschem_importer.h</td><td>Xschem .sch/.sym import</td></tr>
+        <tr><td><a href="xschemexporter.html">XschemExporter</a></td><td>utils/xschem_exporter.h</td><td>Xschem export</td></tr>
+        <tr><td><a href="xschembriage.html">xschem_bridge</a></td><td>utils/xschem_bridge.h</td><td>File API for Xschem Tcl / coretcl.so</td></tr>
         <tr><td><a href="textdumper.html">TextDumper</a></td><td>utils/text_dump.h</td><td>Human-readable database dump</td></tr>
       </table>
     </main>

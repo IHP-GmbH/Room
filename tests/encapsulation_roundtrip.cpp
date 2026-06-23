@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     cell.pCell().parameters().push_back({"h", "2.0"});
 
     original.setVersion("1.0");
-    original.saveToFile(corePath);
+    original.saveToFile(corePath, core::ViewType::Layout);
 
     const core::Database reloaded = core::Database::loadFromFile(corePath);
     const core::Cell *reloadedCell = reloaded.lib().findCell(cell.name());

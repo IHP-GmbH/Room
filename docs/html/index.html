@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CORE — Documentation</title>
+  <title>CORE &mdash; Documentation</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,6 +23,7 @@
         <li><a href="index.html" class="active">Overview</a></li>
         <li><a href="example.html">GDS import example</a></li>
         <li><a href="example_qucs.html">Qucs import example</a></li>
+        <li><a href="example_xschem.html">Xschem import example</a></li>
         <li><a href="classes.html">Class index</a></li>
       </ul>
       <h3>Types</h3>
@@ -45,22 +46,28 @@
         <li><a href="instance.html">Instance</a></li>
         <li><a href="net.html">Net</a></li>
         <li><a href="term.html">Term</a></li>
+        <li><a href="sourceinfo.html">SourceInfo</a></li>
+        <li><a href="filesummary.html">File summary / sniff</a></li>
+        <li><a href="corepaths.html">CORE paths</a></li>
       </ul>
       <h3>Utilities</h3>
       <ul>
         <li><a href="gdsimporter.html">GdsImporter</a></li>
         <li><a href="qucsimporter.html">QucsImporter</a></li>
         <li><a href="qucsexporter.html">QucsExporter</a></li>
+        <li><a href="xschemimporter.html">XschemImporter</a></li>
+        <li><a href="xschemexporter.html">XschemExporter</a></li>
+        <li><a href="xschembriage.html">xschem_bridge</a></li>
         <li><a href="textdumper.html">TextDumper</a></li>
       </ul>
     </aside>
 
     <main class="content">
       <h1>CORE</h1>
-      <p class="subtitle">Common Open Repository for EDA · Cap'n Proto · C++17</p>
+      <p class="subtitle">Common Open Repository for EDA &middot; Cap'n Proto &middot; C++17</p>
 
       <p>
-        CORE — Common Open Repository for EDA — is a teaching and application API
+        CORE &mdash; Common Open Repository for EDA &mdash; is a teaching and application API
         (<code>core::</code>) for storing chip design topology: libraries, cells, layers,
         shapes, instances, and nets. Layout and schematic data share one model; the view kind
         (<code>layout</code>, <code>schematic</code>, <code>symbol</code>, <code>abstract</code>)
@@ -77,22 +84,22 @@
       </p>
 
       <h2>Data hierarchy</h2>
-      <p>On disk (<code>.core</code>, format v1.0), each view stores geometry in <code>CellContent.payload</code> — not a top-level <code>block</code> field. The C++ API exposes the same topology via <code>CellContent::block()</code>.</p>
+      <p>On disk (<code>.core</code>, format v1.0), each view stores geometry in <code>CellContent.payload</code> &mdash; not a top-level <code>block</code> field. The C++ API exposes the same topology via <code>CellContent::block()</code>.</p>
       <div class="diagram">Database
  +-- Lib
-      +-- layers[]              ? LayerSpec table (library-global)
-      +-- index                 ? LibIndex (derived, persisted)
+      +-- layers[]              -&gt; LayerSpec table (library-global)
+      +-- index                 -&gt; LibIndex (derived, persisted)
       +-- Cell[]
-           +-- CellContent[]    ? viewType, dbuPerMicron, properties
-                +-- payload      ? ViewPayload (on disk)
+           +-- CellContent[]    -&gt; viewType, dbuPerMicron, properties
+                +-- payload      -&gt; ViewPayload (on disk)
                      +-- layout | schematic | symbol | abstract
-                     ¦    +-- layers[]   (per-view on disk)
-                     ¦    +-- block      ? Shape[], Instance[], Net[]
+                     |    +-- layers[]   (per-view on disk)
+                     |    +-- block      -&gt; Shape[], Instance[], Net[]
                      +-- opaque         (unknown / future views)</div>
       <p>Format v1.0 stores only <code>payload</code> on <code>CellContent</code> (no legacy top-level <code>block</code> field).</p>
 
       <h2>Quick start (VS Code)</h2>
-      <p><code>Ctrl+Shift+B</code> ? Example: Build &amp; Run Full Demo</p>
+      <p><code>Ctrl+Shift+B</code> &rarr; Example: Build &amp; Run Full Demo</p>
       <p>Or build static libraries only: Build: Static Libraries (.a)</p>
 
       <h2>Quick start (command line)</h2>
@@ -129,31 +136,47 @@ cmake --build build
         <li><a href="instance.html">core::Instance</a></li>
         <li><a href="net.html">core::Net</a></li>
         <li><a href="term.html">core::Term</a></li>
+        <li><a href="sourceinfo.html">core::SourceInfo</a></li>
+        <li><a href="filesummary.html">sniffCoreFile / FileSummary</a></li>
+        <li><a href="corepaths.html">CORE path helpers</a></li>
         <li><a href="gdsimporter.html">core::GdsImporter</a></li>
         <li><a href="qucsimporter.html">core::QucsImporter</a></li>
         <li><a href="qucsexporter.html">core::QucsExporter</a></li>
+        <li><a href="xschemimporter.html">core::XschemImporter</a></li>
+        <li><a href="xschemexporter.html">core::XschemExporter</a></li>
+        <li><a href="xschembriage.html">core::xschem_bridge</a></li>
         <li><a href="textdumper.html">core::TextDumper</a></li>
       </ul>
 
       <h2>Examples</h2>
       <p>
-        <a href="example.html">GDS layout import</a> ·
-        <a href="example_qucs.html">Qucs schematic import</a>
+        <a href="example.html">GDS layout import</a> &middot;
+        <a href="example_qucs.html">Qucs schematic import</a> &middot;
+        <a href="example_xschem.html">Xschem schematic import</a>
+      </p>
+
+      <h2>Sniff and file naming</h2>
+      <p>
+        <a href="filesummary.html">sniffCoreFile()</a> reads <code>.core</code> headers without geometry.
+        View-specific names: <code>&lt;cell&gt;.schematic.core</code> &mdash; see
+        <a href="corepaths.html">CORE path helpers</a> and
+        <a href="../SNIFF.md">docs/SNIFF.md</a>.
       </p>
 
       <h2>Project layout</h2>
       <table class="members">
         <tr><th>Path</th><th>Purpose</th></tr>
-        <tr><td><code>src/</code></td><td>Core C++ API (Database, Cell, Shape, …)</td></tr>
-        <tr><td><code>src/point.h</code>, <code>box.h</code>, <code>box.cpp</code>, …</td><td>Basic geometry and metadata types</td></tr>
+        <tr><td><code>src/</code></td><td>Core C++ API (Database, Cell, Shape, &hellip;)</td></tr>
+        <tr><td><code>src/point.h</code>, <code>box.h</code>, <code>box.cpp</code>, &hellip;</td><td>Basic geometry and metadata types</td></tr>
         <tr><td><code>src/types.h</code></td><td>Umbrella include for basic types</td></tr>
         <tr><td><code>src/enums.h</code></td><td>ViewType, Orient, SigType, string helpers</td></tr>
-        <tr><td><code>utils/</code></td><td>GdsImporter, QucsImporter, QucsExporter, TextDumper</td></tr>
+        <tr><td><code>utils/</code></td><td>GdsImporter, QucsImporter/Exporter, XschemImporter/Exporter, xschem_bridge, TextDumper</td></tr>
         <tr><td><code>schema/</code></td><td>Cap'n Proto schemas</td></tr>
         <tr><td><code>third_party/capnp-install/</code></td><td>Cap'n Proto compiler and libraries</td></tr>
         <tr><td><code>scripts/mkcapnp.cmd</code></td><td>Optional manual Cap'n Proto build (CMake runs it automatically if needed)</td></tr>
         <tr><td><code>examples/gds_to_core/</code></td><td>GDS import demo</td></tr>
         <tr><td><code>examples/qucs_to_core/</code></td><td>Qucs schematic demo</td></tr>
+        <tr><td><code>examples/xschem_to_core/</code></td><td>Xschem schematic demo</td></tr>
         <tr><td><code>docs/html/</code></td><td>This documentation (<code>logo.svg</code>, <code>CORE-logo.png</code>)</td></tr>
         <tr><td><code>LICENSE</code></td><td>GNU GPL v3.0</td></tr>
       </table>

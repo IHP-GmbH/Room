@@ -1,5 +1,6 @@
 #pragma once
 
+#include "file_summary.h"
 #include "lib.h"
 
 #include <string>
@@ -34,13 +35,23 @@ public:
     Lib &                                               lib() { return m_lib; }
     const Lib &                                         lib() const { return m_lib; }
 
-    void                                                saveToFile(const std::string &path, SaveOptions options = {});
+    ViewType                                            fileView() const { return m_fileView; }
+    void                                                setFileView(ViewType view) { m_fileView = view; }
+
+    const FileSummary &                                 fileSummary() const { return m_fileSummary; }
+    void                                                setFileSummary(FileSummary summary);
+
+    void                                                saveToFile(const std::string &path, ViewType fileView, SaveOptions options = {});
     static Database                                     loadFromFile(const std::string &path);
 
 private:
+    void                                                recomputeFileSummary(ViewType fileView);
+
     std::string                                         m_version = "1.0";
     std::string                                         m_generator;
     std::string                                         m_technology;
+    ViewType                                            m_fileView = ViewType::Layout;
+    FileSummary                                         m_fileSummary;
     Lib                                                 m_lib{"default"};
 };
 

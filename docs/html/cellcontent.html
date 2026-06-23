@@ -56,12 +56,14 @@
         <tr><td><a href="#fn-7">const std::vector&lt;Property&gt; &amp; properties() const</a></td><td>Returns view-level metadata for read-only access.</td></tr>
         <tr><td><a href="#Block">Block &amp; block()</a></td><td>In-memory topology (maps to <code>payload.&lt;view&gt;.block</code> on disk).</td></tr>
         <tr><td><a href="#Block-9">const Block &amp; block() const</a></td><td>Read-only topology (same mapping as above).</td></tr>
+        <tr><td><a href="#sourceInfo">SourceInfo &amp; sourceInfo()</a></td><td>Original tool format/version metadata.</td></tr>
+        <tr><td>layers(), opaque payload accessors</td><td>Per-view layer table; skip-friendly unknown views.</td></tr>
       </table>
 
       <h2 id="details">Detailed Description</h2>
       <p>One view of a <a href="cell.html">Cell</a> (layout, schematic, symbol, or abstract).</p>
       <p><strong>On disk</strong> (<code>.core</code> v1.0), view geometry is stored in <code>payload</code> — a <code>ViewPayload</code> union (<code>schema/views.capnp</code>). The active arm matches <code>viewType</code> (<code>layout</code>, <code>schematic</code>, …) and contains per-view <code>layers[]</code> plus a nested <code>block</code> (shapes, instances, nets).</p>
-      <p><strong>In C++</strong>, use <code>block()</code> as the ergonomic accessor for that nested topology. <a href="database.html">Database::saveToFile()</a> / <code>loadFromFile()</code> map between <code>block()</code> and <code>payload.*.block</code>. Tools that do not understand a view type can copy the <code>opaque</code> arm without decoding geometry.</p>
+      <p><strong>In C++</strong>, use <code>block()</code> as the ergonomic accessor for that nested topology. <a href="sourceinfo.html">SourceInfo</a> records provenance from importers (Xschem, Qucs, GDS). <a href="database.html">Database::saveToFile()</a> / <code>loadFromFile()</code> map between <code>block()</code> and <code>payload.*.block</code>. Tools that do not understand a view type can copy the <code>opaque</code> arm without decoding geometry.</p>
       <p>Layer indices in shapes and terms refer to <code>Lib::layers()</code> at import time; the per-view <code>layers[]</code> inside <code>payload</code> is the serialized copy for that view.</p>
 
       <h2>Member Function Documentation</h2>

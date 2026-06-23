@@ -3,9 +3,9 @@
 using Cxx = import "/capnp/c++.capnp";
 $Cxx.namespace("core::schema");
 
-using Property    = import "common.capnp".Property;
-using ViewType    = import "dm.capnp".ViewType;
-using LayerSpec   = import "dm.capnp".LayerSpec;
+using Property  = import "common.capnp".Property;
+using ViewType  = import "dm.capnp".ViewType;
+using LayerSpec = import "dm.capnp".LayerSpec;
 using ViewPayload = import "views.capnp".ViewPayload;
 using LibIndex    = import "index.capnp".LibIndex;
 
@@ -37,9 +37,17 @@ struct Lib {
   index      @4 :LibIndex;
 }
 
+# Denormalized file header for fast sniffing (LibMan, tools) without reading geometry payloads.
+struct FileSummary {
+  view        @0 :ViewType;
+  cellCount   @1 :UInt32;
+  primaryCell @2 :Text;
+}
+
 struct Database {
   version    @0 :Text;
   generator  @1 :Text;
   technology @2 :Text;
   lib        @3 :Lib;
+  summary    @4 :FileSummary;
 }

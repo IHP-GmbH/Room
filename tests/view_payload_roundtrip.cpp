@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
     if (slash != std::string::npos) {
         ensureDirectory(corePath.substr(0, slash));
     }
-    original.saveToFile(corePath);
+    original.saveToFile(corePath, core::ViewType::Layout);
 
     try {
         verifyPayloadInFile(corePath);

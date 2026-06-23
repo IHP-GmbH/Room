@@ -40,7 +40,7 @@
         <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Core</a> &raquo; C++ Classes &raquo; Shape</p>
 
         <h1 class="title">Shape Class</h1>
-        <p class="brief">Tagged union of layout geometry (rect, polygon, path, text) with optional metadata. <a class="more" href="#details">More…</a></p>
+        <p class="brief">Tagged union of layout and schematic geometry (rect, polygon, path, text, arc) with optional metadata. <a class="more" href="#details">More…</a></p>
 
         <table class="props">
           <tr><th>Header:</th><td><code>#include "shape.h"</code></td></tr>
@@ -51,11 +51,12 @@
 
         <h2 id="public-types">Public Types</h2>
         <table class="memlist">
-          <tr><td class="enum-name">enum class <a href="#type-enum">Type</a></td><td>Discriminator: <code>Rect</code>, <code>Polygon</code>, <code>Path</code>, <code>Text</code>.</td></tr>
+          <tr><td class="enum-name">enum class <a href="#type-enum">Type</a></td><td>Discriminator: <code>Rect</code>, <code>Polygon</code>, <code>Path</code>, <code>Text</code>, <code>Arc</code>.</td></tr>
           <tr><td><a href="#rectdata">struct RectData</a></td><td>Axis-aligned box and <code>layerId</code> (GDS BOX).</td></tr>
           <tr><td><a href="#polygondata">struct PolygonData</a></td><td>Point hull and <code>layerId</code> (GDS BOUNDARY).</td></tr>
           <tr><td><a href="#pathdata">struct PathData</a></td><td>Centerline, width, and <code>layerId</code> (GDS PATH).</td></tr>
           <tr><td><a href="#textdata">struct TextData</a></td><td>Label string, position, height, and <code>layerId</code> (GDS TEXT).</td></tr>
+          <tr><td><a href="#arcdata">struct ArcData</a></td><td>Circular arc (center, radius, angles, width) — used by Xschem wires/pins.</td></tr>
         </table>
 
         <h2 id="public-functions">Public Functions</h2>
@@ -64,11 +65,13 @@
           <tr><td><a href="#Shape-poly">explicit Shape(PolygonData data)</a></td><td>Constructs a polygon shape.</td></tr>
           <tr><td><a href="#Shape-path">explicit Shape(PathData data)</a></td><td>Constructs a path shape.</td></tr>
           <tr><td><a href="#Shape-text">explicit Shape(TextData data)</a></td><td>Constructs a text shape.</td></tr>
+          <tr><td><a href="#Shape-arc">explicit Shape(ArcData data)</a></td><td>Constructs an arc shape.</td></tr>
           <tr><td><a href="#type">Type type() const</a></td><td>Returns the active geometry kind.</td></tr>
           <tr><td><a href="#rect">const RectData * rect() const</a></td><td>Rectangle payload when <code>type() == Rect</code>.</td></tr>
           <tr><td><a href="#polygon">const PolygonData * polygon() const</a></td><td>Polygon payload when <code>type() == Polygon</code>.</td></tr>
           <tr><td><a href="#path">const PathData * path() const</a></td><td>Path payload when <code>type() == Path</code>.</td></tr>
           <tr><td><a href="#text">const TextData * text() const</a></td><td>Text payload when <code>type() == Text</code>.</td></tr>
+          <tr><td><a href="#arc">const ArcData * arc() const</a></td><td>Arc payload when <code>type() == Arc</code>.</td></tr>
           <tr><td><a href="#properties">std::vector&lt;Property&gt; &amp; properties()</a></td><td>Shape metadata for modification.</td></tr>
           <tr><td><a href="#properties-const">const std::vector&lt;Property&gt; &amp; properties() const</a></td><td>Shape metadata for read-only access.</td></tr>
         </table>
@@ -80,13 +83,14 @@
         <h2>Member Type Documentation</h2>
 
         <div class="fn-block" id="type-enum">
-          <h3 class="fn-title">enum class Type { Rect, Polygon, Path, Text }</h3>
+          <h3 class="fn-title">enum class Type { Rect, Polygon, Path, Text, Arc }</h3>
           <table class="members">
-            <tr><th>Value</th><th>GDS record</th><th>Accessor</th></tr>
-            <tr><td><code>Rect</code></td><td>BOX</td><td><code>rect()</code></td></tr>
-            <tr><td><code>Polygon</code></td><td>BOUNDARY</td><td><code>polygon()</code></td></tr>
-            <tr><td><code>Path</code></td><td>PATH</td><td><code>path()</code></td></tr>
-            <tr><td><code>Text</code></td><td>TEXT</td><td><code>text()</code></td></tr>
+            <tr><th>Value</th><th>Source</th><th>Accessor</th></tr>
+            <tr><td><code>Rect</code></td><td>GDS BOX</td><td><code>rect()</code></td></tr>
+            <tr><td><code>Polygon</code></td><td>GDS BOUNDARY</td><td><code>polygon()</code></td></tr>
+            <tr><td><code>Path</code></td><td>GDS PATH</td><td><code>path()</code></td></tr>
+            <tr><td><code>Text</code></td><td>GDS TEXT</td><td><code>text()</code></td></tr>
+            <tr><td><code>Arc</code></td><td>Xschem / schematic</td><td><code>arc()</code></td></tr>
           </table>
         </div>
 
@@ -108,6 +112,11 @@
         <div class="fn-block" id="textdata">
           <h3 class="fn-title">struct TextData { Point position; std::string text; std::uint32_t layerId; std::uint32_t height; }</h3>
           <p class="fn-desc">Text anchor, string payload, layer index, and character height in DBU.</p>
+        </div>
+
+        <div class="fn-block" id="arcdata">
+          <h3 class="fn-title">struct ArcData { Point center; double radius; double startAngle; double endAngle; std::uint32_t width; std::uint32_t layerId; }</h3>
+          <p class="fn-desc">Circular arc in DBU. Angles in degrees; <code>width</code> is stroke width for schematic wires.</p>
         </div>
 
         <h2>Member Function Documentation</h2>
@@ -139,7 +148,7 @@
         <div class="fn-block" id="type">
           <h3 class="fn-title">Type type() const</h3>
           <p class="fn-desc">Returns which geometry variant is stored.</p>
-          <p class="fn-returns"><strong>Returns:</strong> One of <code>Type::Rect</code>, <code>Polygon</code>, <code>Path</code>, or <code>Text</code>.</p>
+          <p class="fn-returns"><strong>Returns:</strong> One of <code>Type::Rect</code>, <code>Polygon</code>, <code>Path</code>, <code>Text</code>, or <code>Arc</code>.</p>
         </div>
 
         <div class="fn-block" id="rect">
@@ -184,6 +193,7 @@
           <tr><td><code>PolygonData m_polygon</code></td><td>Storage when type is <code>Polygon</code>.</td></tr>
           <tr><td><code>PathData m_path</code></td><td>Storage when type is <code>Path</code>.</td></tr>
           <tr><td><code>TextData m_text</code></td><td>Storage when type is <code>Text</code>.</td></tr>
+          <tr><td><code>ArcData m_arc</code></td><td>Storage when type is <code>Arc</code>.</td></tr>
           <tr><td><code>std::vector&lt;Property&gt; m_properties</code></td><td>Attached metadata.</td></tr>
         </table>
 

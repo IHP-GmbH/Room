@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
     db.setGenerator("CORE gds_to_core");
     db.setTechnology("sg13g2");
 
-    db.saveToFile(corePath);
+    db.saveToFile(corePath, core::ViewType::Layout);
     std::cout << "Saved CORE file: " << corePath << "\n";
     if (!cellName.empty()) {
         std::cout << "  cell: " << cellName << "\n";

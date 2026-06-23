@@ -13,7 +13,7 @@ namespace core {
  *****************************************************************************************/
 class Shape {
 public:
-    enum class Type { Rect, Polygon, Path, Text };
+    enum class Type { Rect, Polygon, Path, Text, Arc };
 
     struct RectData {
         Box box;
@@ -34,17 +34,27 @@ public:
         std::uint32_t layerId = 0;
         std::uint32_t height = 0;
     };
+    struct ArcData {
+        Point center;
+        double radius = 0.0;
+        double startAngle = 0.0;
+        double endAngle = 0.0;
+        std::uint32_t width = 0;
+        std::uint32_t layerId = 0;
+    };
 
     explicit Shape(RectData data);
     explicit Shape(PolygonData data);
     explicit Shape(PathData data);
     explicit Shape(TextData data);
+    explicit Shape(ArcData data);
 
     Type                                                type() const { return m_type; }
     const RectData *                                    rect() const;
     const PolygonData *                                 polygon() const;
     const PathData *                                    path() const;
     const TextData *                                    text() const;
+    const ArcData *                                     arc() const;
 
     std::vector<Property> &                             properties() { return m_properties; }
     const std::vector<Property> &                       properties() const { return m_properties; }
@@ -55,6 +65,7 @@ private:
     PolygonData                                         m_polygon;
     PathData                                            m_path;
     TextData                                            m_text;
+    ArcData                                             m_arc;
     std::vector<Property>                               m_properties;
 };
 

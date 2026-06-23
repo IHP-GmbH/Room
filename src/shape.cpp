@@ -26,6 +26,8 @@ Shape::Shape(PathData data) : m_type(Type::Path), m_path(std::move(data)) {}
  *****************************************************************************************/
 Shape::Shape(TextData data) : m_type(Type::Text), m_text(std::move(data)) {}
 
+Shape::Shape(ArcData data) : m_type(Type::Arc), m_arc(std::move(data)) {}
+
 /*!****************************************************************************************
  * \brief Returns rectangle data when type() is Rect.
  * \return         Pointer to rect data, or nullptr for other types.
@@ -60,6 +62,11 @@ const Shape::PathData *Shape::path() const
 const Shape::TextData *Shape::text() const
 {
     return m_type == Type::Text ? &m_text : nullptr;
+}
+
+const Shape::ArcData *Shape::arc() const
+{
+    return m_type == Type::Arc ? &m_arc : nullptr;
 }
 
 } // namespace core

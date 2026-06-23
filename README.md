@@ -131,6 +131,9 @@ CI runs `./scripts/run_tests_coverage.sh` in the **Coverage (Ubuntu)** job (afte
 | `core_utils` | static library | GDS / Qucs importers, text dump |
 | `gds_to_core` | executable | GDSII → `.core` |
 | `qucs_to_core` | executable | Qucs `.sch` → `.core` (round-trip export) |
+| `xschem_to_core` | executable | Xschem `.sch`/`.sym` → `.core` |
+| `core_to_xschem` | executable | `.core` → Xschem files |
+| `core_file_sniff` | test tool | Import + `sniffCoreFile()` smoke test |
 | `make_sample_gds` | executable | Minimal sample GDS for tests |
 
 Install headers and libraries into a prefix:
@@ -163,6 +166,21 @@ build\gds_to_core.exe input.gds output\layout.core output\layout.txt CELL_NAME
 build\qucs_to_core.exe examples\qucs_to_core\data\rc_lowpass.sch examples\qucs_to_core\output\schematic.core
 ```
 
+### Xschem schematic / symbol import
+
+```bat
+build\xschem_to_core.exe examples\xschem_to_core\data\test.sch examples\xschem_to_core\output\test.schematic.core
+```
+
+### Sniff a `.core` file (metadata only)
+
+```cpp
+#include "file_summary.h"
+core::CoreFileInfo info = core::sniffCoreFile("cell.schematic.core");
+```
+
+See [docs/SNIFF.md](docs/SNIFF.md) and [docs/CORE_FILE_NAMING.md](docs/CORE_FILE_NAMING.md). HTML API: [filesummary.html](docs/html/filesummary.html).
+
 ### Minimal GDS
 
 ```bat
@@ -187,7 +205,7 @@ CORE ships a **KLayout streamer plugin** (`mcore`) that opens and saves `.core` 
 
 HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally in a browser after cloning).
 
-Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md) · [COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) (size & timing benchmarks) · [KLayout plugin](integrations/klayout/README.md)
+Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md) · [COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) · [SNIFF.md](docs/SNIFF.md) · [CORE_FILE_NAMING.md](docs/CORE_FILE_NAMING.md) · [KLayout plugin](integrations/klayout/README.md)
 
 ## Project layout
 
@@ -195,9 +213,10 @@ Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHAR
 |------|---------|
 | `src/` | Core C++ API (`Database`, `Cell`, `Shape`, …) |
 | `schema/` | Cap'n Proto schemas (`.capnp`) |
-| `utils/` | `GdsImporter`, `QucsImporter`, `QucsExporter`, `TextDumper` |
+| `utils/` | `GdsImporter`, `QucsImporter`, `QucsExporter`, `XschemImporter`, `XschemExporter`, `xschem_bridge`, `TextDumper` |
 | `examples/gds_to_core/` | GDS import example + sample data |
 | `examples/qucs_to_core/` | Qucs import example + sample `.sch` |
+| `examples/xschem_to_core/` | Xschem import example + sample `.sch` |
 | `integrations/klayout/` | KLayout `mcore` streamer plugin (read/write `.core`) |
 | `third_party/capnp-install/` | Cap'n Proto compiler and libraries |
 | `scripts/mkcapnp.cmd` | Build Cap'n Proto on Windows |

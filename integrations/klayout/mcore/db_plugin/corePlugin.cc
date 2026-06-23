@@ -16,7 +16,10 @@ class CoreFormatDeclaration
   std::string format_name () const override { return "CORE"; }
   std::string format_desc () const override { return "IHP CommonDB CORE"; }
   std::string format_title () const override { return "CommonDB CORE"; }
-  std::string file_format () const override { return "CORE files (*.core)"; }
+  std::string file_format () const override
+  {
+    return "CORE layout (*.layout.core);;CORE legacy (*.core)";
+  }
 
   bool detect (tl::InputStream &stream) const override
   {

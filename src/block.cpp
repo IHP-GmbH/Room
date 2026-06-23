@@ -23,6 +23,10 @@ Box Block::computeBBox(const Block &block)
             }
         } else if (const auto *text = shape.text()) {
             bbox.expand(text->position.x, text->position.y);
+        } else if (const auto *arc = shape.arc()) {
+            const std::int64_t r = static_cast<std::int64_t>(arc->radius * 1000.0);
+            bbox.expand(arc->center.x - r, arc->center.y - r);
+            bbox.expand(arc->center.x + r, arc->center.y + r);
         }
     }
     return bbox;

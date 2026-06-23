@@ -141,11 +141,11 @@ int main(int argc, char *argv[])
     core::SaveOptions verbose;
     verbose.compactGeometry = false;
     const Clock::time_point tSaveVerbose0 = Clock::now();
-    db.saveToFile(verbosePath, verbose);
+    db.saveToFile(verbosePath, core::ViewType::Layout, verbose);
     const Clock::time_point tSaveVerbose1 = Clock::now();
 
     const Clock::time_point tSaveCompact0 = Clock::now();
-    db.saveToFile(compactPath);
+    db.saveToFile(compactPath, core::ViewType::Layout);
     const Clock::time_point tSaveCompact1 = Clock::now();
 
     const Clock::time_point tLoadVerbose0 = Clock::now();

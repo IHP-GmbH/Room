@@ -12,6 +12,7 @@
 #include <dm.capnp.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <map>
 #include <set>
@@ -504,6 +505,31 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
             bucket.textHeights.push_back(text.height);
             bucket.texts.push_back(text.text);
             appendShapeProperties(bucket, shape.properties());
+            break;
+        }
+        case Shape::Type::Arc: {
+            const auto &arc = *shape.arc();
+            LayerBucket &bucket = buckets[arc.layerId];
+            bucket.layerId = arc.layerId;
+            std::vector<Point> points;
+            constexpr int segments = 32;
+            const double start = arc.startAngle * 3.141592653589793 / 180.0;
+            const double span = (arc.endAngle - arc.startAngle) * 3.141592653589793 / 180.0;
+            const double cx = static_cast<double>(arc.center.x) / 1000.0;
+            const double cy = static_cast<double>(arc.center.y) / 1000.0;
+            for (int i = 0; i <= segments; ++i) {
+                const double angle = start + span * static_cast<double>(i) / static_cast<double>(segments);
+                const double x = cx + arc.radius * std::cos(angle);
+                const double y = cy + arc.radius * std::sin(angle);
+                points.push_back(
+                    Point{static_cast<std::int64_t>(std::llround(x * 1000.0)), static_cast<std::int64_t>(std::llround(y * 1000.0))});
+            }
+            std::vector<Property> props = shape.properties();
+            props.push_back({"geometry", "arc"});
+            props.push_back({"arc.radius", std::to_string(arc.radius)});
+            props.push_back({"arc.startAngle", std::to_string(arc.startAngle)});
+            props.push_back({"arc.endAngle", std::to_string(arc.endAngle)});
+            pendingPaths[arc.layerId].emplace_back(arc.width, points, props);
             break;
         }
         }

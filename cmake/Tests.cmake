@@ -17,6 +17,15 @@ if(CORE_BUILD_TESTS)
     add_executable(view_payload_roundtrip tests/view_payload_roundtrip.cpp)
     target_link_libraries(view_payload_roundtrip PRIVATE core_utils)
 
+    add_executable(xschem_api_roundtrip tests/xschem_api_roundtrip.cpp)
+    target_link_libraries(xschem_api_roundtrip PRIVATE core_utils)
+
+    add_executable(core_file_sniff tests/core_file_sniff.cpp)
+    target_link_libraries(core_file_sniff PRIVATE core_utils)
+
+    add_executable(core_paths_unit tests/core_paths_unit.cpp)
+    target_link_libraries(core_paths_unit PRIVATE core)
+
     add_executable(encapsulation_roundtrip tests/encapsulation_roundtrip.cpp)
     target_link_libraries(encapsulation_roundtrip PRIVATE core_utils)
 
@@ -82,6 +91,41 @@ if(CORE_BUILD_TESTS)
     set_tests_properties(view_payload_roundtrip PROPERTIES
         LABELS "core;payload"
         TIMEOUT 60
+    )
+
+    add_test(
+        NAME xschem_api_roundtrip
+        COMMAND xschem_api_roundtrip
+                "${CMAKE_SOURCE_DIR}/examples/xschem_to_core/data/test.sch"
+                "${_ctest_out}/xschem_api_roundtrip.schematic.core"
+                "${_ctest_out}/xschem_api_roundtrip.out.sch"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(xschem_api_roundtrip PROPERTIES
+        LABELS "core;xschem;api"
+        TIMEOUT 60
+    )
+
+    add_test(
+        NAME core_file_sniff
+        COMMAND core_file_sniff
+                "${CMAKE_SOURCE_DIR}/examples/xschem_to_core/data/test.sch"
+                "${_ctest_out}/core_file_sniff.schematic.core"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(core_file_sniff PROPERTIES
+        LABELS "core;sniff"
+        TIMEOUT 30
+    )
+
+    add_test(
+        NAME core_paths_unit
+        COMMAND core_paths_unit
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(core_paths_unit PROPERTIES
+        LABELS "core;paths"
+        TIMEOUT 10
     )
 
     add_test(

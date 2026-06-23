@@ -243,17 +243,16 @@ Instance parseComponentLine(const std::string &line, std::vector<std::string> &w
     xf.orient = qucsRotateToOrient(rotate, mirror);
 
     Instance inst(type, xf);
-    addProperty(inst.properties(), "qucs.instName", instName);
-    addProperty(inst.properties(), "qucs.type", type);
-    addProperty(inst.properties(), "qucs.active", std::to_string(active));
-    addProperty(inst.properties(), "qucs.textX", std::to_string(textX));
-    addProperty(inst.properties(), "qucs.textY", std::to_string(textY));
-    addProperty(inst.properties(), "qucs.mirror", std::to_string(mirror));
-    addProperty(inst.properties(), "qucs.rotate", std::to_string(rotate));
+    addProperty(inst.properties(), "name", instName);
+    addProperty(inst.properties(), "active", std::to_string(active));
+    addProperty(inst.properties(), "textX", std::to_string(textX));
+    addProperty(inst.properties(), "textY", std::to_string(textY));
+    addProperty(inst.properties(), "mirror", std::to_string(mirror));
+    addProperty(inst.properties(), "rotate", std::to_string(rotate));
 
     for (std::size_t i = 9; i + 1 < tokens.size(); i += 2) {
-        addProperty(inst.properties(), "qucs.prop." + std::to_string((i - 9) / 2), unquote(tokens[i]));
-        addProperty(inst.properties(), "qucs.vis." + std::to_string((i - 9) / 2), tokens[i + 1]);
+        addProperty(inst.properties(), "param." + std::to_string((i - 9) / 2), unquote(tokens[i]));
+        addProperty(inst.properties(), "visible." + std::to_string((i - 9) / 2), tokens[i + 1]);
     }
 
     return inst;
@@ -381,21 +380,30 @@ Database QucsImporter::importFile(const std::string &schPath) const
     addSchematicLayer("label", LayerPurpose::Label);
 
     if (sections.count("__header__")) {
-        for (const std::string &line : sections.at("__header__")) {
-            addProperty(content.properties(), "qucs.header", line);
+        const std::string &header = sections.at("__header__").front();
+        content.sourceInfo().setFormat("qucs");
+        const std::size_t open = header.find('<');
+        const std::size_t close = header.find('>');
+        if (open != std::string::npos && close != std::string::npos && close > open) {
+            const std::string body = header.substr(open + 1, close - open - 1);
+            const std::size_t space = body.find(' ');
+            if (space != std::string::npos) {
+                content.sourceInfo().setToolVersion(body.substr(space + 1));
+            }
+            addProperty(content.properties(), "schematic.header", header);
         }
     }
 
     if (sections.count("Properties")) {
         for (const std::string &line : sections.at("Properties")) {
-            addProperty(content.properties(), "qucs.properties", line);
+            addProperty(content.properties(), "schematic.view", line);
         }
     }
 
     for (const char *sectionName : {"Symbol", "Diagrams", "Paintings"}) {
         if (sections.count(sectionName)) {
             for (const std::string &line : sections.at(sectionName)) {
-                addProperty(content.properties(), std::string("qucs.section.") + sectionName, line);
+                addProperty(content.properties(), std::string("section.") + sectionName, line);
             }
         }
     }
@@ -410,16 +418,23 @@ Database QucsImporter::importFile(const std::string &schPath) const
 
     std::vector<WireRec> wires;
     if (sections.count("Wires")) {
+        const std::uint32_t wireLayer = 0;
         for (const std::string &line : sections.at("Wires")) {
             wires.push_back(parseWireLine(line, m_warnings));
         }
         buildNetsFromWires(wires, block);
         for (const WireRec &wire : wires) {
-            std::ostringstream oss;
-            oss << wire.x1 << ' ' << wire.y1 << ' ' << wire.x2 << ' ' << wire.y2 << " \""
-                << wire.label << "\" " << wire.labelX << ' ' << wire.labelY << ' ' << wire.dist
-                << " \"" << wire.nodeSet << '"';
-            addProperty(content.properties(), "qucs.wire", oss.str());
+            Shape::PathData path;
+            path.layerId = wireLayer;
+            path.width = 1;
+            path.points = {Point{wire.x1, wire.y1}, Point{wire.x2, wire.y2}};
+            Shape shape(path);
+            addProperty(shape.properties(), "label", wire.label);
+            addProperty(shape.properties(), "labelX", std::to_string(wire.labelX));
+            addProperty(shape.properties(), "labelY", std::to_string(wire.labelY));
+            addProperty(shape.properties(), "dist", std::to_string(wire.dist));
+            addProperty(shape.properties(), "nodeSet", wire.nodeSet);
+            block.shapes().push_back(std::move(shape));
         }
     } else {
         m_warnings.push_back("No <Wires> section found");

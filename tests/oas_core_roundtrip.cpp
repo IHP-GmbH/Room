@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     std::cout << "Imported " << importedCells << " cell(s), " << layerCount << " layer(s)\n";
     printMs("  OAS import", t1 - t0);
 
-    db.saveToFile(corePath);
+    db.saveToFile(corePath, core::ViewType::Layout);
     const Clock::time_point t2 = Clock::now();
     printMs("  CORE save", t2 - t1);
 

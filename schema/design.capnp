@@ -33,14 +33,25 @@ struct TextGeom {
   height   @3 :UInt32;
 }
 
+struct ArcGeom {
+  centerX    @0 :Float64;
+  centerY    @1 :Float64;
+  radius     @2 :Float64;
+  startAngle @3 :Float64;
+  endAngle   @4 :Float64;
+  width      @5 :UInt32;
+  layerId    @6 :UInt32;
+}
+
 struct Shape {
   union {
     rect    @0 :RectGeom;
     polygon @1 :PolygonGeom;
     path    @2 :PathGeom;
     text    @3 :TextGeom;
+    arc     @4 :ArcGeom;
   }
-  properties @4 :List(Property);
+  properties @5 :List(Property);
 }
 
 struct Instance {

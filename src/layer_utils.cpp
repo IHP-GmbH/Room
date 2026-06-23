@@ -30,6 +30,11 @@ std::uint32_t shapeLayerId(const Shape &shape)
             return text->layerId;
         }
         break;
+    case Shape::Type::Arc:
+        if (const Shape::ArcData *arc = shape.arc()) {
+            return arc->layerId;
+        }
+        break;
     }
     return 0;
 }
@@ -114,6 +119,7 @@ LayerPurpose gdsShapePurpose(Shape::Type shapeType)
         return LayerPurpose::Wire;
     case Shape::Type::Polygon:
     case Shape::Type::Rect:
+    case Shape::Type::Arc:
         return LayerPurpose::Boundary;
     }
     return LayerPurpose::Drawing;

@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     db.setGenerator("CORE qucs_to_core");
     db.setTechnology("qucs");
 
-    db.saveToFile(corePath);
+    db.saveToFile(corePath, core::ViewType::Schematic);
     std::cout << "Saved CORE file: " << corePath << '\n';
     std::cout << "  cells: " << db.lib().cells().size() << '\n';
 

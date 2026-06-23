@@ -12,23 +12,25 @@
 
 namespace core {
 
-/*!****************************************************************************************
- * \brief Constructs an empty Database with default format version and library name.
- *****************************************************************************************/
 Database::Database() = default;
 
-/*!****************************************************************************************
- * \brief Serializes this database to a binary .core file.
- *
- * Recomputes cell bounding boxes and refreshes the library index before writing.
- *
- * \param path     Output file path.
- * \param options  Encoding options; compact geometry is the default.
- *****************************************************************************************/
-void Database::saveToFile(const std::string &path, SaveOptions options)
+void Database::recomputeFileSummary(ViewType fileView)
+{
+    m_fileView = fileView;
+    m_fileSummary = FileSummary::fromLib(m_lib, fileView);
+}
+
+void Database::setFileSummary(FileSummary summary)
+{
+    m_fileSummary = std::move(summary);
+    m_fileView = m_fileSummary.view;
+}
+
+void Database::saveToFile(const std::string &path, ViewType fileView, SaveOptions options)
 {
     m_lib.recomputeAllBBoxes();
-    m_lib.refreshIndex();
+    m_lib.refreshIndex(fileView);
+    recomputeFileSummary(fileView);
 
     capnp::MallocMessageBuilder message;
     writeDatabase(message.initRoot<schema::Database>(), *this, options);
@@ -41,14 +43,6 @@ void Database::saveToFile(const std::string &path, SaveOptions options)
     capnp::writeMessage(kjOut, message);
 }
 
-/*!****************************************************************************************
- * \brief Loads a database from a binary .core file.
- *
- * Auto-detects compact vs verbose geometry in each view payload.
- *
- * \param path     Input .core file path.
- * \return         Deserialized database.
- *****************************************************************************************/
 Database Database::loadFromFile(const std::string &path)
 {
     std::ifstream in(path, std::ios::binary | std::ios::ate);

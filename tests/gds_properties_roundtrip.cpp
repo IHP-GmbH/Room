@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
         return 6;
     }
 
-    db.saveToFile(corePath);
+    db.saveToFile(corePath, core::ViewType::Layout);
     const core::Database reloaded = core::Database::loadFromFile(corePath);
     const core::Cell *reloadedCell = firstCell(reloaded);
     const core::CellContent *reloadedLayout = reloadedCell ? reloadedCell->findContent(core::ViewType::Layout) : nullptr;
