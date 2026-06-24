@@ -152,6 +152,27 @@ if(CORE_BUILD_EXAMPLES)
     target_link_libraries(core_to_xschem PRIVATE core_utils)
 
     add_executable(make_sample_gds tools/make_sample_gds.cpp)
+
+    find_package(ZLIB QUIET)
+    if(ZLIB_FOUND)
+        add_library(core_oas STATIC
+            utils/oas_reader.cpp
+            utils/oas_writer.cpp
+            utils/oas_geometry.cpp
+            utils/oas_strict.cpp
+            utils/klayout_util.cpp
+            utils/oas_importer.cpp
+            utils/oas_exporter.cpp
+        )
+        target_include_directories(core_oas PUBLIC
+            "$<BUILD_INTERFACE:${CORE_ROOT}/utils>"
+        )
+        target_link_libraries(core_oas PUBLIC core_utils ZLIB::ZLIB)
+        target_compile_definitions(core_oas PRIVATE OAS_TRACE=0)
+
+        add_executable(oas_to_core examples/oas_to_core/main.cpp)
+        target_link_libraries(oas_to_core PRIVATE core_oas)
+    endif()
 endif()
 
 add_executable(make_empty_core_views tools/make_empty_core_views.cpp)
@@ -166,6 +187,9 @@ if(_CORE_TOP_LEVEL)
     if(CORE_BUILD_EXAMPLES)
         install(TARGETS gds_to_core core_to_gds qucs_to_core xschem_to_core core_to_xschem make_sample_gds
                 RUNTIME DESTINATION bin)
+        if(TARGET oas_to_core)
+            install(TARGETS oas_to_core RUNTIME DESTINATION bin)
+        endif()
     endif()
 
     install(DIRECTORY src/ DESTINATION include/CORE/src FILES_MATCHING PATTERN "*.h")
