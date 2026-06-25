@@ -220,20 +220,23 @@ if(CORE_BUILD_TESTS)
                 endif()
             endif()
 
-            add_library(core_oas STATIC
-                utils/oas_reader.cpp
-                utils/oas_writer.cpp
-                utils/oas_geometry.cpp
-                utils/oas_strict.cpp
-                utils/klayout_util.cpp
-                utils/oas_importer.cpp
-                utils/oas_exporter.cpp
-            )
-            target_include_directories(core_oas PUBLIC
-                "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/utils>"
-            )
-            target_link_libraries(core_oas PUBLIC core_utils ZLIB::ZLIB)
-            target_compile_definitions(core_oas PRIVATE OAS_TRACE=0)
+            # core_oas is defined in CMakeLists.txt when CORE_BUILD_EXAMPLES is on.
+            if(NOT TARGET core_oas)
+                add_library(core_oas STATIC
+                    utils/oas_reader.cpp
+                    utils/oas_writer.cpp
+                    utils/oas_geometry.cpp
+                    utils/oas_strict.cpp
+                    utils/klayout_util.cpp
+                    utils/oas_importer.cpp
+                    utils/oas_exporter.cpp
+                )
+                target_include_directories(core_oas PUBLIC
+                    "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/utils>"
+                )
+                target_link_libraries(core_oas PUBLIC core_utils ZLIB::ZLIB)
+                target_compile_definitions(core_oas PRIVATE OAS_TRACE=0)
+            endif()
 
             add_executable(oas_hierarchy tests/oas_hierarchy.cpp)
             target_link_libraries(oas_hierarchy PRIVATE core_oas)
