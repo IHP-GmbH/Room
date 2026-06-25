@@ -119,6 +119,7 @@ void TextDumper::dump(const Database &db, std::ostream &out) const
             indent(out, 1);
             out << "type " << viewTypeToString(content.viewType())
                 << " dbuPerMicron=" << std::fixed << std::setprecision(3) << content.dbuPerMicron()
+                << " dbuPerEditorUnit=" << std::fixed << std::setprecision(3) << content.dbuPerEditorUnit()
                 << "\n";
 
             const auto &viewLayers = resolveViewLayers(content, db.lib());

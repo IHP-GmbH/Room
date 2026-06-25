@@ -41,8 +41,10 @@ int main(int argc, char *argv[])
 
     const std::string schPath = (argc >= 2) ? argv[1] : kDefaultSch;
     const std::string corePath = (argc >= 3) ? argv[2] : kDefaultCore;
-    const std::string dumpPath = (argc >= 4) ? argv[3] : kDefaultDump;
-    const std::string roundtripPath = (argc >= 5) ? argv[4] : kDefaultRoundtrip;
+    const bool dumpRequested = argc >= 4;
+    const bool roundtripRequested = argc >= 5;
+    const std::string dumpPath = dumpRequested ? argv[3] : kDefaultDump;
+    const std::string roundtripPath = roundtripRequested ? argv[4] : kDefaultRoundtrip;
 
     core::QucsImporter::Options importOpts;
     importOpts.libName = "qucs_import";
@@ -63,22 +65,26 @@ int main(int argc, char *argv[])
     std::cout << "Saved CORE file: " << corePath << '\n';
     std::cout << "  cells: " << db.lib().cells().size() << '\n';
 
-    core::TextDumper dumper;
-    dumper.dumpToFile(db, dumpPath);
-    std::cout << "Text dump: " << dumpPath << '\n';
+    if (dumpRequested) {
+        core::TextDumper dumper;
+        dumper.dumpToFile(db, dumpPath);
+        std::cout << "Text dump: " << dumpPath << '\n';
+    }
 
-    const core::Database reloaded = core::Database::loadFromFile(corePath);
-    std::cout << "Reload check: " << reloaded.lib().cells().size() << " cells\n";
+    if (roundtripRequested) {
+        const core::Database reloaded = core::Database::loadFromFile(corePath);
+        std::cout << "Reload check: " << reloaded.lib().cells().size() << " cells\n";
 
-    if (!reloaded.lib().cells().empty()) {
-        core::QucsExporter exporter;
-        exporter.exportCell(reloaded, reloaded.lib().cells().front().name(), roundtripPath);
-        printMessages("warning", exporter.warnings());
-        printMessages("error", exporter.errors());
-        if (!exporter.errors().empty()) {
-            return 3;
+        if (!reloaded.lib().cells().empty()) {
+            core::QucsExporter exporter;
+            exporter.exportCell(reloaded, reloaded.lib().cells().front().name(), roundtripPath);
+            printMessages("warning", exporter.warnings());
+            printMessages("error", exporter.errors());
+            if (!exporter.errors().empty()) {
+                return 3;
+            }
+            std::cout << "Round-trip Qucs export: " << roundtripPath << '\n';
         }
-        std::cout << "Round-trip Qucs export: " << roundtripPath << '\n';
     }
 
     return 0;

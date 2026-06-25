@@ -60,7 +60,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 - [x] **Schema** — `Point` / `Box` / `Transform` use `Int64` ([common.capnp](../schema/common.capnp))
 - [ ] **Pipeline audit** — GDS import, transforms, export, overflow regression tests
-- [ ] **DBU policy** — document `dbuPerMicron` per view; rounding rules
+- [x] **DBU policy** — `dbuPerMicron` (layout) and `dbuPerEditorUnit` (schematic/symbol); see [html/coordscale.html](html/coordscale.html)
 - [ ] **Exchange parity** — arrays, path extensions, text attributes (GDS/OAS feature matrix)
 
 ---

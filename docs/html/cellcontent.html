@@ -50,8 +50,10 @@
       <table class="memlist">
         <tr><td><a href="#ViewTypeviewType">ViewType viewType() const</a></td><td>Returns the view kind of this content.</td></tr>
         <tr><td><a href="#setViewType">void setViewType(ViewType type)</a></td><td>Changes the stored view type label.</td></tr>
-        <tr><td><a href="#doubledbuPerMicron">double dbuPerMicron() const</a></td><td>Returns the coordinate resolution for this view.</td></tr>
-        <tr><td><a href="#setDbuPerMicron">void setDbuPerMicron(double value)</a></td><td>Sets the coordinate resolution for this view.</td></tr>
+        <tr><td><a href="#doubledbuPerMicron">double dbuPerMicron() const</a></td><td>Layout: DBU per micron (from GDS UNITS).</td></tr>
+        <tr><td><a href="#setDbuPerMicron">void setDbuPerMicron(double value)</a></td><td>Sets layout physical scale.</td></tr>
+        <tr><td><a href="#dbuPerEditorUnit">double dbuPerEditorUnit() const</a></td><td>Schematic/symbol: DBU per 1.0 native editor unit.</td></tr>
+        <tr><td><a href="#setDbuPerEditorUnit">void setDbuPerEditorUnit(double value)</a></td><td>Sets schematic coordinate scale (<code>0</code> = infer on read).</td></tr>
         <tr><td><a href="#fn-6">std::vector&lt;Property&gt; &amp; properties()</a></td><td>Returns view-level metadata for modification.</td></tr>
         <tr><td><a href="#fn-7">const std::vector&lt;Property&gt; &amp; properties() const</a></td><td>Returns view-level metadata for read-only access.</td></tr>
         <tr><td><a href="#Block">Block &amp; block()</a></td><td>In-memory topology (maps to <code>payload.&lt;view&gt;.block</code> on disk).</td></tr>
@@ -65,6 +67,7 @@
       <p><strong>On disk</strong> (<code>.core</code> v1.0), view geometry is stored in <code>payload</code> — a <code>ViewPayload</code> union (<code>schema/views.capnp</code>). The active arm matches <code>viewType</code> (<code>layout</code>, <code>schematic</code>, …) and contains per-view <code>layers[]</code> plus a nested <code>block</code> (shapes, instances, nets).</p>
       <p><strong>In C++</strong>, use <code>block()</code> as the ergonomic accessor for that nested topology. <a href="sourceinfo.html">SourceInfo</a> records provenance from importers (Xschem, Qucs, GDS). <a href="database.html">Database::saveToFile()</a> / <code>loadFromFile()</code> map between <code>block()</code> and <code>payload.*.block</code>. Tools that do not understand a view type can copy the <code>opaque</code> arm without decoding geometry.</p>
       <p>Layer indices in shapes and terms refer to <code>Lib::layers()</code> at import time; the per-view <code>layers[]</code> inside <code>payload</code> is the serialized copy for that view.</p>
+      <p>Integer coordinates in <code>block()</code> are always stored in <strong>DBU</strong>. Layout views use <code>dbuPerMicron</code> for physical microns; schematic and symbol views use <code>dbuPerEditorUnit</code> to map to Qucs/Xschem file coordinates. See <a href="coordscale.html">Coordinate scale</a>.</p>
 
       <h2>Member Function Documentation</h2>
 
@@ -95,11 +98,27 @@
 
       <div class="fn-block" id="setDbuPerMicron">
         <h3 class="fn-title">double dbuPerMicron() const</h3>
-        <p class="fn-desc">Returns the coordinate resolution for this view.</p>
-        <p class="fn-returns"><strong>Returns:</strong> Database units per micron (from GDS UNITS or the constructor default).</p>
+        <p class="fn-desc">Returns DBU per micron for <strong>layout</strong> views (from GDS UNITS or constructor default).</p>
+        <p class="fn-returns"><strong>Returns:</strong> Typically <code>1000</code> for GDS imports.</p>
+      </div>
+
+      <div class="fn-block" id="dbuPerEditorUnit">
+        <h3 class="fn-title">void setDbuPerMicron(double value)</h3>
+        <p class="fn-desc">Sets DBU per micron for layout views.</p>
+      </div>
+
+      <div class="fn-block" id="setDbuPerEditorUnit">
+        <h3 class="fn-title">double dbuPerEditorUnit() const</h3>
+        <p class="fn-desc">Returns DBU per one native editor coordinate unit for <strong>schematic</strong> and <strong>symbol</strong> views. Qucs uses <code>1</code>; Xschem uses <code>1000</code> for sub-grid precision. Value <code>0</code> means unset — readers infer from <a href="sourceinfo.html">SourceInfo</a>.</p>
+        <p class="fn-returns"><strong>See also:</strong> <a href="coordscale.html">Coordinate scale</a>, <code>utils/coord_scale.h</code>.</p>
       </div>
 
       <div class="fn-block" id="fn-6">
+        <h3 class="fn-title">void setDbuPerEditorUnit(double value)</h3>
+        <p class="fn-desc">Persists schematic/symbol coordinate scale to disk (<code>CellContent.dbuPerEditorUnit</code> in Cap'n Proto).</p>
+      </div>
+
+      <div class="fn-block" id="fn-6b">
         <h3 class="fn-title">std::vector&lt;Property&gt; &amp; properties()</h3>
         <p class="fn-desc">Returns view-level metadata for modification.</p>
         <p class="fn-returns"><strong>Returns:</strong> Mutable reference to name/value properties on this view.</p>

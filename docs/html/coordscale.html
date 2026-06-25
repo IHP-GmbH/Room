@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Coordinate scale (DBU) — CORE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">CORE</a>
+    <nav><a href="index.html">Overview</a><a href="cellcontent.html">CellContent</a><a href="classes.html">All Classes</a></nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Core</h3>
+      <ul>
+        <li><a href="cellcontent.html">CellContent</a></li>
+        <li><a href="coordscale.html" class="active">Coordinate scale</a></li>
+        <li><a href="types.html#point">Point</a></li>
+      </ul>
+      <h3>Examples</h3>
+      <ul>
+        <li><a href="example.html">GDS layout</a></li>
+        <li><a href="example_qucs.html">Qucs schematic</a></li>
+        <li><a href="example_xschem.html">Xschem schematic</a></li>
+      </ul>
+    </aside>
+    <main class="content">
+      <div class="breadcrumb"><a href="index.html">CORE</a> &raquo; Coordinate scale</div>
+      <h1>Coordinate scale: <code>dbuPerMicron</code> and <code>dbuPerEditorUnit</code></h1>
+      <p class="subtitle">How integer DBU in <a href="block.html">Block</a> geometry map to layout microns and schematic editor units</p>
+
+      <h2>Two scale fields on <a href="cellcontent.html">CellContent</a></h2>
+      <table class="members">
+        <tr><th>Field</th><th>Used for</th><th>Typical value</th></tr>
+        <tr>
+          <td><code>dbuPerMicron</code></td>
+          <td><strong>Layout</strong> views (GDS, OAS). Physical size: how many integer DBU equal one micron.</td>
+          <td><code>1000</code> (GDS UNITS record)</td>
+        </tr>
+        <tr>
+          <td><code>dbuPerEditorUnit</code></td>
+          <td><strong>Schematic / symbol</strong> views. How many integer DBU equal <code>1.0</code> native editor coordinate in the source tool file.</td>
+          <td><code>1</code> (Qucs), <code>1000</code> (Xschem)</td>
+        </tr>
+      </table>
+
+      <p>
+        All coordinates in <code>Point</code>, <code>Instance::transform()</code>, wire paths, and pin positions are stored as
+        <strong>signed integer DBU</strong> in CORE. Exporters divide by the appropriate scale; importers multiply.
+        Grid snap (<code>Grid=10,10</code> in Qucs, SNAP in Xschem) stays in editor metadata — it is not the same as DBU scale.
+      </p>
+
+      <h2>Conversion (schematic / symbol)</h2>
+      <pre class="example"><code>// utils/coord_scale.h
+DBU       = round(editor_coord × dbuPerEditorUnit)
+editor_coord = DBU / dbuPerEditorUnit
+
+effectiveDbuPerEditorUnit(content)  // uses stored value, or infers from SourceInfo::format()</code></pre>
+
+      <h2>Per-tool defaults</h2>
+      <table class="members">
+        <tr><th>Importer</th><th><code>dbuPerEditorUnit</code></th><th><code>SourceInfo::format()</code></th><th>Example</th></tr>
+        <tr><td><a href="qucsimporter.html">QucsImporter</a></td><td><code>1</code></td><td><code>qucs</code></td><td><code>.sch</code> coord <code>270</code> → DBU <code>270</code></td></tr>
+        <tr><td><a href="xschemimporter.html">XschemImporter</a></td><td><code>1000</code></td><td><code>xschem</code></td><td><code>.sch</code> coord <code>270.5</code> → DBU <code>270500</code></td></tr>
+        <tr><td><a href="gdsimporter.html">GdsImporter</a></td><td><em>n/a</em></td><td><em>layout</em></td><td>Uses <code>dbuPerMicron</code> from GDS UNITS</td></tr>
+      </table>
+
+      <h2>On disk (<code>schema/database.capnp</code>)</h2>
+      <pre class="example"><code>struct CellContent {
+  viewType         @0 :ViewType;
+  dbuPerMicron     @1 :Float64;
+  properties       @2 :List(Property);
+  payload          @3 :ViewPayload;
+  dbuPerEditorUnit @4 :Float64;  // 0 = infer on read (legacy files)
+}</code></pre>
+
+      <h2>Migration</h2>
+      <p>
+        Older <code>.core</code> files may have <code>dbuPerEditorUnit = 0</code> (unset). Readers call
+        <code>effectiveDbuPerEditorUnit()</code>: <code>qucs</code> → <code>1</code>, <code>xschem</code> → <code>1000</code>.
+        Re-import from the native tool to persist the field explicitly. <a href="textdumper.html">TextDumper</a> prints both scales per view.
+      </p>
+
+      <h2>Qucs ↔ CORE ↔ Xschem</h2>
+      <p>
+        A Qucs schematic opened in Xschem goes through CORE export (<a href="xschemexporter.html">XschemExporter</a> /
+        <code>xschem_io</code>). Qucs component types are mapped to Xschem symbols (e.g. <code>GND</code> → <code>gnd.sym</code>;
+        unknown <code>Lib</code> devices → <code>qucs_blackbox.sym</code>). Coordinates use the view's
+        <code>dbuPerEditorUnit</code>, so Qucs DBU and Xschem editor units stay consistent without ad-hoc divisors.
+      </p>
+
+      <p>See also: <a href="example_qucs.html">Qucs example</a> · <a href="example_xschem.html">Xschem example</a> · <a href="../SCHEMA_EVOLUTION.md">Schema evolution</a></p>
+    </main>
+  </div>
+</body>
+</html>

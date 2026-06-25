@@ -7,6 +7,7 @@
 
 #include "cell.h"
 #include "lib.h"
+#include "coord_scale.h"
 #include "xschem_format.h"
 #include "xschem_io.h"
 
@@ -77,8 +78,9 @@ Database XschemImporter::importFileInto(Database db, const std::string &path) co
     }
 
     Cell &cell = db.lib().getOrCreateCell(cellName);
-    CellContent &content = cell.getOrCreateContent(viewType, 1.0);
-    content.setDbuPerMicron(1.0);
+    CellContent &content = cell.getOrCreateContent(viewType, kXschemDbuPerEditorUnit);
+    content.setDbuPerMicron(kXschemDbuPerEditorUnit);
+    content.setDbuPerEditorUnit(kXschemDbuPerEditorUnit);
     content.clearOpaquePayload();
 
     xschem::importRecords(records, cell, content, m_warnings);

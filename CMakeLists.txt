@@ -112,6 +112,7 @@ add_library(core_utils STATIC
     utils/gds_exporter.cpp
     utils/qucs_importer.cpp
     utils/qucs_exporter.cpp
+    utils/coord_scale.cpp
     utils/xschem_format.cpp
     utils/xschem_io.cpp
     utils/xschem_importer.cpp
@@ -151,6 +152,9 @@ if(CORE_BUILD_EXAMPLES)
     add_executable(core_to_xschem examples/core_to_xschem/main.cpp)
     target_link_libraries(core_to_xschem PRIVATE core_utils)
 
+    add_executable(core_to_qucs examples/core_to_qucs/main.cpp)
+    target_link_libraries(core_to_qucs PRIVATE core_utils)
+
     add_executable(make_sample_gds tools/make_sample_gds.cpp)
 
     find_package(ZLIB QUIET)
@@ -185,7 +189,7 @@ if(_CORE_TOP_LEVEL)
             RUNTIME DESTINATION bin)
 
     if(CORE_BUILD_EXAMPLES)
-        install(TARGETS gds_to_core core_to_gds qucs_to_core xschem_to_core core_to_xschem make_sample_gds
+        install(TARGETS gds_to_core core_to_gds qucs_to_core core_to_qucs xschem_to_core core_to_xschem make_sample_gds
                 RUNTIME DESTINATION bin)
         if(TARGET oas_to_core)
             install(TARGETS oas_to_core RUNTIME DESTINATION bin)

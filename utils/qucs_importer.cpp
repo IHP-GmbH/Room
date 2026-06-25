@@ -6,9 +6,11 @@
 #include "qucs_importer.h"
 
 #include "cell.h"
+#include "coord_scale.h"
 #include "layer_spec.h"
 
 #include <cctype>
+#include <cmath>
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
@@ -157,6 +159,12 @@ private:
     std::unordered_map<PointKey, PointKey, PointKeyHash> parent_;
 };
 
+bool isTopLevelSectionName(const std::string &name)
+{
+    return name == "Properties" || name == "Symbol" || name == "Components" || name == "Wires" || name == "Diagrams"
+        || name == "Paintings";
+}
+
 std::unordered_map<std::string, std::vector<std::string>> parseSections(const std::string &text)
 {
     std::unordered_map<std::string, std::vector<std::string>> sections;
@@ -171,7 +179,16 @@ std::unordered_map<std::string, std::vector<std::string>> parseSections(const st
         }
         const std::string inner = line.substr(1, line.size() - 2);
         if (inner.size() >= 2 && inner[0] == '/') {
-            current.clear();
+            const std::string tagName = inner.substr(1);
+            if (!current.empty()) {
+                if (tagName == current) {
+                    current.clear();
+                } else if (!isTopLevelSectionName(tagName)) {
+                    sections[current].push_back(line);
+                } else {
+                    current.clear();
+                }
+            }
             continue;
         }
         if (inner.rfind("Qucs Schematic", 0) == 0) {
@@ -362,8 +379,9 @@ Database QucsImporter::importFile(const std::string &schPath) const
     db.lib() = Lib(m_options.libName);
 
     Cell &cell = db.lib().getOrCreateCell(cellName);
-    CellContent &content = cell.getOrCreateContent(ViewType::Schematic, 1.0);
-    content.setDbuPerMicron(1.0);
+    CellContent &content = cell.getOrCreateContent(ViewType::Schematic, kQucsDbuPerEditorUnit);
+    content.setDbuPerMicron(kQucsDbuPerEditorUnit);
+    content.setDbuPerEditorUnit(kQucsDbuPerEditorUnit);
     Block &block = content.block();
 
     auto addSchematicLayer = [&](const std::string &name, LayerPurpose purpose) {

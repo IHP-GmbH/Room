@@ -90,7 +90,7 @@
       +-- layers[]              -&gt; LayerSpec table (library-global)
       +-- index                 -&gt; LibIndex (derived, persisted)
       +-- Cell[]
-           +-- CellContent[]    -&gt; viewType, dbuPerMicron, properties
+           +-- CellContent[]    -&gt; viewType, dbuPerMicron, dbuPerEditorUnit, properties
                 +-- payload      -&gt; ViewPayload (on disk)
                      +-- layout | schematic | symbol | abstract
                      |    +-- layers[]   (per-view on disk)
@@ -131,6 +131,7 @@ cmake --build build
         <li><a href="lib.html">core::Lib</a></li>
         <li><a href="cell.html">core::Cell</a></li>
         <li><a href="cellcontent.html">core::CellContent</a></li>
+        <li><a href="coordscale.html">Coordinate scale (DBU)</a></li>
         <li><a href="block.html">core::Block</a></li>
         <li><a href="shape.html">core::Shape</a></li>
         <li><a href="instance.html">core::Instance</a></li>

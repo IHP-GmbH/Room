@@ -537,6 +537,7 @@ void writeCellContent(schema::CellContent::Builder b,
 {
     b.setViewType(toSchemaViewType(content.viewType()));
     b.setDbuPerMicron(content.dbuPerMicron());
+    b.setDbuPerEditorUnit(content.dbuPerEditorUnit());
     std::vector<Property> properties = content.properties();
     appendSourceInfoProperties(content.sourceInfo(), properties);
     writeProperties(b.initProperties(properties.size()), properties);
@@ -553,6 +554,7 @@ void writeCellContent(schema::CellContent::Builder b,
 CellContent readCellContent(schema::CellContent::Reader r)
 {
     CellContent content(fromSchemaViewType(r.getViewType()), r.getDbuPerMicron());
+    content.setDbuPerEditorUnit(r.getDbuPerEditorUnit());
     content.properties() = readProperties(r.getProperties());
     content.sourceInfo() = extractSourceInfo(content.properties());
 

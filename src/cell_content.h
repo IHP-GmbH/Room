@@ -27,6 +27,10 @@ public:
     double                                              dbuPerMicron() const { return m_dbuPerMicron; }
     void                                                setDbuPerMicron(double value) { m_dbuPerMicron = value; }
 
+    /** Schematic/symbol views: integer DBU per 1.0 native editor unit (Qucs=1, Xschem=1000). 0 = infer on read. */
+    double                                              dbuPerEditorUnit() const { return m_dbuPerEditorUnit; }
+    void                                                setDbuPerEditorUnit(double value) { m_dbuPerEditorUnit = value; }
+
     std::vector<Property> &                             properties() { return m_properties; }
     const std::vector<Property> &                       properties() const { return m_properties; }
 
@@ -48,6 +52,7 @@ public:
 private:
     ViewType                                            m_viewType;
     double                                              m_dbuPerMicron;
+    double                                              m_dbuPerEditorUnit = 0.0;
     std::vector<Property>                               m_properties;
     std::vector<LayerSpec>                              m_layers;
     Block                                               m_block;

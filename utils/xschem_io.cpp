@@ -5,12 +5,14 @@
 
 #include "xschem_io.h"
 
+#include "coord_scale.h"
 #include "net.h"
 #include "shape.h"
 #include "xschem_format.h"
 
 #include <cctype>
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
@@ -19,7 +21,7 @@
 namespace core::xschem {
 namespace {
 
-constexpr double kCoordScale = 1000.0;
+double g_dbuPerEditorUnit = kXschemDbuPerEditorUnit;
 
 std::string trim(const std::string &value)
 {
@@ -106,18 +108,45 @@ bool readCoordToken(const std::string &text, std::size_t &pos, std::int64_t &val
     if (!readDoubleToken(text, pos, coord)) {
         return false;
     }
-    value = static_cast<std::int64_t>(std::llround(coord * kCoordScale));
+    value = editorUnitsToDbu(coord, g_dbuPerEditorUnit);
     return true;
 }
 
 void writeCoord(std::ostream &out, std::int64_t value)
 {
-    const double coord = static_cast<double>(value) / kCoordScale;
+    const double coord = dbuToEditorUnits(value, g_dbuPerEditorUnit);
     if (std::fabs(coord - std::llround(coord)) < 1e-9) {
         out << static_cast<std::int64_t>(std::llround(coord));
     } else {
         out << std::setprecision(12) << coord;
     }
+}
+
+std::string mapQucsSymbol(const std::string &qucsType)
+{
+    static const std::unordered_map<std::string, std::string> kMap = {
+        {"GND", "gnd.sym"},
+        {"Vdc", "vsource.sym"},
+        {"Vac", "vsource.sym"},
+        {"Idc", "isource.sym"},
+        {"Iac", "isource.sym"},
+        {"R", "res.sym"},
+        {"C", "capa.sym"},
+        {"L", "ind.sym"},
+        {"IProbe", "ngspice_probe.sym"},
+        {"VProbe", "ngspice_probe.sym"},
+    };
+    const auto it = kMap.find(qucsType);
+    if (it != kMap.end()) {
+        return it->second;
+    }
+    if (!qucsType.empty() && qucsType.front() == '.') {
+        return "qucs_directive.sym";
+    }
+    if (qucsType == "INCLSCR" || qucsType == "SpiceLib" || qucsType == "Lib" || qucsType == "Sub") {
+        return "qucs_blackbox.sym";
+    }
+    return "qucs_blackbox.sym";
 }
 
 void addProperty(std::vector<Property> &props, const std::string &name, const std::string &value)
@@ -133,6 +162,37 @@ const std::string *findProperty(const std::vector<Property> &props, const std::s
         }
     }
     return nullptr;
+}
+
+Instance instanceForQucsExport(const Instance &src)
+{
+    const std::string qucsType = src.cellName();
+    const std::string symbol = mapQucsSymbol(qucsType);
+    Instance inst(symbol, src.transform());
+
+    if (const std::string *name = findProperty(src.properties(), "name")) {
+        addProperty(inst.properties(), "name", *name);
+    }
+
+    if (symbol == "qucs_blackbox.sym") {
+        std::string label = qucsType;
+        if (qucsType == "Lib" || qucsType == "SpiceLib" || qucsType == "Sub") {
+            if (const std::string *model = findProperty(src.properties(), "param.1"); model && !model->empty()) {
+                label = *model;
+            }
+        }
+        addProperty(inst.properties(), "symname", label);
+    } else if (symbol == "qucs_directive.sym") {
+        addProperty(inst.properties(), "symname", qucsType);
+    } else if (symbol == "vsource.sym" || symbol == "isource.sym" || symbol == "res.sym" || symbol == "capa.sym" ||
+               symbol == "ind.sym") {
+        if (const std::string *value = findProperty(src.properties(), "param.0")) {
+            addProperty(inst.properties(), "value", *value);
+        }
+    }
+
+    addProperty(inst.properties(), "qucs.type", qucsType);
+    return inst;
 }
 
 void parseAttrBlock(const std::string &block, std::vector<Property> &props)
@@ -439,7 +499,7 @@ void parseTextRecord(const std::string &raw, Block &block, std::uint32_t layerId
     textData.layerId = layerId;
     textData.position = Point{x, y};
     textData.text = text;
-    textData.height = static_cast<std::uint32_t>(sizeX * kCoordScale);
+    textData.height = static_cast<std::uint32_t>(editorUnitsToDbu(sizeX, g_dbuPerEditorUnit));
     Shape shape(textData);
     addProperty(shape.properties(), "rotate", std::to_string(rotate));
     addProperty(shape.properties(), "mirror", std::to_string(mirror));
@@ -518,8 +578,7 @@ void parseArcRecord(const std::string &raw, Block &block, std::uint32_t layerId)
     }
     Shape::ArcData arc;
     arc.layerId = layerId;
-    arc.center = Point{static_cast<std::int64_t>(std::llround(cx * kCoordScale)),
-                       static_cast<std::int64_t>(std::llround(cy * kCoordScale))};
+    arc.center = Point{editorUnitsToDbu(cx, g_dbuPerEditorUnit), editorUnitsToDbu(cy, g_dbuPerEditorUnit)};
     arc.radius = radius;
     arc.startAngle = startAngle;
     arc.endAngle = endAngle;
@@ -577,6 +636,8 @@ void writeNetRecord(std::ostream &out, const Shape::PathData &path, const std::v
     writeCoord(out, path.points[1].y);
     if (const std::string *lab = findProperty(props, "lab")) {
         out << " {lab=" << *lab << "}";
+    } else if (const std::string *lab = findProperty(props, "label")) {
+        out << " {lab=" << *lab << "}";
     } else {
         out << " {}";
     }
@@ -600,7 +661,7 @@ void writeTextRecord(std::ostream &out, const Shape::TextData &text, const std::
 {
     const int rotate = findProperty(props, "rotate") ? std::stoi(*findProperty(props, "rotate")) : 0;
     const int mirror = findProperty(props, "mirror") ? std::stoi(*findProperty(props, "mirror")) : 0;
-    const double sizeX = static_cast<double>(text.height) / kCoordScale;
+    const double sizeX = dbuToEditorUnits(static_cast<std::int64_t>(text.height), g_dbuPerEditorUnit);
     const double sizeY = findProperty(props, "sizeY") ? std::stod(*findProperty(props, "sizeY")) : sizeX;
     out << 'T' << ' ' << '{' << text.text << '}' << ' ';
     writeCoord(out, text.position.x);
@@ -643,8 +704,8 @@ void writePinRecord(std::ostream &out, const Shape::RectData &rect, const std::v
 
 void writeArcRecord(std::ostream &out, const Shape::ArcData &arc, const std::vector<Property> &props)
 {
-    const double cx = static_cast<double>(arc.center.x) / kCoordScale;
-    const double cy = static_cast<double>(arc.center.y) / kCoordScale;
+    const double cx = dbuToEditorUnits(arc.center.x, g_dbuPerEditorUnit);
+    const double cy = dbuToEditorUnits(arc.center.y, g_dbuPerEditorUnit);
     std::vector<Property> arcProps;
     for (const Property &prop : props) {
         if (prop.name.rfind("arc.", 0) == 0 || prop.name == "geometry") {
@@ -732,6 +793,8 @@ void importRecords(const std::vector<std::string> &records, Cell &cell, CellCont
     cell.properties().clear();
     content.sourceInfo() = SourceInfo{};
 
+    g_dbuPerEditorUnit = content.dbuPerEditorUnit() > 0.0 ? content.dbuPerEditorUnit() : kXschemDbuPerEditorUnit;
+
     const std::uint32_t wireLayer = ensureLayer(content, "wire", LayerPurpose::Wire);
     const std::uint32_t drawingLayer = ensureLayer(content, "drawing", LayerPurpose::Drawing);
     const std::uint32_t labelLayer = ensureLayer(content, "label", LayerPurpose::Label);
@@ -792,10 +855,16 @@ void importRecords(const std::vector<std::string> &records, Cell &cell, CellCont
     }
     buildNetsFromWires(wires, block);
     block.recomputeBBox();
+    if (content.dbuPerEditorUnit() <= 0.0) {
+        content.setDbuPerEditorUnit(g_dbuPerEditorUnit);
+    }
 }
 
 void exportRecords(std::ostream &out, const Cell &cell, const CellContent &content)
 {
+    const bool fromQucs = content.sourceInfo().format() == "qucs";
+    g_dbuPerEditorUnit = effectiveDbuPerEditorUnit(content);
+
     writeVersionRecord(out, content.sourceInfo());
     if (!cell.properties().empty()) {
         out << 'G' << ' ' << formatAttrBlock(cell.properties()) << '\n';
@@ -866,7 +935,11 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
     }
 
     for (const Instance &inst : block.instances()) {
-        writeComponentRecord(out, inst);
+        if (fromQucs) {
+            writeComponentRecord(out, instanceForQucsExport(inst));
+        } else {
+            writeComponentRecord(out, inst);
+        }
     }
 }
 

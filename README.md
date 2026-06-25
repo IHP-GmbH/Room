@@ -31,7 +31,7 @@ Database
       ├── layers[]              ← LayerSpec table (library-global)
       ├── index                 ← LibIndex (derived hierarchy + bboxes, persisted)
       └── Cell[]                ← name, aliases[], optional PCellInfo
-           └── CellContent[]     ← viewType, dbuPerMicron, properties, layers[] (per-view)
+           └── CellContent[]     ← viewType, dbuPerMicron, dbuPerEditorUnit, properties, layers[] (per-view)
                 └── payload      ← ViewPayload (Cap'n Proto union)
                      ├── layout | schematic | symbol | abstract
                      │    ├── layers[]   (per-view layer table on disk)
@@ -40,7 +40,7 @@ Database
                      └── opaque         (skip-friendly unknown views)
 ```
 
-**C++ API:** `CellContent::block()` is the in-memory accessor for topology; `CellContent::layers()` holds the per-view layer table (`LayerSpec` + `LayerPurpose`). `Cell::aliases()` and `Cell::pCell()` cover PDK cell identity. On save, compact encoding is the default (`SaveOptions::compactGeometry`); load auto-detects `compact` vs `block`. See [docs/COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) and [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
+**C++ API:** `CellContent::block()` is the in-memory accessor for topology; `CellContent::layers()` holds the per-view layer table (`LayerSpec` + `LayerPurpose`). Layout coordinates use `dbuPerMicron`; schematic/symbol coordinates use `dbuPerEditorUnit` (see [docs/html/coordscale.html](docs/html/coordscale.html)). `Cell::aliases()` and `Cell::pCell()` cover PDK cell identity. On save, compact encoding is the default (`SaveOptions::compactGeometry`); load auto-detects `compact` vs `block`. See [docs/COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) and [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
 
 ## Requirements
 

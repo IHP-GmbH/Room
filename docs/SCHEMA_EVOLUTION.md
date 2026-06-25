@@ -21,7 +21,7 @@ Cap'n Proto schemas live under `schema/`. This document defines how they change 
 ## Current model (v1.0)
 
 ```
-Database → Lib → Cell(aliases[], pCell) → CellContent(viewType, payload)
+Database → Lib → Cell(aliases[], pCell) → CellContent(viewType, dbuPerMicron, dbuPerEditorUnit, payload)
                 → layers[]   (library master catalog)
 ```
 

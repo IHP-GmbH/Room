@@ -59,7 +59,22 @@ core::CoreFileInfo info = core::sniffCoreFile("test.schematic.core");</code></pr
    ├─► sniffCoreFile() for LibMan routing
    └─► XschemExporter → payload/*.sch</div>
 
-      <h2>4. In-process (Xschem + Tcl)</h2>
+      <h2>4. Coordinate scale</h2>
+      <p>
+        Xschem stores fractional schematic coordinates; CORE uses <code>dbuPerEditorUnit = 1000</code>
+        (1000 DBU = 1.0 Xschem unit). <a href="qucsimporter.html">Qucs</a> views use <code>1</code>.
+        Exporters call <code>effectiveDbuPerEditorUnit()</code> from <code>utils/coord_scale.h</code>.
+        See <a href="coordscale.html">Coordinate scale</a>.
+      </p>
+
+      <h2>5. Qucs CORE in Xschem</h2>
+      <p>
+        When <code>SourceInfo::format()</code> is <code>qucs</code>, <code>xschem_io</code> maps Qucs component types to
+        Xschem symbols (<code>GND</code> → <code>gnd.sym</code>, <code>Lib</code> → <code>qucs_blackbox.sym</code>, etc.)
+        while applying the view's DBU scale.
+      </p>
+
+      <h2>6. In-process (Xschem + Tcl)</h2>
       <p>Build <code>coretcl.so</code> and use <a href="xschembriage.html">xschem_bridge</a> from Tcl.</p>
 
       <p>See also: <a href="example_qucs.html">Qucs example</a> · <a href="corepaths.html">CORE file naming</a></p>

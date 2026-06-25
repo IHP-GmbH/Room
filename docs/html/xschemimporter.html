@@ -50,7 +50,7 @@
         <tr><td>warnings(), errors()</td><td>Messages from last import.</td></tr>
       </table>
       <h2 id="details">Detailed Description</h2>
-      <p>Parsing uses <code>core::xschem::readRecords</code> / <code>importRecords</code> (<code>xschem_io</code>). Sets <a href="sourceinfo.html">SourceInfo</a> with <code>format = xschem</code>. Schematic wires map to <a href="net.html">Net</a>/<a href="term.html">Term</a>; instances use <a href="shape.html#type-enum">Shape::Arc</a> where applicable.</p>
+      <p>Parsing uses <code>core::xschem::readRecords</code> / <code>importRecords</code> (<code>xschem_io</code>). Sets <code>dbuPerEditorUnit = 1000</code> and <a href="sourceinfo.html">SourceInfo</a> with <code>format = xschem</code>. Schematic wires map to <a href="net.html">Net</a>/<a href="term.html">Term</a>; instances use <a href="shape.html#type-enum">Shape::Arc</a> where applicable. See <a href="coordscale.html">coordinate scale</a>.</p>
       <p>CLI: <code>xschem_to_core</code> — see <a href="example_xschem.html">Xschem example</a>.</p>
       <div class="fn-block" id="options"><h3 class="fn-title">struct Options</h3>
       <table class="members"><tr><th>Member</th><th>Default</th><th>Description</th></tr>

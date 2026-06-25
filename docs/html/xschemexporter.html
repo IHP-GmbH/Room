@@ -48,7 +48,7 @@
         <tr><td>warnings(), errors()</td><td>Messages from last export.</td></tr>
       </table>
       <h2 id="details">Detailed Description</h2>
-      <p>Uses <code>core::xschem::exportRecords</code>. Extension follows <code>CellContent::viewType()</code> via <code>xschem_format</code>.</p>
+      <p>Uses <code>core::xschem::exportRecords</code> with <code>effectiveDbuPerEditorUnit()</code>. For Qucs-sourced views, maps component types to Xschem symbols. Extension follows <code>CellContent::viewType()</code> via <code>xschem_format</code>. See <a href="coordscale.html">coordinate scale</a>.</p>
       <p>CLI: <code>core_to_xschem</code>.</p>
       <h2 id="example">Example</h2>
       <pre class="example"><code>core::Database db = core::Database::loadFromFile("inv.schematic.core");

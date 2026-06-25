@@ -86,13 +86,14 @@ Database  →  Cell  →  CellContent(schematic).payload.schematic.block
         <tr><th>Qucs</th><th>CORE</th></tr>
         <tr><td><code>&lt;Components&gt;</code> line</td><td><a href="instance.html">Instance</a> (<code>cellName</code> = Qucs type, <code>qucs.instName</code> = R1, C1, …)</td></tr>
         <tr><td><code>&lt;Wires&gt;</code> label</td><td><a href="net.html">Net</a> name</td></tr>
-        <tr><td>Wire endpoints</td><td><a href="term.html">Term</a> positions (1 DBU = 1 Qucs pixel)</td></tr>
+        <tr><td>Wire endpoints</td><td><a href="term.html">Term</a> positions; <code>dbuPerEditorUnit=1</code> (1 DBU = 1 Qucs grid unit)</td></tr>
+        <tr><td>Coordinate scale</td><td><code>CellContent::dbuPerEditorUnit()</code> = <code>1</code></td></tr>
         <tr><td>View type</td><td><code>ViewType::Schematic</code></td></tr>
       </table>
 
       <h2>6. Sample text dump</h2>
       <pre class="example"><code>cell "rc_lowpass"
-  type schematic dbuPerMicron=1.000
+  type schematic dbuPerMicron=1.000 dbuPerEditorUnit=1.000
   shapes=0 instances=4 nets=3
     instance -> "R" at (280,200)
     instance -> "C" at (480,200)
@@ -105,7 +106,7 @@ Database  →  Cell  →  CellContent(schematic).payload.schematic.block
         <li>Qucs component libraries (<code>.lib</code>) are not imported yet</li>
       </ul>
 
-      <p>See also: <a href="example.html">GDS layout import example</a></p>
+      <p>See also: <a href="example.html">GDS layout import example</a> · <a href="coordscale.html">Coordinate scale</a></p>
     </main>
   </div>
 </body>

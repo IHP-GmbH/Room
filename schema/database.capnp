@@ -10,10 +10,12 @@ using ViewPayload = import "views.capnp".ViewPayload;
 using LibIndex    = import "index.capnp".LibIndex;
 
 struct CellContent {
-  viewType     @0 :ViewType;
-  dbuPerMicron @1 :Float64;
-  properties   @2 :List(Property);
-  payload      @3 :ViewPayload;
+  viewType         @0 :ViewType;
+  dbuPerMicron     @1 :Float64;
+  properties       @2 :List(Property);
+  payload          @3 :ViewPayload;
+  # Schematic/symbol: integer DBU per 1.0 native editor unit (Qucs=1, Xschem=1000). 0 = infer from source.
+  dbuPerEditorUnit @4 :Float64;
 }
 
 struct PCellInfo {
