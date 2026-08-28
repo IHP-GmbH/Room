@@ -58,6 +58,26 @@ Status exportCell(const std::string &corePath, const std::string &cellName, cons
     return status;
 }
 
+std::string exportCellToString(const std::string &corePath, const std::string &cellName, Status &status)
+{
+    status = Status{};
+    try {
+        const Database db = Database::loadFromFile(corePath);
+        XschemExporter exporter;
+        const std::string data = exporter.exportCellToString(db, cellName);
+        appendMessages(status, exporter.warnings(), false);
+        appendMessages(status, exporter.errors(), true);
+        if (!status.ok) {
+            return {};
+        }
+        return data;
+    } catch (const std::exception &ex) {
+        status.ok = false;
+        status.errors.push_back(ex.what());
+        return {};
+    }
+}
+
 Status exportAll(const std::string &corePath, const std::string &outputDir, std::size_t &exportedCount)
 {
     Status status;
@@ -95,6 +115,34 @@ Status importIntoCore(const std::string &inputPath, const std::string &corePath,
         }
 
         db.saveToFile(corePath, fileViewForPath(inputPath));
+    } catch (const std::exception &ex) {
+        status.ok = false;
+        status.errors.push_back(ex.what());
+    }
+    return status;
+}
+
+Status importTextIntoCore(const std::string &text, const std::string &extension, const std::string &corePath,
+                          const XschemImporter::Options &options)
+{
+    Status status;
+    try {
+        Database db;
+        if (std::ifstream(corePath).good()) {
+            db = Database::loadFromFile(corePath);
+        } else {
+            db.lib() = Lib(options.libName);
+        }
+
+        XschemImporter importer(options);
+        db = importer.importTextInto(std::move(db), text, extension, options.cellName);
+        appendMessages(status, importer.warnings(), false);
+        appendMessages(status, importer.errors(), true);
+        if (!status.ok) {
+            return status;
+        }
+
+        db.saveToFile(corePath, fileViewForPath("placeholder" + extension));
     } catch (const std::exception &ex) {
         status.ok = false;
         status.errors.push_back(ex.what());

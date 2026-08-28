@@ -112,11 +112,14 @@ add_library(core_utils STATIC
     utils/gds_exporter.cpp
     utils/qucs_importer.cpp
     utils/qucs_exporter.cpp
+    utils/qucs_block_codec.cpp
     utils/coord_scale.cpp
+    utils/pin_retarget.cpp
     utils/xschem_format.cpp
     utils/xschem_io.cpp
     utils/xschem_importer.cpp
     utils/xschem_exporter.cpp
+    utils/primitive_resolver.cpp
     utils/xschem_bridge.cpp
     utils/text_dump.cpp
 )

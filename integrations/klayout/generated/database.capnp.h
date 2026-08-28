@@ -26,6 +26,7 @@ CAPNP_DECLARE_SCHEMA(a96fd2f55f4e90c1);
 CAPNP_DECLARE_SCHEMA(83f484cf306c4ed8);
 CAPNP_DECLARE_SCHEMA(e0da78f54762e95e);
 CAPNP_DECLARE_SCHEMA(8880e275367ee4c6);
+CAPNP_DECLARE_SCHEMA(8f5db13bf1d9c88d);
 CAPNP_DECLARE_SCHEMA(ed0e75b18be624c4);
 
 }  // namespace schemas
@@ -42,7 +43,7 @@ struct CellContent {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(a96fd2f55f4e90c1, 2, 2)
+    CAPNP_DECLARE_STRUCT_HEADER(a96fd2f55f4e90c1, 3, 2)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -94,6 +95,21 @@ struct Lib {
   };
 };
 
+struct FileSummary {
+  FileSummary() = delete;
+
+  class Reader;
+  class Builder;
+  class Pipeline;
+
+  struct _capnpPrivate {
+    CAPNP_DECLARE_STRUCT_HEADER(8f5db13bf1d9c88d, 1, 1)
+    #if !CAPNP_LITE
+    static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
+    #endif  // !CAPNP_LITE
+  };
+};
+
 struct Database {
   Database() = delete;
 
@@ -102,7 +118,7 @@ struct Database {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(ed0e75b18be624c4, 0, 4)
+    CAPNP_DECLARE_STRUCT_HEADER(ed0e75b18be624c4, 0, 5)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -137,6 +153,8 @@ public:
 
   inline bool hasPayload() const;
   inline  ::core::schema::ViewPayload::Reader getPayload() const;
+
+  inline double getDbuPerEditorUnit() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -185,6 +203,9 @@ public:
   inline  ::core::schema::ViewPayload::Builder initPayload();
   inline void adoptPayload(::capnp::Orphan< ::core::schema::ViewPayload>&& value);
   inline ::capnp::Orphan< ::core::schema::ViewPayload> disownPayload();
+
+  inline double getDbuPerEditorUnit();
+  inline void setDbuPerEditorUnit(double value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -549,6 +570,97 @@ private:
 };
 #endif  // !CAPNP_LITE
 
+class FileSummary::Reader {
+public:
+  typedef FileSummary Reads;
+
+  Reader() = default;
+  inline explicit Reader(::capnp::_::StructReader base): _reader(base) {}
+
+  inline ::capnp::MessageSize totalSize() const {
+    return _reader.totalSize().asPublic();
+  }
+
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const {
+    return ::capnp::_::structString(_reader, *_capnpPrivate::brand());
+  }
+#endif  // !CAPNP_LITE
+
+  inline  ::core::schema::ViewType getView() const;
+
+  inline  ::uint32_t getCellCount() const;
+
+  inline bool hasPrimaryCell() const;
+  inline  ::capnp::Text::Reader getPrimaryCell() const;
+
+private:
+  ::capnp::_::StructReader _reader;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::List;
+  friend class ::capnp::MessageBuilder;
+  friend class ::capnp::Orphanage;
+};
+
+class FileSummary::Builder {
+public:
+  typedef FileSummary Builds;
+
+  Builder() = delete;  // Deleted to discourage incorrect usage.
+                       // You can explicitly initialize to nullptr instead.
+  inline Builder(decltype(nullptr)) {}
+  inline explicit Builder(::capnp::_::StructBuilder base): _builder(base) {}
+  inline operator Reader() const { return Reader(_builder.asReader()); }
+  inline Reader asReader() const { return *this; }
+
+  inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const { return asReader().toString(); }
+#endif  // !CAPNP_LITE
+
+  inline  ::core::schema::ViewType getView();
+  inline void setView( ::core::schema::ViewType value);
+
+  inline  ::uint32_t getCellCount();
+  inline void setCellCount( ::uint32_t value);
+
+  inline bool hasPrimaryCell();
+  inline  ::capnp::Text::Builder getPrimaryCell();
+  inline void setPrimaryCell( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initPrimaryCell(unsigned int size);
+  inline void adoptPrimaryCell(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownPrimaryCell();
+
+private:
+  ::capnp::_::StructBuilder _builder;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  friend class ::capnp::Orphanage;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+};
+
+#if !CAPNP_LITE
+class FileSummary::Pipeline {
+public:
+  typedef FileSummary Pipelines;
+
+  inline Pipeline(decltype(nullptr)): _typeless(nullptr) {}
+  inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
+      : _typeless(kj::mv(typeless)) {}
+
+private:
+  ::capnp::AnyPointer::Pipeline _typeless;
+  friend class ::capnp::PipelineHook;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+};
+#endif  // !CAPNP_LITE
+
 class Database::Reader {
 public:
   typedef Database Reads;
@@ -577,6 +689,9 @@ public:
 
   inline bool hasLib() const;
   inline  ::core::schema::Lib::Reader getLib() const;
+
+  inline bool hasSummary() const;
+  inline  ::core::schema::FileSummary::Reader getSummary() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -634,6 +749,13 @@ public:
   inline void adoptLib(::capnp::Orphan< ::core::schema::Lib>&& value);
   inline ::capnp::Orphan< ::core::schema::Lib> disownLib();
 
+  inline bool hasSummary();
+  inline  ::core::schema::FileSummary::Builder getSummary();
+  inline void setSummary( ::core::schema::FileSummary::Reader value);
+  inline  ::core::schema::FileSummary::Builder initSummary();
+  inline void adoptSummary(::capnp::Orphan< ::core::schema::FileSummary>&& value);
+  inline ::capnp::Orphan< ::core::schema::FileSummary> disownSummary();
+
 private:
   ::capnp::_::StructBuilder _builder;
   template <typename, ::capnp::Kind>
@@ -653,6 +775,7 @@ public:
       : _typeless(kj::mv(typeless)) {}
 
   inline  ::core::schema::Lib::Pipeline getLib();
+  inline  ::core::schema::FileSummary::Pipeline getSummary();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   friend class ::capnp::PipelineHook;
@@ -762,6 +885,20 @@ inline void CellContent::Builder::adoptPayload(
 inline ::capnp::Orphan< ::core::schema::ViewPayload> CellContent::Builder::disownPayload() {
   return ::capnp::_::PointerHelpers< ::core::schema::ViewPayload>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+
+inline double CellContent::Reader::getDbuPerEditorUnit() const {
+  return _reader.getDataField<double>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+
+inline double CellContent::Builder::getDbuPerEditorUnit() {
+  return _builder.getDataField<double>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+inline void CellContent::Builder::setDbuPerEditorUnit(double value) {
+  _builder.setDataField<double>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
 }
 
 inline bool PCellInfo::Reader::hasMasterName() const {
@@ -1186,6 +1323,68 @@ inline ::capnp::Orphan< ::core::schema::LibIndex> Lib::Builder::disownIndex() {
       ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
 
+inline  ::core::schema::ViewType FileSummary::Reader::getView() const {
+  return _reader.getDataField< ::core::schema::ViewType>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+
+inline  ::core::schema::ViewType FileSummary::Builder::getView() {
+  return _builder.getDataField< ::core::schema::ViewType>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+inline void FileSummary::Builder::setView( ::core::schema::ViewType value) {
+  _builder.setDataField< ::core::schema::ViewType>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t FileSummary::Reader::getCellCount() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t FileSummary::Builder::getCellCount() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+inline void FileSummary::Builder::setCellCount( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool FileSummary::Reader::hasPrimaryCell() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline bool FileSummary::Builder::hasPrimaryCell() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader FileSummary::Reader::getPrimaryCell() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder FileSummary::Builder::getPrimaryCell() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void FileSummary::Builder::setPrimaryCell( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder FileSummary::Builder::initPrimaryCell(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), size);
+}
+inline void FileSummary::Builder::adoptPrimaryCell(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> FileSummary::Builder::disownPrimaryCell() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+
 inline bool Database::Reader::hasVersion() const {
   return !_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
@@ -1325,6 +1524,45 @@ inline void Database::Builder::adoptLib(
 inline ::capnp::Orphan< ::core::schema::Lib> Database::Builder::disownLib() {
   return ::capnp::_::PointerHelpers< ::core::schema::Lib>::disown(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+
+inline bool Database::Reader::hasSummary() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline bool Database::Builder::hasSummary() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline  ::core::schema::FileSummary::Reader Database::Reader::getSummary() const {
+  return ::capnp::_::PointerHelpers< ::core::schema::FileSummary>::get(_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline  ::core::schema::FileSummary::Builder Database::Builder::getSummary() {
+  return ::capnp::_::PointerHelpers< ::core::schema::FileSummary>::get(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+#if !CAPNP_LITE
+inline  ::core::schema::FileSummary::Pipeline Database::Pipeline::getSummary() {
+  return  ::core::schema::FileSummary::Pipeline(_typeless.getPointerField(4));
+}
+#endif  // !CAPNP_LITE
+inline void Database::Builder::setSummary( ::core::schema::FileSummary::Reader value) {
+  ::capnp::_::PointerHelpers< ::core::schema::FileSummary>::set(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), value);
+}
+inline  ::core::schema::FileSummary::Builder Database::Builder::initSummary() {
+  return ::capnp::_::PointerHelpers< ::core::schema::FileSummary>::init(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline void Database::Builder::adoptSummary(
+    ::capnp::Orphan< ::core::schema::FileSummary>&& value) {
+  ::capnp::_::PointerHelpers< ::core::schema::FileSummary>::adopt(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::core::schema::FileSummary> Database::Builder::disownSummary() {
+  return ::capnp::_::PointerHelpers< ::core::schema::FileSummary>::disown(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
 
 }  // namespace

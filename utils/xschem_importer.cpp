@@ -69,6 +69,46 @@ Database XschemImporter::importFileInto(Database db, const std::string &path) co
     }
 
     const std::string cellName = m_options.cellName.empty() ? stemFromPath(path) : m_options.cellName;
+    return importTextInto(std::move(db), records, extension, cellName, path);
+}
+
+Database XschemImporter::importText(const std::string &text, const std::string &extension,
+                                    const std::string &cellName) const
+{
+    Database db;
+    db.lib() = Lib(m_options.libName);
+    return importTextInto(std::move(db), text, extension, cellName);
+}
+
+Database XschemImporter::importTextInto(Database db, const std::string &text, const std::string &extension,
+                                        const std::string &cellName) const
+{
+    m_warnings.clear();
+    m_errors.clear();
+
+    if (extension != ".sch" && extension != ".sym") {
+        m_errors.push_back("Unsupported Xschem extension: " + extension);
+        return db;
+    }
+
+    const std::vector<std::string> records = xschem::readRecordsFromText(text, m_errors);
+    if (!m_errors.empty()) {
+        return db;
+    }
+
+    const std::string resolvedCellName = cellName.empty()
+        ? (m_options.cellName.empty() ? std::string("cell") : m_options.cellName)
+        : cellName;
+    return importTextInto(std::move(db), records, extension, resolvedCellName, {});
+}
+
+Database XschemImporter::importTextInto(Database db, const std::vector<std::string> &records,
+                                          const std::string &extension, const std::string &cellName,
+                                          const std::string &sourcePath) const
+{
+    m_warnings.clear();
+    m_errors.clear();
+
     const ViewType viewType = xschem::viewTypeForExtension(extension);
 
     Cell *existing = db.lib().findCell(cellName);
@@ -84,7 +124,9 @@ Database XschemImporter::importFileInto(Database db, const std::string &path) co
     content.clearOpaquePayload();
 
     xschem::importRecords(records, cell, content, m_warnings);
-    content.properties().push_back({xschem::kPropSourcePath, path});
+    if (!sourcePath.empty()) {
+        content.properties().push_back({xschem::kPropSourcePath, sourcePath});
+    }
     content.properties().push_back({xschem::kPropSourceExt, extension});
 
     for (const LayerSpec &layer : content.layers()) {

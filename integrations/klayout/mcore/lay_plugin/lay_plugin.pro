@@ -2,14 +2,18 @@
 TARGET = mcore_ui
 DESTDIR = $$OUT_PWD/../../../../lay_plugins
 
-include($$PWD/../../../lay_plugin.pri)
-
 exists($$PWD/../db_plugin/local.pri) {
   include($$PWD/../db_plugin/local.pri)
 }
 
-INCLUDEPATH += $$PWD/../db_plugin
-DEPENDPATH += $$PWD/../db_plugin
+isEmpty(KLAYOUT_SRC) {
+  KLAYOUT_SRC = $$clean_path($$PWD/../../../../..)
+}
+
+include($$KLAYOUT_SRC/plugins/lay_plugin.pri)
+
+INCLUDEPATH += $$PWD/../db_plugin $$KLAYOUT_SRC/plugins/common
+DEPENDPATH += $$PWD/../db_plugin $$KLAYOUT_SRC/plugins/common
 LIBS += -L$$DESTDIR/../db_plugins -lmcore
 
 !isEmpty(RPATH) {

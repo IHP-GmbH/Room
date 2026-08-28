@@ -96,7 +96,7 @@ void write_database_to_stream (core::Database &database, tl::OutputStream &strea
 {
   database.lib ().recomputeAllBBoxes ();
   database.lib ().refreshIndex ();
-  database.recomputeFileSummary (core::ViewType::Layout);
+  database.setFileSummary (core::FileSummary::fromLib (database.lib (), core::ViewType::Layout));
 
   core::SaveOptions options;
   capnp::MallocMessageBuilder message;

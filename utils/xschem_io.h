@@ -25,6 +25,7 @@ namespace core::xschem {
 
 
 std::vector<std::string> readRecords(const std::string &path, std::vector<std::string> &errors);
+std::vector<std::string> readRecordsFromText(const std::string &text, std::vector<std::string> &errors);
 
 void importRecords(const std::vector<std::string> &records, Cell &cell, CellContent &content,
 

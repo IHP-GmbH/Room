@@ -1,3 +1,4 @@
+#include "core_paths.h"
 #include "database.h"
 #include "qucs_exporter.h"
 
@@ -16,6 +17,12 @@ void printMessages(const char *kind, const std::vector<std::string> &messages)
     for (const auto &msg : messages) {
         std::cerr << kind << ": " << msg << '\n';
     }
+}
+
+bool isSymbolCorePath(const std::string &path)
+{
+    const core::ParsedCorePath parsed = core::parseCoreFilePath(path);
+    return parsed.valid && parsed.view == core::ViewType::Symbol;
 }
 
 } // namespace
@@ -39,7 +46,11 @@ int main(int argc, char *argv[])
     try {
         const core::Database db = core::Database::loadFromFile(corePath);
         core::QucsExporter exporter;
-        exporter.exportCell(db, cellName, schPath);
+        if (isSymbolCorePath(corePath)) {
+            exporter.exportSymbolCell(db, cellName, schPath);
+        } else {
+            exporter.exportCell(db, cellName, schPath);
+        }
         printMessages("warning", exporter.warnings());
         printMessages("error", exporter.errors());
         if (!exporter.errors().empty()) {

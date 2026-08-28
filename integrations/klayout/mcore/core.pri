@@ -31,11 +31,13 @@ SOURCES += \
   $$CORE_SRC/net.cpp \
   $$CORE_SRC/block.cpp \
   $$CORE_SRC/cell_content.cpp \
+  $$CORE_SRC/source_info.cpp \
   $$CORE_SRC/cell.cpp \
   $$CORE_SRC/layer_utils.cpp \
   $$CORE_SRC/lib.cpp \
   $$CORE_SRC/lib_index.cpp \
   $$CORE_SRC/database.cpp \
+  $$CORE_SRC/file_summary.cpp \
   $$CORE_SRC/serialization.cpp \
   $$CORE_SRC/compact_codec.cpp \
   $$CORE_SRC/varint_codec.cpp \

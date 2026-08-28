@@ -513,8 +513,9 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
             bucket.layerId = arc.layerId;
             std::vector<Point> points;
             constexpr int segments = 32;
+            // Xschem arc record stores start angle and span (not absolute end angle).
             const double start = arc.startAngle * 3.141592653589793 / 180.0;
-            const double span = (arc.endAngle - arc.startAngle) * 3.141592653589793 / 180.0;
+            const double span = arc.endAngle * 3.141592653589793 / 180.0;
             const double cx = static_cast<double>(arc.center.x) / 1000.0;
             const double cy = static_cast<double>(arc.center.y) / 1000.0;
             for (int i = 0; i <= segments; ++i) {
@@ -526,6 +527,8 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
             }
             std::vector<Property> props = shape.properties();
             props.push_back({"geometry", "arc"});
+            props.push_back({"arc.centerX", std::to_string(arc.center.x)});
+            props.push_back({"arc.centerY", std::to_string(arc.center.y)});
             props.push_back({"arc.radius", std::to_string(arc.radius)});
             props.push_back({"arc.startAngle", std::to_string(arc.startAngle)});
             props.push_back({"arc.endAngle", std::to_string(arc.endAngle)});

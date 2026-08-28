@@ -61,8 +61,18 @@ int main(int argc, char *argv[])
     db.setGenerator("CORE qucs_to_core");
     db.setTechnology("qucs");
 
-    db.saveToFile(corePath, core::ViewType::Schematic);
-    std::cout << "Saved CORE file: " << corePath << '\n';
+    core::ViewType saveView = core::ViewType::Schematic;
+    if (!db.lib().cells().empty()) {
+        const core::Cell &cell = db.lib().cells().front();
+        if (cell.findContent(core::ViewType::Symbol) != nullptr
+            && cell.findContent(core::ViewType::Schematic) == nullptr) {
+            saveView = core::ViewType::Symbol;
+        }
+    }
+
+    db.saveToFile(corePath, saveView);
+    std::cout << "Saved CORE file: " << corePath
+              << (saveView == core::ViewType::Symbol ? " (symbol)" : " (schematic)") << '\n';
     std::cout << "  cells: " << db.lib().cells().size() << '\n';
 
     if (dumpRequested) {

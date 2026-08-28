@@ -136,6 +136,61 @@ int CoreParsePathCmd(ClientData, Tcl_Interp *interp, int objc, Tcl_Obj *const ob
     return TCL_OK;
 }
 
+int CoreExportCellDataCmd(ClientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
+{
+    if (objc != 3) {
+        Tcl_WrongNumArgs(interp, 1, objv, "corePath cellName");
+        return TCL_ERROR;
+    }
+
+    bridge::Status status;
+    const std::string data = bridge::exportCellToString(objToString(objv[1]), objToString(objv[2]), status);
+    appendWarnings(interp, status);
+    if (!status.ok) {
+        return setBridgeError(interp, status);
+    }
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(data.c_str(), static_cast<int>(data.size())));
+    return TCL_OK;
+}
+
+int CoreImportDataCmd(ClientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
+{
+    if (objc < 3) {
+        Tcl_WrongNumArgs(interp, 1, objv, "text corePath ?-lib name? ?-cell name?");
+        return TCL_ERROR;
+    }
+
+    core::XschemImporter::Options options;
+    options.libName = "xschem";
+    for (int i = 3; i < objc; i += 2) {
+        if (i + 1 >= objc) {
+            Tcl_SetObjResult(interp, Tcl_NewStringObj("missing value after flag", -1));
+            return TCL_ERROR;
+        }
+        const std::string flag = objToString(objv[i]);
+        const std::string value = objToString(objv[i + 1]);
+        if (flag == "-lib") {
+            options.libName = value;
+        } else if (flag == "-cell") {
+            options.cellName = value;
+        } else {
+            Tcl_SetObjResult(interp, Tcl_NewStringObj(("unknown flag: " + flag).c_str(), -1));
+            return TCL_ERROR;
+        }
+    }
+
+    const std::string text = objToString(objv[1]);
+    const std::string corePath = objToString(objv[2]);
+    const std::string extension = corePath.find(".symbol.core") != std::string::npos ? ".sym" : ".sch";
+    const bridge::Status status = bridge::importTextIntoCore(text, extension, corePath, options);
+    appendWarnings(interp, status);
+    if (!status.ok) {
+        return setBridgeError(interp, status);
+    }
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(corePath.c_str(), -1));
+    return TCL_OK;
+}
+
 int CoreImportCmd(ClientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 {
     if (objc < 3) {
@@ -181,8 +236,10 @@ extern "C" int Core_Init(Tcl_Interp *interp)
 
     Tcl_CreateObjCommand(interp, "coreapi_list_cells", CoreListCellsCmd, nullptr, nullptr);
     Tcl_CreateObjCommand(interp, "coreapi_export_cell", CoreExportCellCmd, nullptr, nullptr);
+    Tcl_CreateObjCommand(interp, "coreapi_export_cell_data", CoreExportCellDataCmd, nullptr, nullptr);
     Tcl_CreateObjCommand(interp, "coreapi_export_all", CoreExportAllCmd, nullptr, nullptr);
     Tcl_CreateObjCommand(interp, "coreapi_import", CoreImportCmd, nullptr, nullptr);
+    Tcl_CreateObjCommand(interp, "coreapi_import_data", CoreImportDataCmd, nullptr, nullptr);
     Tcl_CreateObjCommand(interp, "coreapi_core_file_name", CoreFileNameCmd, nullptr, nullptr);
     Tcl_CreateObjCommand(interp, "coreapi_parse_core_path", CoreParsePathCmd, nullptr, nullptr);
 

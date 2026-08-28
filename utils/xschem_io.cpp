@@ -7,8 +7,11 @@
 
 #include "coord_scale.h"
 #include "net.h"
+#include "pin_retarget.h"
 #include "shape.h"
 #include "xschem_format.h"
+
+#include "primitive_resolver.h"
 
 #include <cctype>
 #include <cmath>
@@ -128,13 +131,29 @@ std::string mapQucsSymbol(const std::string &qucsType)
         {"GND", "gnd.sym"},
         {"Vdc", "vsource.sym"},
         {"Vac", "vsource.sym"},
+        {"Vpulse", "vsource.sym"},
+        {"Vexp", "vsource.sym"},
+        {"Vrect", "vsource.sym"},
+        {"Vfile", "vsource_pwl.sym"},
+        {"Vpwl", "vsource_pwl.sym"},
+        {"Varith", "vsource_arith.sym"},
         {"Idc", "isource.sym"},
         {"Iac", "isource.sym"},
+        {"Ipulse", "isource.sym"},
+        {"Iexp", "isource.sym"},
+        {"Irect", "isource.sym"},
+        {"Ifile", "isource_pwl.sym"},
+        {"Ipwl", "isource_pwl.sym"},
+        {"Iarith", "isource_arith.sym"},
+        {"vdd", "vdd.sym"},
+        {"vss", "vss.sym"},
         {"R", "res.sym"},
         {"C", "capa.sym"},
         {"L", "ind.sym"},
-        {"IProbe", "ngspice_probe.sym"},
+        {"INDQ", "ind.sym"},
+        {"IProbe", "IProbe.sym"},
         {"VProbe", "ngspice_probe.sym"},
+        {"Port", "iopin.sym"},
     };
     const auto it = kMap.find(qucsType);
     if (it != kMap.end()) {
@@ -167,31 +186,95 @@ const std::string *findProperty(const std::vector<Property> &props, const std::s
 Instance instanceForQucsExport(const Instance &src)
 {
     const std::string qucsType = src.cellName();
-    const std::string symbol = mapQucsSymbol(qucsType);
-    Instance inst(symbol, src.transform());
+    // LibComp stores the real model in param.1 (library component name). After a Qucs CORE
+    // save, R/C/Vdc/GND/PDK devices often appear as cellName "Lib" — resolve before mapping.
+    std::string resolvedModel = qucsType;
+    if (qucsType == "Lib" || qucsType == "SpiceLib") {
+        if (const std::string *model = findProperty(src.properties(), "param.1"); model && !model->empty()) {
+            resolvedModel = *model;
+        }
+    }
+
+    std::string symbol = mapQucsSymbol(resolvedModel);
+    if (resolvedModel == "Port") {
+        // Qucs Port Type: param.1 = analog|in|out|inout → commonLib pin cells
+        std::string portType = "analog";
+        if (const std::string *t = findProperty(src.properties(), "param.1"); t && !t->empty()) {
+            portType = *t;
+        }
+        if (portType == "in") {
+            symbol = "ipin.sym";
+        } else if (portType == "out") {
+            symbol = "opin.sym";
+        } else {
+            symbol = "iopin.sym";
+        }
+    }
+    bool remappedToNativePdk = false;
+    if (symbol == "qucs_blackbox.sym" && qucsType == "Lib" && !resolvedModel.empty() && resolvedModel != "Lib"
+        && resolvedModel.front() != '.') {
+        // PDK / analogLib cell: let Xschem resolve via CORE_PRIMITIVE index (cell.sym).
+        symbol = resolvedModel + ".sym";
+        remappedToNativePdk = true;
+    }
+
+    Transform xf = src.transform();
+    if (hasQucsHistoricalSourceRotate(resolvedModel)) {
+        const int mirror = findProperty(src.properties(), "mirror")
+            ? std::stoi(*findProperty(src.properties(), "mirror"))
+            : 0;
+        const int rotateField = findProperty(src.properties(), "rotate")
+            ? std::stoi(*findProperty(src.properties(), "rotate"))
+            : 1;
+        xf.orient = orientFromQucsSourcePlacement(mirror, rotateField);
+    } else if (remappedToNativePdk && qucsLibNeedsEwToNsCompensate(resolvedModel)) {
+        // Qucs IHP LibComp artwork is east–west; native Xschem/CORE PDK symbols are north–south.
+        // Keep CORE rotate props for Qucs round-trip; only adjust the Xschem placement orient.
+        const int mirror = findProperty(src.properties(), "mirror")
+            ? std::stoi(*findProperty(src.properties(), "mirror"))
+            : 0;
+        const int rotateField = findProperty(src.properties(), "rotate")
+            ? std::stoi(*findProperty(src.properties(), "rotate"))
+            : 0;
+        xf.orient = orientFromQucsLibToNativePdk(mirror, rotateField);
+    }
+    Instance inst(symbol, xf);
 
     if (const std::string *name = findProperty(src.properties(), "name")) {
         addProperty(inst.properties(), "name", *name);
     }
 
     if (symbol == "qucs_blackbox.sym") {
-        std::string label = qucsType;
-        if (qucsType == "Lib" || qucsType == "SpiceLib" || qucsType == "Sub") {
-            if (const std::string *model = findProperty(src.properties(), "param.1"); model && !model->empty()) {
-                label = *model;
-            }
-        }
-        addProperty(inst.properties(), "symname", label);
+        addProperty(inst.properties(), "symname", resolvedModel);
     } else if (symbol == "qucs_directive.sym") {
         addProperty(inst.properties(), "symname", qucsType);
     } else if (symbol == "vsource.sym" || symbol == "isource.sym" || symbol == "res.sym" || symbol == "capa.sym" ||
-               symbol == "ind.sym") {
+               symbol == "ind.sym" || symbol == "vsource_pwl.sym" || symbol == "isource_pwl.sym" ||
+               symbol == "vsource_arith.sym" || symbol == "isource_arith.sym" || symbol == "gnd.sym") {
         if (const std::string *value = findProperty(src.properties(), "param.0")) {
-            addProperty(inst.properties(), "value", *value);
+            // For LibComp, param.0 is the library name — prefer first device value param if present.
+            if (qucsType != "Lib") {
+                addProperty(inst.properties(), "value", *value);
+            }
+        }
+        if (qucsType == "Lib") {
+            // LibComp device params start at param.2 (0=lib, 1=model).
+            if (const std::string *value = findProperty(src.properties(), "param.2")) {
+                addProperty(inst.properties(), "value", *value);
+            }
         }
     }
 
     addProperty(inst.properties(), "qucs.type", qucsType);
+    if (resolvedModel != qucsType) {
+        addProperty(inst.properties(), "qucs.model", resolvedModel);
+    }
+    if (const std::string *rot = findProperty(src.properties(), "rotate")) {
+        addProperty(inst.properties(), "rotate", *rot);
+    }
+    if (const std::string *mir = findProperty(src.properties(), "mirror")) {
+        addProperty(inst.properties(), "mirror", *mir);
+    }
     return inst;
 }
 
@@ -391,6 +474,22 @@ void parseVersionRecord(const std::string &raw, SourceInfo &info)
     }
 }
 
+void annotatePrimitiveReference(Instance &inst)
+{
+    if (findProperty(inst.properties(), "core.primitive") != nullptr) {
+        return;
+    }
+
+    PrimitiveResolver resolver;
+    resolver.loadFromEnvironment();
+    const ResolvedPrimitive resolved = resolver.resolveReference(inst.cellName());
+    if (!resolved.found) {
+        return;
+    }
+
+    addProperty(inst.properties(), "core.primitive", resolved.logicalRef);
+}
+
 void parseComponentRecord(const std::string &raw, Block &block, std::vector<std::string> &warnings)
 {
     if (raw.size() < 2 || raw[0] != 'C') {
@@ -424,6 +523,7 @@ void parseComponentRecord(const std::string &raw, Block &block, std::vector<std:
     if (extractBracedToken(raw, pos, attrs)) {
         parseAttrBlock(attrs, inst.properties());
     }
+    annotatePrimitiveReference(inst);
     block.instances().push_back(std::move(inst));
 }
 
@@ -513,8 +613,9 @@ void parsePolygonRecord(const std::string &raw, Block &block, std::uint32_t laye
         return;
     }
     std::size_t pos = 1;
+    int xschemLayer = 0;
     int count = 0;
-    if (!readIntToken(raw, pos, count) || count < 2) {
+    if (!readIntToken(raw, pos, xschemLayer) || !readIntToken(raw, pos, count) || count < 2) {
         return;
     }
     Shape::PolygonData polygon;
@@ -522,14 +623,28 @@ void parsePolygonRecord(const std::string &raw, Block &block, std::uint32_t laye
     for (int i = 0; i < count; ++i) {
         std::int64_t x = 0;
         std::int64_t y = 0;
-        if (!readCoordToken(raw, pos, x) || !readCoordToken(raw, pos, y)) {
+        if (!readCoordToken(raw, pos, x)) {
             break;
+        }
+        if (!readCoordToken(raw, pos, y)) {
+            if (polygon.points.empty()) {
+                break;
+            }
+            // Xschem shorthand: a lone trailing coordinate closes the polygon to the first point.
+            if (i == count - 1) {
+                y = polygon.points.front().y;
+            } else {
+                y = polygon.points.back().y;
+            }
         }
         polygon.points.push_back(Point{x, y});
     }
-    if (polygon.points.size() >= 2) {
-        block.shapes().push_back(Shape(polygon));
+    if (polygon.points.size() < 2) {
+        return;
     }
+    Shape shape(polygon);
+    addProperty(shape.properties(), "xschemLayer", std::to_string(xschemLayer));
+    block.shapes().push_back(std::move(shape));
 }
 
 void parsePinRecord(const std::string &raw, Block &block, std::uint32_t layerId)
@@ -670,9 +785,10 @@ void writeTextRecord(std::ostream &out, const Shape::TextData &text, const std::
     out << ' ' << rotate << ' ' << mirror << ' ' << sizeX << ' ' << sizeY << " {}\n";
 }
 
-void writePolygonRecord(std::ostream &out, const Shape::PolygonData &polygon)
+void writePolygonRecord(std::ostream &out, const Shape::PolygonData &polygon, const std::vector<Property> &props)
 {
-    out << 'P' << ' ' << polygon.points.size();
+    const int layer = findProperty(props, "xschemLayer") ? std::stoi(*findProperty(props, "xschemLayer")) : 4;
+    out << 'P' << ' ' << layer << ' ' << polygon.points.size();
     for (const Point &pt : polygon.points) {
         out << ' ';
         writeCoord(out, pt.x);
@@ -731,7 +847,12 @@ void writeArcFromPath(std::ostream &out, const Shape::PathData &path, const std:
     if (const std::string *end = findProperty(props, "arc.endAngle")) {
         arc.endAngle = std::stod(*end);
     }
-    if (!path.points.empty()) {
+    if (const std::string *cx = findProperty(props, "arc.centerX")) {
+        arc.center.x = std::stoll(*cx);
+    }
+    if (const std::string *cy = findProperty(props, "arc.centerY")) {
+        arc.center.y = std::stoll(*cy);
+    } else if (!path.points.empty()) {
         arc.center = path.points.front();
     }
     writeArcRecord(out, arc, props);
@@ -741,7 +862,22 @@ void writeComponentRecord(std::ostream &out, const Instance &inst)
 {
     int rotate = 0;
     int mirror = 0;
-    xschemFromOrient(inst.transform().orient, rotate, mirror);
+    Orient orient = inst.transform().orient;
+
+    std::string typeKey = inst.cellName();
+    if (const std::string *qucsType = findProperty(inst.properties(), "qucs.type")) {
+        typeKey = *qucsType;
+    }
+    if (hasQucsHistoricalSourceRotate(typeKey) || hasQucsHistoricalSourceRotate(inst.cellName())) {
+        // Prefer the original Qucs rotate field so default sources (rotate=1) become xschem rot=0.
+        const int mirrorField =
+            findProperty(inst.properties(), "mirror") ? std::stoi(*findProperty(inst.properties(), "mirror")) : 0;
+        if (const std::string *rotateField = findProperty(inst.properties(), "rotate")) {
+            orient = orientFromQucsSourcePlacement(mirrorField, std::stoi(*rotateField));
+        }
+    }
+
+    xschemFromOrient(orient, rotate, mirror);
     out << 'C' << " {" << inst.cellName() << "} ";
     writeCoord(out, inst.transform().x);
     out << ' ';
@@ -751,14 +887,11 @@ void writeComponentRecord(std::ostream &out, const Instance &inst)
 
 } // namespace
 
-std::vector<std::string> readRecords(const std::string &path, std::vector<std::string> &errors)
+std::vector<std::string> readRecordsFromText(const std::string &text, std::vector<std::string> &errors)
 {
-    std::ifstream in(path);
-    if (!in) {
-        errors.push_back("Cannot open Xschem file: " + path);
-        return {};
-    }
+    (void)errors;
     std::vector<std::string> records;
+    std::istringstream in(text);
     std::string line;
     while (std::getline(in, line)) {
         if (!line.empty() && line.back() == '\r') {
@@ -780,6 +913,18 @@ std::vector<std::string> readRecords(const std::string &path, std::vector<std::s
         records.push_back(record);
     }
     return records;
+}
+
+std::vector<std::string> readRecords(const std::string &path, std::vector<std::string> &errors)
+{
+    std::ifstream in(path);
+    if (!in) {
+        errors.push_back("Cannot open Xschem file: " + path);
+        return {};
+    }
+    std::ostringstream buffer;
+    buffer << in.rdbuf();
+    return readRecordsFromText(buffer.str(), errors);
 }
 
 void importRecords(const std::vector<std::string> &records, Cell &cell, CellContent &content,
@@ -891,15 +1036,41 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
     writeSectionRecord(out, 'E', sectionE ? *sectionE : "");
 
     const Block &block = content.block();
+
+    std::vector<std::pair<Point, Point>> pinRetargets;
+    if (fromQucs) {
+        pinRetargets.reserve(block.instances().size() * 4);
+        for (const Instance &inst : block.instances()) {
+            appendQucsToXschemPinRetargets(inst, g_dbuPerEditorUnit, pinRetargets);
+        }
+    }
+
+    std::vector<Shape::PathData> wirePaths;
+    std::vector<const std::vector<Property> *> wireProps;
     for (const Shape &shape : block.shapes()) {
         if (layerPurpose(content, shapeLayerId(shape)) != LayerPurpose::Wire) {
             continue;
         }
         if (const Shape::PathData *path = shape.path()) {
             if (path->points.size() >= 2) {
-                writeNetRecord(out, *path, shape.properties());
+                wirePaths.push_back(*path);
+                wireProps.push_back(&shape.properties());
             }
         }
+    }
+    if (!pinRetargets.empty() && !wirePaths.empty()) {
+        std::vector<std::vector<Point>> polylines;
+        polylines.reserve(wirePaths.size());
+        for (const Shape::PathData &path : wirePaths) {
+            polylines.push_back(path.points);
+        }
+        retargetWirePolylinesQucsToCore(polylines, pinRetargets, g_dbuPerEditorUnit);
+        for (std::size_t i = 0; i < wirePaths.size(); ++i) {
+            wirePaths[i].points = std::move(polylines[i]);
+        }
+    }
+    for (std::size_t i = 0; i < wirePaths.size(); ++i) {
+        writeNetRecord(out, wirePaths[i], *wireProps[i]);
     }
 
     for (const Shape &shape : block.shapes()) {
@@ -919,7 +1090,7 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
             writeTextRecord(out, *shape.text(), shape.properties());
             break;
         case Shape::Type::Polygon:
-            writePolygonRecord(out, *shape.polygon());
+            writePolygonRecord(out, *shape.polygon(), shape.properties());
             break;
         case Shape::Type::Rect:
             if (purpose == LayerPurpose::Pin) {

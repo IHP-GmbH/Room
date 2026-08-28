@@ -30,6 +30,7 @@ enum class PathCap_fdf463d58a48d317: uint16_t {
 };
 CAPNP_DECLARE_ENUM(PathCap, fdf463d58a48d317);
 CAPNP_DECLARE_SCHEMA(f8585224539c1e1a);
+CAPNP_DECLARE_SCHEMA(d40c145481a547a4);
 CAPNP_DECLARE_SCHEMA(8998e25dbc0bb7df);
 CAPNP_DECLARE_SCHEMA(afeec16de4ecde8b);
 CAPNP_DECLARE_SCHEMA(c29395cd6d80c282);
@@ -112,6 +113,21 @@ struct TextGeom {
   };
 };
 
+struct ArcGeom {
+  ArcGeom() = delete;
+
+  class Reader;
+  class Builder;
+  class Pipeline;
+
+  struct _capnpPrivate {
+    CAPNP_DECLARE_STRUCT_HEADER(d40c145481a547a4, 6, 0)
+    #if !CAPNP_LITE
+    static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
+    #endif  // !CAPNP_LITE
+  };
+};
+
 struct Shape {
   Shape() = delete;
 
@@ -123,6 +139,7 @@ struct Shape {
     POLYGON,
     PATH,
     TEXT,
+    ARC,
   };
 
   struct _capnpPrivate {
@@ -568,6 +585,112 @@ private:
 };
 #endif  // !CAPNP_LITE
 
+class ArcGeom::Reader {
+public:
+  typedef ArcGeom Reads;
+
+  Reader() = default;
+  inline explicit Reader(::capnp::_::StructReader base): _reader(base) {}
+
+  inline ::capnp::MessageSize totalSize() const {
+    return _reader.totalSize().asPublic();
+  }
+
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const {
+    return ::capnp::_::structString(_reader, *_capnpPrivate::brand());
+  }
+#endif  // !CAPNP_LITE
+
+  inline double getCenterX() const;
+
+  inline double getCenterY() const;
+
+  inline double getRadius() const;
+
+  inline double getStartAngle() const;
+
+  inline double getEndAngle() const;
+
+  inline  ::uint32_t getWidth() const;
+
+  inline  ::uint32_t getLayerId() const;
+
+private:
+  ::capnp::_::StructReader _reader;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::List;
+  friend class ::capnp::MessageBuilder;
+  friend class ::capnp::Orphanage;
+};
+
+class ArcGeom::Builder {
+public:
+  typedef ArcGeom Builds;
+
+  Builder() = delete;  // Deleted to discourage incorrect usage.
+                       // You can explicitly initialize to nullptr instead.
+  inline Builder(decltype(nullptr)) {}
+  inline explicit Builder(::capnp::_::StructBuilder base): _builder(base) {}
+  inline operator Reader() const { return Reader(_builder.asReader()); }
+  inline Reader asReader() const { return *this; }
+
+  inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const { return asReader().toString(); }
+#endif  // !CAPNP_LITE
+
+  inline double getCenterX();
+  inline void setCenterX(double value);
+
+  inline double getCenterY();
+  inline void setCenterY(double value);
+
+  inline double getRadius();
+  inline void setRadius(double value);
+
+  inline double getStartAngle();
+  inline void setStartAngle(double value);
+
+  inline double getEndAngle();
+  inline void setEndAngle(double value);
+
+  inline  ::uint32_t getWidth();
+  inline void setWidth( ::uint32_t value);
+
+  inline  ::uint32_t getLayerId();
+  inline void setLayerId( ::uint32_t value);
+
+private:
+  ::capnp::_::StructBuilder _builder;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  friend class ::capnp::Orphanage;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+};
+
+#if !CAPNP_LITE
+class ArcGeom::Pipeline {
+public:
+  typedef ArcGeom Pipelines;
+
+  inline Pipeline(decltype(nullptr)): _typeless(nullptr) {}
+  inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
+      : _typeless(kj::mv(typeless)) {}
+
+private:
+  ::capnp::AnyPointer::Pipeline _typeless;
+  friend class ::capnp::PipelineHook;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+};
+#endif  // !CAPNP_LITE
+
 class Shape::Reader {
 public:
   typedef Shape Reads;
@@ -601,6 +724,10 @@ public:
   inline bool isText() const;
   inline bool hasText() const;
   inline  ::core::schema::TextGeom::Reader getText() const;
+
+  inline bool isArc() const;
+  inline bool hasArc() const;
+  inline  ::core::schema::ArcGeom::Reader getArc() const;
 
   inline bool hasProperties() const;
   inline  ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Reader getProperties() const;
@@ -665,6 +792,14 @@ public:
   inline  ::core::schema::TextGeom::Builder initText();
   inline void adoptText(::capnp::Orphan< ::core::schema::TextGeom>&& value);
   inline ::capnp::Orphan< ::core::schema::TextGeom> disownText();
+
+  inline bool isArc();
+  inline bool hasArc();
+  inline  ::core::schema::ArcGeom::Builder getArc();
+  inline void setArc( ::core::schema::ArcGeom::Reader value);
+  inline  ::core::schema::ArcGeom::Builder initArc();
+  inline void adoptArc(::capnp::Orphan< ::core::schema::ArcGeom>&& value);
+  inline ::capnp::Orphan< ::core::schema::ArcGeom> disownArc();
 
   inline bool hasProperties();
   inline  ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Builder getProperties();
@@ -1386,6 +1521,104 @@ inline void TextGeom::Builder::setHeight( ::uint32_t value) {
       ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
 }
 
+inline double ArcGeom::Reader::getCenterX() const {
+  return _reader.getDataField<double>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+
+inline double ArcGeom::Builder::getCenterX() {
+  return _builder.getDataField<double>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+inline void ArcGeom::Builder::setCenterX(double value) {
+  _builder.setDataField<double>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
+}
+
+inline double ArcGeom::Reader::getCenterY() const {
+  return _reader.getDataField<double>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+
+inline double ArcGeom::Builder::getCenterY() {
+  return _builder.getDataField<double>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+inline void ArcGeom::Builder::setCenterY(double value) {
+  _builder.setDataField<double>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
+}
+
+inline double ArcGeom::Reader::getRadius() const {
+  return _reader.getDataField<double>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+
+inline double ArcGeom::Builder::getRadius() {
+  return _builder.getDataField<double>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+inline void ArcGeom::Builder::setRadius(double value) {
+  _builder.setDataField<double>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
+}
+
+inline double ArcGeom::Reader::getStartAngle() const {
+  return _reader.getDataField<double>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+
+inline double ArcGeom::Builder::getStartAngle() {
+  return _builder.getDataField<double>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+inline void ArcGeom::Builder::setStartAngle(double value) {
+  _builder.setDataField<double>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS, value);
+}
+
+inline double ArcGeom::Reader::getEndAngle() const {
+  return _reader.getDataField<double>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+
+inline double ArcGeom::Builder::getEndAngle() {
+  return _builder.getDataField<double>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+inline void ArcGeom::Builder::setEndAngle(double value) {
+  _builder.setDataField<double>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t ArcGeom::Reader::getWidth() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<10>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t ArcGeom::Builder::getWidth() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<10>() * ::capnp::ELEMENTS);
+}
+inline void ArcGeom::Builder::setWidth( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<10>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t ArcGeom::Reader::getLayerId() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<11>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t ArcGeom::Builder::getLayerId() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<11>() * ::capnp::ELEMENTS);
+}
+inline void ArcGeom::Builder::setLayerId( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<11>() * ::capnp::ELEMENTS, value);
+}
+
 inline  ::core::schema::Shape::Which Shape::Reader::which() const {
   return _reader.getDataField<Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS);
@@ -1608,6 +1841,60 @@ inline ::capnp::Orphan< ::core::schema::TextGeom> Shape::Builder::disownText() {
   KJ_IREQUIRE((which() == Shape::TEXT),
               "Must check which() before get()ing a union member.");
   return ::capnp::_::PointerHelpers< ::core::schema::TextGeom>::disown(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+
+inline bool Shape::Reader::isArc() const {
+  return which() == Shape::ARC;
+}
+inline bool Shape::Builder::isArc() {
+  return which() == Shape::ARC;
+}
+inline bool Shape::Reader::hasArc() const {
+  if (which() != Shape::ARC) return false;
+  return !_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline bool Shape::Builder::hasArc() {
+  if (which() != Shape::ARC) return false;
+  return !_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline  ::core::schema::ArcGeom::Reader Shape::Reader::getArc() const {
+  KJ_IREQUIRE((which() == Shape::ARC),
+              "Must check which() before get()ing a union member.");
+  return ::capnp::_::PointerHelpers< ::core::schema::ArcGeom>::get(_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline  ::core::schema::ArcGeom::Builder Shape::Builder::getArc() {
+  KJ_IREQUIRE((which() == Shape::ARC),
+              "Must check which() before get()ing a union member.");
+  return ::capnp::_::PointerHelpers< ::core::schema::ArcGeom>::get(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void Shape::Builder::setArc( ::core::schema::ArcGeom::Reader value) {
+  _builder.setDataField<Shape::Which>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, Shape::ARC);
+  ::capnp::_::PointerHelpers< ::core::schema::ArcGeom>::set(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), value);
+}
+inline  ::core::schema::ArcGeom::Builder Shape::Builder::initArc() {
+  _builder.setDataField<Shape::Which>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, Shape::ARC);
+  return ::capnp::_::PointerHelpers< ::core::schema::ArcGeom>::init(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void Shape::Builder::adoptArc(
+    ::capnp::Orphan< ::core::schema::ArcGeom>&& value) {
+  _builder.setDataField<Shape::Which>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, Shape::ARC);
+  ::capnp::_::PointerHelpers< ::core::schema::ArcGeom>::adopt(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::core::schema::ArcGeom> Shape::Builder::disownArc() {
+  KJ_IREQUIRE((which() == Shape::ARC),
+              "Must check which() before get()ing a union member.");
+  return ::capnp::_::PointerHelpers< ::core::schema::ArcGeom>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 

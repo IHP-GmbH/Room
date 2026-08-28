@@ -2,6 +2,7 @@
 
 #include "database.h"
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,9 @@ class XschemExporter {
 public:
     void                                                exportCell(const Database &db, const std::string &cellName,
                                                                      const std::string &outputPath) const;
+    void                                                exportCell(const Database &db, const std::string &cellName,
+                                                                     std::ostream &out) const;
+    std::string                                         exportCellToString(const Database &db, const std::string &cellName) const;
     std::size_t                                         exportAll(const Database &db, const std::string &outputDir) const;
 
     const std::vector<std::string> &                    warnings() const { return m_warnings; }

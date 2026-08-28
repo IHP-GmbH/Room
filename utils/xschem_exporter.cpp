@@ -10,6 +10,7 @@
 #include "xschem_io.h"
 
 #include <fstream>
+#include <sstream>
 
 namespace core {
 namespace {
@@ -33,6 +34,18 @@ std::string defaultOutputPath(const std::string &cellName, const CellContent &co
 void XschemExporter::exportCell(const Database &db, const std::string &cellName,
                                 const std::string &outputPath) const
 {
+    std::ofstream out(outputPath);
+    if (!out) {
+        m_warnings.clear();
+        m_errors.clear();
+        m_errors.push_back("Cannot open file for writing: " + outputPath);
+        return;
+    }
+    exportCell(db, cellName, out);
+}
+
+void XschemExporter::exportCell(const Database &db, const std::string &cellName, std::ostream &out) const
+{
     m_warnings.clear();
     m_errors.clear();
 
@@ -48,17 +61,18 @@ void XschemExporter::exportCell(const Database &db, const std::string &cellName,
         return;
     }
 
-    std::ofstream out(outputPath);
-    if (!out) {
-        m_errors.push_back("Cannot open file for writing: " + outputPath);
-        return;
-    }
-
     try {
         xschem::exportRecords(out, *cell, *content);
     } catch (const std::exception &ex) {
         m_errors.push_back(ex.what());
     }
+}
+
+std::string XschemExporter::exportCellToString(const Database &db, const std::string &cellName) const
+{
+    std::ostringstream out;
+    exportCell(db, cellName, out);
+    return out.str();
 }
 
 std::size_t XschemExporter::exportAll(const Database &db, const std::string &outputDir) const
