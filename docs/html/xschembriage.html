@@ -30,7 +30,9 @@
       </ul>
       <h3>Utilities</h3>
       <ul>
+        <li><a href="primitiveresolver.html">PrimitiveResolver</a></li>
         <li><a href="xschembriage.html" class="active">xschem_bridge</a></li>
+        <li><a href="pinretarget.html">pin_retarget</a></li>
         <li><a href="textdumper.html">TextDumper</a></li>
       </ul>
     </aside>
@@ -38,7 +40,7 @@
     <main class="content">
       <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Utilities</a> &raquo; xschem_bridge</p>
       <h1 class="title">core::xschem_bridge</h1>
-      <p class="brief">File-based API for Xschem Tcl (<code>coretcl.so</code>) — list, export, import without linking Tcl in your app. <a class="more" href="#details">More…</a></p>
+      <p class="brief">File and in-memory API for Xschem Tcl (<code>coretcl.so</code>) — list, export, import without linking Tcl in your app. <a class="more" href="#details">More…</a></p>
       <table class="props"><tr><th>Header:</th><td><code>#include "xschem_bridge.h"</code></td></tr>
       <tr><th>CMake:</th><td><code>target_link_libraries(coretcl PRIVATE CORE::core_utils)</code></td></tr></table>
       <h2 id="public-types">Public Types</h2>
@@ -46,12 +48,15 @@
       <h2 id="public-functions">Public Functions</h2>
       <table class="memlist">
         <tr><td><a href="#listCells">listCells(corePath, status)</a></td><td>Cell names in a CORE file.</td></tr>
-        <tr><td><a href="#exportCell">exportCell(corePath, cell, outputPath)</a></td><td>Export one cell to <code>.sch</code>/<code>.sym</code>.</td></tr>
+        <tr><td><a href="#exportCell">exportCell(corePath, cell, outputPath)</a></td><td>Export one cell to <code>.sch</code>/<code>.sym</code> file.</td></tr>
+        <tr><td><a href="#exportCellToString">exportCellToString(corePath, cell, status)</a></td><td>Export one cell to an in-memory Xschem document string.</td></tr>
         <tr><td><a href="#exportAll">exportAll(corePath, outputDir, count)</a></td><td>Export all cells.</td></tr>
         <tr><td><a href="#importInto">importIntoCore(inputPath, corePath, options)</a></td><td>Import Xschem file into existing CORE.</td></tr>
+        <tr><td><a href="#importTextIntoCore">importTextIntoCore(text, extension, corePath, options)</a></td><td>Import from an in-memory <code>.sch</code>/<code>.sym</code> buffer (<code>xschem get_data</code> path).</td></tr>
       </table>
       <h2 id="details">Detailed Description</h2>
-      <p>Used by Xschem integration (<code>integrations/xschem_tcl/core_tcl.cpp</code>) for in-process open/save. Pair with <a href="filesummary.html">sniffCoreFile</a> in LibMan for view routing.</p>
+      <p>Used by Xschem integration (<code>integrations/xschem_tcl/core_tcl.cpp</code>) for in-process open/save via <code>load_data</code> / <code>get_data</code>. Pair with <a href="filesummary.html">sniffCoreFile</a> in LibMan for view routing.</p>
+      <p>Primitive symbol resolution for export uses the same environment variables as <a href="primitiveresolver.html#environment">PrimitiveResolver</a> (<code>CORE_PRIMITIVE_LIBS_FILE</code>, <code>LIBMAN_TECH_LIBRARY</code>, …). LibMan writes a temp list file when many <code>*.symbol.core</code> paths are attached.</p>
 
     </main>
     <aside class="page-toc"><h4>On this page</h4><ul><li><a href="#public-types">Public Types</a></li><li><a href="#public-functions">Public Functions</a></li><li><a href="#details">Detailed Description</a></li></ul>

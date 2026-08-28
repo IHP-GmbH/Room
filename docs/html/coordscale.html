@@ -82,11 +82,21 @@ effectiveDbuPerEditorUnit(content)  // uses stored value, or infers from SourceI
         Re-import from the native tool to persist the field explicitly. <a href="textdumper.html">TextDumper</a> prints both scales per view.
       </p>
 
+      <h2>Orientation helpers</h2>
+      <p><code>coord_scale.h</code> also provides Qucs/Xschem placement mapping used during cross-tool export:</p>
+      <table class="members">
+        <tr><th>Function</th><th>Purpose</th></tr>
+        <tr><td><code>orientToQucsPlacement</code> / <code>orientFromQucsPlacement</code></td><td>Map <code>Orient</code> &harr; Qucs mirror/rotate fields</td></tr>
+        <tr><td><code>orientFromQucsLibToNativePdk</code></td><td>Qucs LibComp E&ndash;W ports &rarr; native PDK N&ndash;S symbols</td></tr>
+        <tr><td><code>qucsLibNeedsEwToNsCompensate</code></td><td>Detect IHP LibComp vs native symbol orientation mismatch</td></tr>
+      </table>
+      <p>Wire endpoint alignment uses <a href="pinretarget.html">pin_retarget</a> on top of these scales.</p>
+
       <h2>Qucs ↔ CORE ↔ Xschem</h2>
       <p>
         A Qucs schematic opened in Xschem goes through CORE export (<a href="xschemexporter.html">XschemExporter</a> /
-        <code>xschem_io</code>). Qucs component types are mapped to Xschem symbols (e.g. <code>GND</code> → <code>gnd.sym</code>;
-        unknown <code>Lib</code> devices → <code>qucs_blackbox.sym</code>). Coordinates use the view's
+        <a href="xschembriage.html">xschem_bridge</a>). Qucs component types are mapped to Xschem symbols (e.g. <code>GND</code> &rarr; <code>gnd.sym</code>;
+        PDK cells resolve via <a href="primitiveresolver.html">PrimitiveResolver</a>). Coordinates use the view's
         <code>dbuPerEditorUnit</code>, so Qucs DBU and Xschem editor units stay consistent without ad-hoc divisors.
       </p>
 

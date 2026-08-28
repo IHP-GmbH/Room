@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PrimitiveResolver Class | CORE Core | CORE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">CORE</a>
+    <nav><a href="index.html">Overview</a><a href="example_qucs.html">Examples</a><a href="classes.html">All Classes</a></nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Getting Started</h3>
+      <ul><li><a href="index.html">Overview</a></li><li><a href="classes.html">Class index</a></li></ul>
+      <h3>Utilities</h3>
+      <ul>
+        <li><a href="primitiveresolver.html" class="active">PrimitiveResolver</a></li>
+        <li><a href="qucsexporter.html">QucsExporter</a></li>
+        <li><a href="xschembriage.html">xschem_bridge</a></li>
+        <li><a href="pinretarget.html">pin_retarget</a></li>
+      </ul>
+    </aside>
+    <div class="content-with-toc">
+    <main class="content">
+      <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Utilities</a> &raquo; C++ Classes &raquo; PrimitiveResolver</p>
+
+      <h1 class="title">PrimitiveResolver Class</h1>
+      <p class="brief">Indexes attached <code>*.symbol.core</code> files (PDK, commonLib, design-library cells) so Qucs and Xschem exporters can resolve <code>Lib</code> / <code>devices/*.sym</code> references. <a class="more" href="#details">More…</a></p>
+
+      <table class="props">
+        <tr><th>Header:</th><td><code>#include "primitive_resolver.h"</code></td></tr>
+        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE CORE::core_utils)</code></td></tr>
+      </table>
+
+      <h2 id="public-types">Public Types</h2>
+      <table class="memlist">
+        <tr><td><a href="#resolved-primitive">struct ResolvedPrimitive</a></td><td>Lookup result: CORE path, cell name, tech library.</td></tr>
+      </table>
+
+      <h2 id="public-functions">Public Functions</h2>
+      <table class="memlist">
+        <tr><td><a href="#setTechLibrary">void setTechLibrary(const std::string &amp; techLibrary)</a></td><td>Semicolon-separated tech/design library names (e.g. <code>commonLib;ihp_sg13g2</code>).</td></tr>
+        <tr><td><a href="#setQucsLibrary">void setQucsLibrary(const std::string &amp; qucsLibrary)</a></td><td>Qucs <code>&lt;Lib&gt;</code> library name for PDK cells.</td></tr>
+        <tr><td><a href="#addCorePath">void addCorePath(const std::string &amp; corePath)</a></td><td>Register one <code>*.symbol.core</code> file.</td></tr>
+        <tr><td><a href="#loadFromEnvironment">void loadFromEnvironment()</a></td><td>Read paths and library names from process environment.</td></tr>
+        <tr><td><a href="#resolveReference">ResolvedPrimitive resolveReference(const std::string &amp; ref) const</a></td><td>Resolve <code>res</code>, <code>sg13g2_pr/rppd</code>, <code>devices/lab_pin.sym</code>, …</td></tr>
+        <tr><td><a href="#primitiveCorePathsFromEnvironment">static std::vector&lt;std::string&gt; primitiveCorePathsFromEnvironment()</a></td><td>Parse primitive path list without building the index.</td></tr>
+      </table>
+
+      <h2 id="environment">Environment variables</h2>
+      <p>LibMan and integrated editors set these when opening a schematic view with attached tech libraries:</p>
+      <table class="members">
+        <tr><th>Variable</th><th>Format</th><th>Description</th></tr>
+        <tr>
+          <td><code>CORE_PRIMITIVE_LIBS_FILE</code></td>
+          <td>Path to a text file</td>
+          <td><strong>Preferred</strong> for large libraries (100+ symbols). One absolute path per line. Avoids oversized environment strings on Windows/WSL.</td>
+        </tr>
+        <tr>
+          <td><code>CORE_PRIMITIVE_LIBS</code></td>
+          <td><code>;</code> or <code>:</code> separated paths</td>
+          <td>Fallback when no list file is set.</td>
+        </tr>
+        <tr>
+          <td><code>CORE_PRIMITIVE_LIB</code></td>
+          <td>Single path</td>
+          <td>Legacy single-symbol attachment.</td>
+        </tr>
+        <tr>
+          <td><code>LIBMAN_TECH_LIBRARY</code></td>
+          <td><code>;</code> separated names</td>
+          <td>Logical library prefixes for symbol keys (e.g. <code>commonLib</code>, <code>sg13g2_pr</code>).</td>
+        </tr>
+        <tr>
+          <td><code>QUCS_PRIMITIVE_LIB</code></td>
+          <td>Library name</td>
+          <td>Qucs <code>&lt;Lib&gt;</code> name written by <a href="qucsexporter.html">QucsExporter</a> for PDK primitives.</td>
+        </tr>
+      </table>
+      <p><code>primitiveCorePathsFromEnvironment()</code> checks <code>CORE_PRIMITIVE_LIBS_FILE</code> first, then <code>CORE_PRIMITIVE_LIBS</code>, then <code>CORE_PRIMITIVE_LIB</code>.</p>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>
+        Each registered <code>&lt;cell&gt;.symbol.core</code> is indexed under multiple keys: bare <code>cell.sym</code>,
+        <code>&lt;lib&gt;/cell.sym</code>, and (for <code>commonLib</code>) <code>devices/cell.sym</code> for Xschem compatibility.
+        Alias tables map Qucs component types to Xschem device names (e.g. <code>res</code> &harr; <code>R</code>, <code>gnd</code> &harr; <code>GND</code>).
+      </p>
+      <p>
+        <a href="qucsexporter.html">QucsExporter</a> uses the resolver to emit native Qucs components where possible
+        (<code>res</code> &rarr; <code>R</code>, <code>iopin</code> &rarr; <code>Port</code>) and <code>&lt;Lib&gt;</code> only for
+        PDK/hierarchy cells without a built-in mapping. Xschem-only decorations (<code>lab_wire</code>, <code>code_shown</code>, <code>launcher</code>)
+        are skipped in Qucs via <a href="qucsexporter.html#isQucsSchematicDecoration"><code>isQucsSchematicDecoration()</code></a>.
+      </p>
+
+      <h2>Member Type Documentation</h2>
+      <div class="fn-block" id="resolved-primitive">
+        <h3 class="fn-title">struct ResolvedPrimitive</h3>
+        <table class="members">
+          <tr><th>Member</th><th>Description</th></tr>
+          <tr><td><code>bool found</code></td><td><code>true</code> when <code>ref</code> matched an indexed symbol core.</td></tr>
+          <tr><td><code>std::string corePath</code></td><td>Absolute path to the <code>*.symbol.core</code> file.</td></tr>
+          <tr><td><code>std::string cellName</code></td><td>Cell stem (e.g. <code>lab_pin</code>, <code>rppd</code>).</td></tr>
+          <tr><td><code>std::string techLibrary</code></td><td>Library directory prefix when known.</td></tr>
+          <tr><td><code>std::string logicalRef</code></td><td>Normalized lookup key.</td></tr>
+        </table>
+      </div>
+
+      <h2>Example</h2>
+      <pre class="example"><code>core::PrimitiveResolver resolver;
+resolver.loadFromEnvironment();
+// or manually:
+resolver.setTechLibrary("commonLib;sg13g2_pr");
+resolver.addCorePath("/data/commonLib/lab_pin/lab_pin.symbol.core");
+
+const core::ResolvedPrimitive hit = resolver.resolveReference("devices/lab_pin.sym");
+if (hit.found) {
+    // use hit.corePath in export/materialize
+}</code></pre>
+    </main>
+    <aside class="page-toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#public-types">Public Types</a></li>
+        <li><a href="#public-functions">Public Functions</a></li>
+        <li><a href="#environment">Environment variables</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+      </ul>
+    </aside>
+    </div>
+  </div>
+</body>
+</html>

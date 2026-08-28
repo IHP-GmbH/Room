@@ -25,8 +25,10 @@
       </ul>
       <h3>Utilities</h3>
       <ul>
+        <li><a href="primitiveresolver.html">PrimitiveResolver</a></li>
         <li><a href="qucsimporter.html">QucsImporter</a></li>
         <li><a href="qucsexporter.html" class="active">QucsExporter</a></li>
+        <li><a href="pinretarget.html">pin_retarget</a></li>
         <li><a href="textdumper.html">TextDumper</a></li>
       </ul>
     </aside>
@@ -44,20 +46,39 @@
 
       <h2 id="public-types">Public Types</h2>
       <table class="memlist">
-        <tr><td><a href="#options">struct Options</a></td><td>Qucs version string for the output header.</td></tr>
+        <tr><td><a href="#options">struct Options</a></td><td>Primitive paths, tech library, Qucs version header.</td></tr>
+      </table>
+
+      <h2 id="free-functions">Free Functions</h2>
+      <table class="memlist">
+        <tr><td><a href="#isQucsSchematicDecoration">bool isQucsSchematicDecoration(const std::string &amp; cellName)</a></td><td><code>true</code> for Xschem-only decorations skipped in Qucs (<code>lab_wire</code>, <code>code_shown</code>, <code>launcher</code>).</td></tr>
       </table>
 
       <h2 id="public-functions">Public Functions</h2>
       <table class="memlist">
         <tr><td><a href="#QucsExporter">QucsExporter()</a></td><td>Default constructor.</td></tr>
         <tr><td><a href="#QucsExporter-opt">explicit QucsExporter(const Options &amp; options)</a></td><td>Constructs with custom export settings.</td></tr>
-        <tr><td><a href="#exportCell">void exportCell(const Database &amp; db, const std::string &amp; cellName, const std::string &amp; schPath) const</a></td><td>Writes one cell's schematic view to a Qucs file.</td></tr>
+        <tr><td><a href="#exportCell">void exportCell(…)</a></td><td>Writes one cell's schematic view to a Qucs file or stream.</td></tr>
+        <tr><td><a href="#exportCellToString">std::string exportCellToString(…)</a></td><td>In-memory export of schematic view.</td></tr>
+        <tr><td><a href="#exportSymbolCell">void exportSymbolCell(…)</a></td><td>Export symbol view to Qucs <code>.sch</code> symbol section.</td></tr>
+        <tr><td><a href="#exportInstanceAsLine">std::string exportInstanceAsLine(…)</a></td><td>Single <code>&lt;Components&gt;</code> line for one <a href="instance.html">Instance</a>.</td></tr>
+        <tr><td><a href="#exportBlockWiresAsLines">std::vector&lt;std::string&gt; exportBlockWiresAsLines(…)</a></td><td><code>&lt;Wires&gt;</code> lines from block topology.</td></tr>
         <tr><td><a href="#warnings">const std::vector&lt;std::string&gt; &amp; warnings() const</a></td><td>Warnings from the last export.</td></tr>
         <tr><td><a href="#errors">const std::vector&lt;std::string&gt; &amp; errors() const</a></td><td>Errors from the last export.</td></tr>
       </table>
 
       <h2 id="details">Detailed Description</h2>
-      <p>Uses stored <code>qucs.wire</code> lines when present for lossless round-trip. Otherwise reconstructs wires from <a href="net.html">Net</a> terminals. Coordinates are converted with <code>dbuPerEditorUnit</code> via <code>coord_scale.h</code>. See the <a href="example_qucs.html">Qucs import example</a> and <a href="coordscale.html">coordinate scale</a>.</p>
+      <p>
+        Uses stored <code>qucs.wire</code> lines when present for lossless round-trip. Otherwise reconstructs wires from
+        <a href="net.html">Net</a> terminals with <a href="pinretarget.html">pin retargeting</a> when
+        <a href="primitiveresolver.html">primitive symbols</a> are attached.
+        Coordinates are converted with <code>dbuPerEditorUnit</code> via <a href="coordscale.html">coord_scale</a>.
+      </p>
+      <p>
+        Export policy: map attached passives to native Qucs devices (<code>res</code> &rarr; <code>R</code>, <code>capa</code> &rarr; <code>C</code>,
+        <code>iopin</code> &rarr; <code>Port</code>). Emit <code>&lt;Lib&gt;</code> only for PDK/hierarchy cells and visual title blocks
+        (<code>title*</code>). Skip Xschem decorations via <code>isQucsSchematicDecoration()</code>.
+      </p>
 
       <h2>Member Type Documentation</h2>
 
@@ -65,8 +86,16 @@
         <h3 class="fn-title">struct Options</h3>
         <table class="members">
           <tr><th>Member</th><th>Default</th><th>Description</th></tr>
-          <tr><td><code>std::string qucsVersion</code></td><td><code>"0.0.19"</code></td><td>Version string written to the <code>&lt;Qucs Schematic …&gt;</code> header if none was imported.</td></tr>
+          <tr><td><code>std::string qucsVersion</code></td><td><code>"0.0.19"</code></td><td>Version string in the <code>&lt;Qucs Schematic …&gt;</code> header.</td></tr>
+          <tr><td><code>std::vector&lt;std::string&gt; primitiveCorePaths</code></td><td><em>empty</em></td><td>Attached <code>*.symbol.core</code> paths (or set via <a href="primitiveresolver.html#environment">environment</a>).</td></tr>
+          <tr><td><code>std::string techLibrary</code></td><td><em>empty</em></td><td>Tech/design library prefix for <code>&lt;Lib&gt;</code> export.</td></tr>
+          <tr><td><code>std::string qucsPrimitiveLib</code></td><td><em>empty</em></td><td>Qucs library name in <code>&lt;Lib&gt;</code> lines (e.g. PDK bundle name).</td></tr>
         </table>
+      </div>
+
+      <div class="fn-block" id="isQucsSchematicDecoration">
+        <h3 class="fn-title">bool isQucsSchematicDecoration(const std::string &amp; cellName)</h3>
+        <p class="fn-desc">Returns <code>true</code> for cells that should not appear in a Qucs schematic: <code>lab_wire</code>, <code>code_shown</code>, <code>launcher</code>. Title blocks (<code>title*</code>) are exported as <code>&lt;Lib&gt;</code> for display only.</p>
       </div>
 
       <h2>Member Function Documentation</h2>
@@ -87,14 +116,27 @@
 
       <div class="fn-block" id="exportCell">
         <h3 class="fn-title">void exportCell(const Database &amp; db, const std::string &amp; cellName, const std::string &amp; schPath) const</h3>
-        <p class="fn-desc">Writes one cell's schematic view to a Qucs file.</p>
-        <table class="fn-params">
-          <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>db</code></td><td>Database containing the cell.</td></tr>
-          <tr><td><code>cellName</code></td><td>Name of the cell to export.</td></tr>
-          <tr><td><code>schPath</code></td><td>Output <code>.sch</code> file path.</td></tr>
-        </table>
-        <p class="fn-desc">Uses stored <code>qucs.wire</code> lines when present (lossless round-trip). Otherwise reconstructs wires from <a href="net.html">Net</a> terminals.</p>
+        <p class="fn-desc">Writes one cell's schematic view to a Qucs file. Overloads accept <code>std::ostream &amp;</code> or return <code>exportCellToString()</code>.</p>
+      </div>
+
+      <div class="fn-block" id="exportCellToString">
+        <h3 class="fn-title">std::string exportCellToString(const Database &amp; db, const std::string &amp; cellName) const</h3>
+        <p class="fn-desc">In-memory schematic export (used by Qucs-S CORE bridge).</p>
+      </div>
+
+      <div class="fn-block" id="exportSymbolCell">
+        <h3 class="fn-title">void exportSymbolCell(…)</h3>
+        <p class="fn-desc">Export <code>ViewType::Symbol</code> content to Qucs symbol section format.</p>
+      </div>
+
+      <div class="fn-block" id="exportInstanceAsLine">
+        <h3 class="fn-title">std::string exportInstanceAsLine(const Instance &amp; inst, double dbuPerEditorUnit, const std::string &amp; sourceFormat) const</h3>
+        <p class="fn-desc">Low-level single-component line for incremental CORE &rarr; Qucs mapping.</p>
+      </div>
+
+      <div class="fn-block" id="exportBlockWiresAsLines">
+        <h3 class="fn-title">std::vector&lt;std::string&gt; exportBlockWiresAsLines(…)</h3>
+        <p class="fn-desc">Emit wire lines from <a href="block.html">Block</a> nets, applying pin retarget when primitives are configured.</p>
       </div>
 
       <div class="fn-block" id="warnings">
@@ -121,6 +163,7 @@
       <h4>On this page</h4>
       <ul>
         <li><a href="#public-types">Public Types</a></li>
+        <li><a href="#free-functions">Free Functions</a></li>
         <li><a href="#public-functions">Public Functions</a></li>
         <li><a href="#details">Detailed Description</a></li>
         <li><a href="#private-members">Private Variables</a></li>

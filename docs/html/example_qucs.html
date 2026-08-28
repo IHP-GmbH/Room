@@ -91,7 +91,24 @@ Database  →  Cell  →  CellContent(schematic).payload.schematic.block
         <tr><td>View type</td><td><code>ViewType::Schematic</code></td></tr>
       </table>
 
-      <h2>6. Sample text dump</h2>
+      <h2>6. Attached primitive libraries (LibMan / Qucs-S)</h2>
+      <p>
+        When a project attaches tech or common libraries, LibMan sets environment variables consumed by
+        <a href="primitiveresolver.html">PrimitiveResolver</a> and <a href="qucsexporter.html">QucsExporter::Options</a>:
+      </p>
+      <table class="members">
+        <tr><th>Variable</th><th>Purpose</th></tr>
+        <tr><td><code>CORE_PRIMITIVE_LIBS_FILE</code></td><td>Newline-separated list of <code>*.symbol.core</code> paths (preferred for large libraries)</td></tr>
+        <tr><td><code>LIBMAN_TECH_LIBRARY</code></td><td>Logical library names (<code>commonLib;sg13g2_pr</code>)</td></tr>
+        <tr><td><code>QUCS_PRIMITIVE_LIB</code></td><td>Qucs <code>&lt;Lib&gt;</code> name for PDK cells</td></tr>
+      </table>
+      <p>
+        On export to Qucs, passives map to native devices (<code>res</code> &rarr; <code>R</code>).
+        PDK and hierarchy cells use <code>&lt;Lib&gt;</code> with CORE symbol geometry.
+        Xschem-only decorations (<code>lab_wire</code>, <code>code_shown</code>) are omitted in Qucs.
+      </p>
+
+      <h2>7. Sample text dump</h2>
       <pre class="example"><code>cell "rc_lowpass"
   type schematic dbuPerMicron=1.000 dbuPerEditorUnit=1.000
   shapes=0 instances=4 nets=3
