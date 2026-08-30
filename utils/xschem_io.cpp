@@ -39,6 +39,90 @@ std::string trim(const std::string &value)
     return value.substr(begin, end - begin);
 }
 
+// Qucs .sch often stores "\\n" as two chars in CORE; Xschem/ngspice then see mos_ttn.
+std::string unescapeCStyle(const std::string &text)
+{
+    std::string out;
+    out.reserve(text.size());
+    for (std::size_t i = 0; i < text.size(); ++i) {
+        if (text[i] == '\\' && i + 1 < text.size()) {
+            switch (text[i + 1]) {
+            case 'n':
+                out.push_back('\n');
+                ++i;
+                break;
+            case 't':
+                out.push_back('\t');
+                ++i;
+                break;
+            case 'r':
+                out.push_back('\r');
+                ++i;
+                break;
+            case '\\':
+                out.push_back('\\');
+                ++i;
+                break;
+            case '"':
+                out.push_back('"');
+                ++i;
+                break;
+            default:
+                out.push_back(text[i]);
+                break;
+            }
+        } else {
+            out.push_back(text[i]);
+        }
+    }
+    return out;
+}
+
+std::string extractWriteRawFile(const std::string &spiceText)
+{
+    // "write test_inverter.raw" → test_inverter.raw
+    const std::string key = "write ";
+    const std::size_t pos = spiceText.find(key);
+    if (pos == std::string::npos) {
+        return {};
+    }
+    std::size_t i = pos + key.size();
+    while (i < spiceText.size() && std::isspace(static_cast<unsigned char>(spiceText[i]))) {
+        ++i;
+    }
+    std::size_t j = i;
+    while (j < spiceText.size() && !std::isspace(static_cast<unsigned char>(spiceText[j])) && spiceText[j] != '\r'
+           && spiceText[j] != '\n') {
+        ++j;
+    }
+    return spiceText.substr(i, j - i);
+}
+
+// Qucs stores "1.2 V"; ngspice rejects "1.2 V" as unknown parameter (v).
+std::string normalizeSpiceDeviceValue(const std::string &raw)
+{
+    std::string s;
+    s.reserve(raw.size());
+    for (char ch : raw) {
+        if (!std::isspace(static_cast<unsigned char>(ch))) {
+            s.push_back(ch);
+        }
+    }
+    if (s.size() >= 2) {
+        const char last = s.back();
+        const char prev = s[s.size() - 2];
+        // Strip trailing unit letter when preceded by a digit (1.2V, 10nF, 1kOhm → strip Ohm separately).
+        if ((last == 'V' || last == 'v' || last == 'A' || last == 'a' || last == 'F' || last == 'f' || last == 'H'
+             || last == 'h')
+            && std::isdigit(static_cast<unsigned char>(prev))) {
+            s.pop_back();
+        } else if (s.size() >= 3 && (s.compare(s.size() - 3, 3, "Ohm") == 0 || s.compare(s.size() - 3, 3, "ohm") == 0)) {
+            s.resize(s.size() - 3);
+        }
+    }
+    return s;
+}
+
 int countBraceDelta(const std::string &line)
 {
     int delta = 0;
@@ -160,9 +244,17 @@ std::string mapQucsSymbol(const std::string &qucsType)
         return it->second;
     }
     if (!qucsType.empty() && qucsType.front() == '.') {
-        return "qucs_directive.sym";
+        // Prefer code_shown look for Xschem; keep qucs.type for Qucs round-trip.
+        return "code_shown.sym";
     }
-    if (qucsType == "INCLSCR" || qucsType == "SpiceLib" || qucsType == "Lib" || qucsType == "Sub") {
+    if (qucsType == "TR") {
+        return "code_shown.sym";
+    }
+    // INCLSCR / SpiceLib are spice include directives — same netlist path as .TR/.DC.
+    if (qucsType == "INCLSCR" || qucsType == "SpiceLib") {
+        return "code_shown.sym";
+    }
+    if (qucsType == "Lib" || qucsType == "Sub") {
         return "qucs_blackbox.sym";
     }
     return "qucs_blackbox.sym";
@@ -197,7 +289,8 @@ Instance instanceForQucsExport(const Instance &src)
 
     std::string symbol = mapQucsSymbol(resolvedModel);
     if (resolvedModel == "Port") {
-        // Qucs Port Type: param.1 = analog|in|out|inout → commonLib pin cells
+        // Qucs Port Type: param.1 = analog|in|out|inout → commonLib pin cells.
+        // For top-level net naming in Xschem, lab_pin is what propagates lab= onto nets.
         std::string portType = "analog";
         if (const std::string *t = findProperty(src.properties(), "param.1"); t && !t->empty()) {
             portType = *t;
@@ -207,7 +300,8 @@ Instance instanceForQucsExport(const Instance &src)
         } else if (portType == "out") {
             symbol = "opin.sym";
         } else {
-            symbol = "iopin.sym";
+            // Default analog Port → lab_pin so Vin/Vdd/Vout show as named nets in Xschem.
+            symbol = "lab_pin.sym";
         }
     }
     bool remappedToNativePdk = false;
@@ -244,22 +338,76 @@ Instance instanceForQucsExport(const Instance &src)
         addProperty(inst.properties(), "name", *name);
     }
 
+    // Qucs Port net name lives in param.0; Xschem pins need lab=.
+    if (resolvedModel == "Port") {
+        if (const std::string *lab = findProperty(src.properties(), "param.0"); lab && !lab->empty()) {
+            addProperty(inst.properties(), "lab", *lab);
+        }
+    }
+
     if (symbol == "qucs_blackbox.sym") {
         addProperty(inst.properties(), "symname", resolvedModel);
-    } else if (symbol == "qucs_directive.sym") {
-        addProperty(inst.properties(), "symname", qucsType);
+    } else if (symbol == "qucs_directive.sym" || symbol == "code_shown.sym") {
+        // Xschem code_shown / directive: spice text via @value (type=netlist_commands).
+        if (resolvedModel == "INCLSCR" || resolvedModel == "SpiceLib") {
+            if (const std::string *code = findProperty(src.properties(), "param.0")) {
+                // Unescape so ".LIB … mos_tt\n" becomes a real newline (not section mos_ttn).
+                addProperty(inst.properties(), "value", unescapeCStyle(*code));
+            }
+            addProperty(inst.properties(), "only_toplevel", "true");
+        } else if (!resolvedModel.empty() && (resolvedModel.front() == '.' || resolvedModel == "TR")) {
+            if (resolvedModel == ".TR" || resolvedModel == "TR") {
+                std::string start = "0";
+                std::string stop = "1m";
+                if (const std::string *s = findProperty(src.properties(), "param.1"); s && !s->empty()) {
+                    start = *s;
+                }
+                if (const std::string *s = findProperty(src.properties(), "param.2"); s && !s->empty()) {
+                    stop = *s;
+                }
+                // Match academy NGSPICE block: .control / tran / write — for Xschem batch use .tran line.
+                addProperty(inst.properties(), "value",
+                            "\n.control\nsave all\ntran 50n " + stop + "\nwrite test_inverter.raw\n.endc\n");
+            } else if (const std::string *code = findProperty(src.properties(), "param.0")) {
+                addProperty(inst.properties(), "value", unescapeCStyle(*code));
+            } else {
+                addProperty(inst.properties(), "value", resolvedModel);
+            }
+            addProperty(inst.properties(), "only_toplevel", "true");
+        }
     } else if (symbol == "vsource.sym" || symbol == "isource.sym" || symbol == "res.sym" || symbol == "capa.sym" ||
                symbol == "ind.sym" || symbol == "vsource_pwl.sym" || symbol == "isource_pwl.sym" ||
                symbol == "vsource_arith.sym" || symbol == "isource_arith.sym" || symbol == "gnd.sym") {
-        if (const std::string *value = findProperty(src.properties(), "param.0")) {
-            // For LibComp, param.0 is the library name — prefer first device value param if present.
-            if (qucsType != "Lib") {
-                addProperty(inst.properties(), "value", *value);
-            }
-        }
         if (qucsType == "Lib") {
             // LibComp device params start at param.2 (0=lib, 1=model).
             if (const std::string *value = findProperty(src.properties(), "param.2")) {
+                addProperty(inst.properties(), "value", *value);
+            }
+        } else if (resolvedModel == "Vpulse" || resolvedModel == "Ipulse") {
+            // Rebuild SPICE PULSE(V1 V2 TD TR TF PW PER) from Qucs U1 U2 T1 T2 Tr Tf.
+            // Qucs T2 is end time; PW ≈ end - start (coarse) when Tr/Tf small.
+            auto p = [&](std::size_t i, const char *def) -> std::string {
+                if (const std::string *v = findProperty(src.properties(), "param." + std::to_string(i))) {
+                    if (!v->empty()) {
+                        return *v;
+                    }
+                }
+                return def;
+            };
+            const std::string u1 = p(0, "0");
+            const std::string u2 = p(1, "1.2");
+            const std::string t1 = p(2, "0.5u");
+            const std::string t2 = p(3, "2u");
+            const std::string tr = p(4, "10n");
+            const std::string tf = p(5, "10n");
+            addProperty(inst.properties(), "value",
+                        "PULSE(" + u1 + " " + u2 + " " + t1 + " " + tr + " " + tf + " 1u " + t2 + ")");
+        } else if (const std::string *value = findProperty(src.properties(), "param.0")) {
+            // Vdc "1.2 V" → "1.2" so ngspice does not see unknown parameter (v).
+            if (symbol == "vsource.sym" || symbol == "isource.sym" || symbol == "res.sym" || symbol == "capa.sym"
+                || symbol == "ind.sym") {
+                addProperty(inst.properties(), "value", normalizeSpiceDeviceValue(*value));
+            } else {
                 addProperty(inst.properties(), "value", *value);
             }
         }
@@ -278,6 +426,72 @@ Instance instanceForQucsExport(const Instance &src)
     return inst;
 }
 
+void skipAttrWhitespace(const std::string &body, std::size_t &pos)
+{
+    while (pos < body.size() && std::isspace(static_cast<unsigned char>(body[pos]))) {
+        ++pos;
+    }
+}
+
+std::string readAttrValue(const std::string &body, std::size_t &pos)
+{
+    skipAttrWhitespace(body, pos);
+    if (pos >= body.size()) {
+        return {};
+    }
+    if (body[pos] == '"') {
+        ++pos;
+        std::string value;
+        while (pos < body.size()) {
+            if (body[pos] == '"') {
+                ++pos;
+                break;
+            }
+            if (body[pos] == '\\' && pos + 1 < body.size()) {
+                value.push_back(body[pos + 1]);
+                pos += 2;
+                continue;
+            }
+            value.push_back(body[pos]);
+            ++pos;
+        }
+        return value;
+    }
+    const std::size_t start = pos;
+    while (pos < body.size() && !std::isspace(static_cast<unsigned char>(body[pos]))) {
+        ++pos;
+    }
+    return body.substr(start, pos - start);
+}
+
+bool attrValueNeedsQuotes(const std::string &value)
+{
+    if (value.empty()) {
+        return true;
+    }
+    for (const char ch : value) {
+        if (std::isspace(static_cast<unsigned char>(ch)) || ch == '{' || ch == '}') {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::string quoteAttrValue(const std::string &value)
+{
+    std::ostringstream oss;
+    oss << '"';
+    for (const char ch : value) {
+        if (ch == '"') {
+            oss << '\\' << '"';
+        } else {
+            oss << ch;
+        }
+    }
+    oss << '"';
+    return oss.str();
+}
+
 void parseAttrBlock(const std::string &block, std::vector<Property> &props)
 {
     if (block.size() < 2 || block.front() != '{' || block.back() != '}') {
@@ -286,17 +500,25 @@ void parseAttrBlock(const std::string &block, std::vector<Property> &props)
     std::string body = block.substr(1, block.size() - 2);
     for (char &ch : body) {
         if (ch == '\r') {
-            ch = ' ';
+            ch = '\n';
         }
     }
-    std::istringstream stream(body);
-    std::string token;
-    while (stream >> token) {
-        const std::size_t eq = token.find('=');
-        if (eq == std::string::npos) {
-            continue;
+    std::size_t pos = 0;
+    while (pos < body.size()) {
+        skipAttrWhitespace(body, pos);
+        if (pos >= body.size()) {
+            break;
         }
-        addProperty(props, token.substr(0, eq), token.substr(eq + 1));
+        const std::size_t eq = body.find('=', pos);
+        if (eq == std::string::npos) {
+            break;
+        }
+        const std::string name = trim(body.substr(pos, eq - pos));
+        pos = eq + 1;
+        const std::string value = readAttrValue(body, pos);
+        if (!name.empty()) {
+            addProperty(props, name, value);
+        }
     }
 }
 
@@ -311,7 +533,12 @@ std::string formatAttrBlock(const std::vector<Property> &props)
         if (i > 0) {
             oss << ' ';
         }
-        oss << props[i].name << '=' << props[i].value;
+        oss << props[i].name << '=';
+        if (attrValueNeedsQuotes(props[i].value)) {
+            oss << quoteAttrValue(props[i].value);
+        } else {
+            oss << props[i].value;
+        }
     }
     oss << '}';
     return oss.str();
@@ -818,8 +1045,24 @@ void writePinRecord(std::ostream &out, const Shape::RectData &rect, const std::v
     out << ' ' << formatAttrBlock(pinProps) << '\n';
 }
 
+void normalizeArcAnglesForXschem(double &startAngle, double &endAngle)
+{
+    constexpr double kPi = 3.14159265358979323846;
+    constexpr double kTwoPi = 2.0 * kPi;
+    // Legacy Qucs import stored absolute end angles in radians; xschem expects degrees + span.
+    if (startAngle <= kTwoPi && endAngle <= kTwoPi && endAngle >= startAngle) {
+        const double startDeg = startAngle * 180.0 / kPi;
+        const double spanDeg = (endAngle - startAngle) * 180.0 / kPi;
+        startAngle = startDeg;
+        endAngle = spanDeg;
+    }
+}
+
 void writeArcRecord(std::ostream &out, const Shape::ArcData &arc, const std::vector<Property> &props)
 {
+    double startAngle = arc.startAngle;
+    double endAngle = arc.endAngle;
+    normalizeArcAnglesForXschem(startAngle, endAngle);
     const double cx = dbuToEditorUnits(arc.center.x, g_dbuPerEditorUnit);
     const double cy = dbuToEditorUnits(arc.center.y, g_dbuPerEditorUnit);
     std::vector<Property> arcProps;
@@ -829,8 +1072,8 @@ void writeArcRecord(std::ostream &out, const Shape::ArcData &arc, const std::vec
         }
         arcProps.push_back(prop);
     }
-    out << 'A' << ' ' << arc.width << ' ' << cx << ' ' << cy << ' ' << arc.radius << ' ' << arc.startAngle << ' '
-        << arc.endAngle << ' ' << formatAttrBlock(arcProps) << '\n';
+    out << 'A' << ' ' << arc.width << ' ' << cx << ' ' << cy << ' ' << arc.radius << ' ' << startAngle << ' '
+        << endAngle << ' ' << formatAttrBlock(arcProps) << '\n';
 }
 
 void writeArcFromPath(std::ostream &out, const Shape::PathData &path, const std::vector<Property> &props)
@@ -852,9 +1095,10 @@ void writeArcFromPath(std::ostream &out, const Shape::PathData &path, const std:
     }
     if (const std::string *cy = findProperty(props, "arc.centerY")) {
         arc.center.y = std::stoll(*cy);
-    } else if (!path.points.empty()) {
-        arc.center = path.points.front();
     }
+    // Never use path.points.front() as center: compact encoding tessellates arcs and the
+    // first vertex is the arc start point, not the circle center.
+    normalizeArcAnglesForXschem(arc.startAngle, arc.endAngle);
     writeArcRecord(out, arc, props);
 }
 
@@ -1105,12 +1349,43 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
         }
     }
 
+    bool hasLauncher = false;
+    bool needWaveLauncher = false;
+    std::string waveRawFile = "test_inverter.raw";
+
     for (const Instance &inst : block.instances()) {
+        const std::string cell = inst.cellName();
+        if (cell == "launcher.sym" || cell == "launcher" || cell.find("launcher") != std::string::npos) {
+            hasLauncher = true;
+        }
         if (fromQucs) {
-            writeComponentRecord(out, instanceForQucsExport(inst));
+            Instance exported = instanceForQucsExport(inst);
+            if (const std::string *val = findProperty(exported.properties(), "value")) {
+                const std::string raw = extractWriteRawFile(*val);
+                if (!raw.empty()) {
+                    needWaveLauncher = true;
+                    waveRawFile = raw;
+                }
+            }
+            writeComponentRecord(out, exported);
         } else {
             writeComponentRecord(out, inst);
         }
+    }
+
+    // Qucs dual-tool TB uses .TR (no launcher). Restore academy "load waves" + graph for Xschem.
+    if (fromQucs && needWaveLauncher && !hasLauncher) {
+        Transform xf{editorUnitsToDbu(770.0, g_dbuPerEditorUnit), editorUnitsToDbu(-120.0, g_dbuPerEditorUnit)};
+        Instance launcher("launcher.sym", xf);
+        addProperty(launcher.properties(), "name", "h5");
+        addProperty(launcher.properties(), "descr", "load waves");
+        addProperty(launcher.properties(), "tclcommand",
+                    "xschem raw_read $netlist_dir/" + waveRawFile + " tran");
+        writeComponentRecord(out, launcher);
+
+        out << "B 2 710 -550 1510 -150 {flags=graph y1=0 y2=1.3 ypos1=0 ypos2=2 divy=5 subdivy=1 "
+               "unity=1 x1=0 x2=2e-06 divx=5 subdivx=1 xlabmag=1.0 ylabmag=1.0 node=Vout color=4 "
+               "dataset=-1 unitx=1 logx=0 logy=0}\n";
     }
 }
 

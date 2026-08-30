@@ -99,6 +99,8 @@ std::string xschemCellStem(const std::string &cellName)
 }
 
 std::string qucsComponentType(const std::string &cellName);
+std::string qucsComponentTypeForInstance(const Instance &inst);
+bool isNativeQucsComponentType(const std::string &type);
 
 bool shouldUseLibPrimitiveExport(const ResolvedPrimitive &resolved)
 {
@@ -109,8 +111,13 @@ bool shouldUseLibPrimitiveExport(const ResolvedPrimitive &resolved)
     if (isQucsSchematicDecoration(resolved.cellName)) {
         return false;
     }
+    const std::string mapped = qucsComponentType(resolved.cellName);
+    // Remapped (vsource→Vpulse, res→R, …) or identity-but-built-in (Vdc, INCLSCR, .TR).
+    if (mapped != stem || isNativeQucsComponentType(mapped)) {
+        return false;
+    }
     // Use <Lib> only for cells without a built-in Qucs component mapping (PDK, hierarchy).
-    return qucsComponentType(resolved.cellName) == stem;
+    return true;
 }
 
 std::string qucsComponentType(const std::string &cellName)
@@ -120,8 +127,21 @@ std::string qucsComponentType(const std::string &cellName)
     if (type == "iopin" || type == "ipin" || type == "opin" || type == "Port") {
         return "Port";
     }
-    if (type == "gnd") {
+    if (type == "gnd" || type == "GND") {
         return "GND";
+    }
+    // Prefer Qucs-native source cell names (analogLib) over legacy commonLib vsource.
+    if (type == "Vdc" || type == "Vac" || type == "Vpulse" || type == "Vexp" || type == "Vrect" ||
+        type == "Vfile" || type == "Vpwl" || type == "Varith") {
+        return type;
+    }
+    if (type == "Idc" || type == "Iac" || type == "Ipulse" || type == "Iexp" || type == "Irect" ||
+        type == "Ifile" || type == "Ipwl" || type == "Iarith") {
+        return type;
+    }
+    if (type == "INCLSCR" || type == "SpiceLib" || type == ".TR" || type == "TR" || type == ".DC" || type == ".SW" ||
+        type == ".AC" || type == ".SP" || type == ".HB") {
+        return type == "TR" ? ".TR" : type;
     }
     if (type == "vsource") {
         return "Vpulse";
@@ -142,6 +162,7 @@ std::string qucsComponentType(const std::string &cellName)
         return "Port";
     }
     // Xschem-only decoration; Qucs has no equivalent — load as inert subcircuit placeholder.
+    // Dual-tool sim controllers must NOT use these names (use INCLSCR / .TR instead).
     if (type == "lab_wire" || type == "code_shown" || type == "launcher") {
         return "Sub";
     }
@@ -149,6 +170,163 @@ std::string qucsComponentType(const std::string &cellName)
         return "Sub";
     }
     return type;
+}
+
+// Prefer explicit qucs.type on the instance (set when CORE was authored for dual-tool use).
+std::string qucsComponentTypeForInstance(const Instance &inst)
+{
+    if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && !qt->empty()) {
+        const std::string t = *qt;
+        if (t == "lab_wire" || t == "code_shown" || t == "launcher") {
+            return "Sub";
+        }
+        return t;
+    }
+    // commonLib vsource: DC-like value → Vdc, otherwise Vpulse.
+    const std::string stem = xschemCellStem(inst.cellName());
+    if (stem == "vsource") {
+        if (const std::string *value = findProperty(inst.properties(), "value")) {
+            const std::string &v = *value;
+            if (v.find("PULSE") != std::string::npos || v.find("pulse") != std::string::npos ||
+                v.find("SIN") != std::string::npos || v.find("EXP") != std::string::npos) {
+                return "Vpulse";
+            }
+            return "Vdc";
+        }
+    }
+    return qucsComponentType(inst.cellName());
+}
+
+bool isNativeQucsComponentType(const std::string &type)
+{
+    return type == "Port" || type == "GND" || type == "R" || type == "C" || type == "L" || type == "INDQ"
+        || type == "Vdc" || type == "Vac" || type == "Vpulse" || type == "Vexp" || type == "Vrect"
+        || type == "Vfile" || type == "Vpwl" || type == "Varith" || type == "Idc" || type == "Iac"
+        || type == "Ipulse" || type == "Iexp" || type == "Irect" || type == "Ifile" || type == "Ipwl"
+        || type == "Iarith" || type == "IProbe" || type == "VProbe" || type == "INCLSCR" || type == "SpiceLib"
+        || type == ".TR" || type == "TR" || type == ".DC" || type == ".SW" || type == ".AC" || type == ".SP"
+        || type == ".HB" || type == "vdd" || type == "vss" || type == "Sub";
+}
+
+// Collect param.N values already stored on the instance.
+std::vector<std::string> collectParamValues(const std::vector<Property> &props)
+{
+    std::vector<std::string> values;
+    for (std::size_t i = 0;; ++i) {
+        const std::string *prop = findProperty(props, "param." + std::to_string(i));
+        if (!prop) {
+            break;
+        }
+        values.push_back(*prop);
+    }
+    return values;
+}
+
+// When CORE came from Xschem (value=…) rather than Qucs (param.N), synthesize Qucs props.
+std::vector<std::pair<std::string, std::string>> synthesizeQucsParams(const std::string &type,
+                                                                      const std::vector<Property> &props)
+{
+    std::vector<std::pair<std::string, std::string>> out; // value, visible
+    const auto existing = collectParamValues(props);
+    if (!existing.empty()) {
+        for (const std::string &v : existing) {
+            out.push_back({v, "1"});
+        }
+        // Preserve visibility flags when present.
+        for (std::size_t i = 0; i < out.size(); ++i) {
+            if (const std::string *vis = findProperty(props, "visible." + std::to_string(i))) {
+                out[i].second = *vis;
+            }
+        }
+        return out;
+    }
+
+    const std::string *value = findProperty(props, "value");
+    const std::string val = value ? *value : "";
+
+    if (type == "Vdc" || type == "Idc" || type == "R" || type == "C" || type == "L") {
+        out.push_back({val.empty() ? "1" : val, "1"});
+        return out;
+    }
+    if (type == "Vpulse" || type == "Ipulse") {
+        // Accept SPICE PULSE(V1 V2 TD TR TF PW [PER]) or leave defaults.
+        std::string body = val;
+        const auto lp = body.find('(');
+        const auto rp = body.rfind(')');
+        if (lp != std::string::npos && rp != std::string::npos && rp > lp) {
+            body = body.substr(lp + 1, rp - lp - 1);
+        }
+        std::vector<std::string> toks;
+        {
+            std::istringstream iss(body);
+            std::string tok;
+            while (iss >> tok) {
+                toks.push_back(tok);
+            }
+        }
+        // Qucs Vpulse: U1 U2 T1 T2 Tr Tf — T2 is end time; PW ≈ T2-T1-Tr-Tf.
+        const std::string u1 = toks.size() > 0 ? toks[0] : "0";
+        const std::string u2 = toks.size() > 1 ? toks[1] : "1.2";
+        const std::string t1 = toks.size() > 2 ? toks[2] : "0.5u";
+        const std::string tr = toks.size() > 3 ? toks[3] : "10n";
+        const std::string tf = toks.size() > 4 ? toks[4] : "10n";
+        const std::string pw = toks.size() > 5 ? toks[5] : "1u";
+        // Qucs T2 = end time ≈ T1+Tr+Tf+PW; if PER present use it as a coarse end.
+        std::string t2 = toks.size() > 6 ? toks[6] : pw;
+        out.push_back({u1, "1"});
+        out.push_back({u2, "1"});
+        out.push_back({t1, "1"});
+        out.push_back({t2, "1"});
+        out.push_back({tr, "1"});
+        out.push_back({tf, "1"});
+        return out;
+    }
+    if (type == "INCLSCR") {
+        out.push_back({val.empty() ? ".LIB cornerMOSlv.lib mos_tt\n" : val, "1"});
+        out.push_back({"", "0"});
+        out.push_back({"", "0"});
+        return out;
+    }
+    if (type == ".TR") {
+        // value may be ".tran 50n 2u" or "tran 50n 2u" — map to Type/Start/Stop/Points.
+        std::string body = val;
+        for (char &ch : body) {
+            if (ch >= 'A' && ch <= 'Z') {
+                ch = static_cast<char>(ch - 'A' + 'a');
+            }
+        }
+        std::string start = "0";
+        std::string stop = "2u";
+        std::string points = "41";
+        {
+            std::istringstream iss(body);
+            std::string tok;
+            std::vector<std::string> toks;
+            while (iss >> tok) {
+                toks.push_back(tok);
+            }
+            // .tran tstep tstop [tstart]
+            std::size_t i = 0;
+            if (!toks.empty() && (toks[0] == ".tran" || toks[0] == "tran")) {
+                ++i;
+            }
+            if (toks.size() > i + 1) {
+                stop = toks[i + 1];
+            }
+            if (toks.size() > i + 2) {
+                start = toks[i + 2];
+            }
+        }
+        out.push_back({"lin", "1"});
+        out.push_back({start, "1"});
+        out.push_back({stop, "1"});
+        out.push_back({points, "0"});
+        return out;
+    }
+    if (!val.empty()) {
+        out.push_back({val, "1"});
+    }
+    return out;
 }
 
 std::string qucsPortDirection(const std::string &cellName)
@@ -201,7 +379,16 @@ std::optional<std::string> formatLibPrimitiveLine(const Instance &inst, double d
         compName = *model;
     }
 
-    const std::string &libName = !resolved.techLibrary.empty() ? resolved.techLibrary : qucsLibrary;
+    // PDK symbols netlist via QUCS_PRIMITIVE_LIB (.lib). Design hierarchies keep techLibrary.
+    std::string libName;
+    const bool pdkCell = compName.rfind("sg13_", 0) == 0;
+    if (!qucsLibrary.empty() && (pdkCell || resolved.techLibrary == "sg13g2_pr")) {
+        libName = qucsLibrary;
+    } else if (!resolved.techLibrary.empty()) {
+        libName = resolved.techLibrary;
+    } else {
+        libName = qucsLibrary;
+    }
 
     std::ostringstream oss;
     oss << "<Lib " << instName << ' ' << active << ' '
@@ -240,6 +427,16 @@ std::optional<std::string> maybeFormatPrimitiveLine(const Instance &inst, double
 
     const ResolvedPrimitive resolved = resolver.resolveReference(ref);
     if (!resolved.found) {
+        // Xschem PDK devices (sg13_lv_nmos, …) netlist via Qucs .lib even without *.symbol.core index.
+        const std::string model = pinRetargetModelName(inst);
+        if (!qucsLibrary.empty() && model.rfind("sg13_", 0) == 0) {
+            ResolvedPrimitive synthetic;
+            synthetic.found = true;
+            synthetic.cellName = model;
+            const std::size_t slash = ref.find('/');
+            synthetic.techLibrary = slash != std::string::npos ? ref.substr(0, slash) : qucsLibrary;
+            return formatLibPrimitiveLine(inst, dbuPerEditorUnit, synthetic, qucsLibrary);
+        }
         return std::nullopt;
     }
     // commonLib/analogLib and xschem devices must not become <Lib> in Qucs.
@@ -259,7 +456,7 @@ std::string formatComponentLine(const Instance &inst, double dbuPerEditorUnit, c
         }
     }
 
-    const std::string type = qucsComponentType(inst.cellName());
+    const std::string type = qucsComponentTypeForInstance(inst);
     const std::string instName = findProperty(inst.properties(), "name") ? *findProperty(inst.properties(), "name")
                                                                          : inst.cellName();
     const int active = findProperty(inst.properties(), "active") ? std::stoi(*findProperty(inst.properties(), "active")) : 1;
@@ -271,10 +468,21 @@ std::string formatComponentLine(const Instance &inst, double dbuPerEditorUnit, c
                                    ? static_cast<std::int64_t>(std::llround(dbuToEditorUnits(
                                          std::stoll(*findProperty(inst.properties(), "textY")), dbuPerEditorUnit)))
                                    : 0;
-    const int mirror = findProperty(inst.properties(), "mirror") ? std::stoi(*findProperty(inst.properties(), "mirror"))
-                                                                    : orientToQucsMirror(inst.transform().orient);
-    const int rotate = findProperty(inst.properties(), "rotate") ? std::stoi(*findProperty(inst.properties(), "rotate"))
-                                                                  : orientToQucsRotate(inst.transform().orient);
+    int mirror = 0;
+    int rotate = 0;
+    if (hasQucsHistoricalSourceRotate(inst.cellName()) || hasQucsHistoricalSourceRotate(type)) {
+        if (findProperty(inst.properties(), "mirror") && findProperty(inst.properties(), "rotate")) {
+            mirror = std::stoi(*findProperty(inst.properties(), "mirror"));
+            rotate = std::stoi(*findProperty(inst.properties(), "rotate"));
+        } else {
+            orientToQucsSourcePlacement(inst.transform().orient, mirror, rotate);
+        }
+    } else {
+        mirror = findProperty(inst.properties(), "mirror") ? std::stoi(*findProperty(inst.properties(), "mirror"))
+                                                           : orientToQucsMirror(inst.transform().orient);
+        rotate = findProperty(inst.properties(), "rotate") ? std::stoi(*findProperty(inst.properties(), "rotate"))
+                                                           : orientToQucsRotate(inst.transform().orient);
+    }
 
     if (type == "Port") {
         const std::string portNum = findProperty(inst.properties(), "lab") ? *findProperty(inst.properties(), "lab")
@@ -298,15 +506,9 @@ std::string formatComponentLine(const Instance &inst, double dbuPerEditorUnit, c
         << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(inst.transform().y, dbuPerEditorUnit)))
         << ' ' << textX << ' ' << textY << ' ' << mirror << ' ' << rotate;
 
-    for (std::size_t i = 0;; ++i) {
-        const std::string propKey = "param." + std::to_string(i);
-        const std::string visKey = "visible." + std::to_string(i);
-        const std::string *prop = findProperty(inst.properties(), propKey);
-        const std::string *vis = findProperty(inst.properties(), visKey);
-        if (!prop || !vis) {
-            break;
-        }
-        oss << ' ' << quote(*prop) << ' ' << *vis;
+    const auto params = synthesizeQucsParams(type, inst.properties());
+    for (const auto &pv : params) {
+        oss << ' ' << quote(pv.first) << ' ' << pv.second;
     }
     oss << '>';
     return oss.str();
@@ -316,13 +518,21 @@ void appendWireSegment(std::vector<std::string> &lines, const Point &a, const Po
                        std::int64_t labelX, std::int64_t labelY, std::int64_t dist, double dbuPerEditorUnit,
                        const std::string &nodeSet = "")
 {
+    // Qucs draws a magenta leader from the wire to (labelX,labelY). Defaulting both to 0
+    // parks every label at the origin and creates a "spider" across the schematic.
+    std::int64_t lx = labelX;
+    std::int64_t ly = labelY;
+    if (!label.empty() && lx == 0 && ly == 0) {
+        lx = (a.x + b.x) / 2 + static_cast<std::int64_t>(std::llround(10.0 * (dbuPerEditorUnit > 0.0 ? dbuPerEditorUnit : 1.0)));
+        ly = (a.y + b.y) / 2 - static_cast<std::int64_t>(std::llround(10.0 * (dbuPerEditorUnit > 0.0 ? dbuPerEditorUnit : 1.0)));
+    }
     std::ostringstream oss;
     oss << '<' << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(a.x, dbuPerEditorUnit))) << ' '
         << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(a.y, dbuPerEditorUnit))) << ' '
         << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(b.x, dbuPerEditorUnit))) << ' '
         << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(b.y, dbuPerEditorUnit))) << ' ' << quote(label)
-        << ' ' << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(labelX, dbuPerEditorUnit))) << ' '
-        << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(labelY, dbuPerEditorUnit))) << ' ' << dist << ' '
+        << ' ' << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(lx, dbuPerEditorUnit))) << ' '
+        << static_cast<std::int64_t>(std::llround(dbuToEditorUnits(ly, dbuPerEditorUnit))) << ' ' << dist << ' '
         << quote(nodeSet) << '>';
     lines.push_back(oss.str());
 }
@@ -615,6 +825,17 @@ std::vector<std::string> symbolLinesFromBlock(const CellContent &content, double
     std::vector<std::string> lines;
     const Block &block = content.block();
     int portSymCount = 0;
+    int nextPinNumber = 1;
+
+    auto emitPort = [&](std::int64_t cx, std::int64_t cy, std::vector<Property> props) {
+        // Qucs analyseLine sizes Ports by pin number; missing pinnumber → all pins collapse to #1.
+        if (!findProperty(props, "pinnumber")) {
+            props.push_back({"pinnumber", std::to_string(nextPinNumber)});
+        }
+        ++nextPinNumber;
+        appendQucsPort(lines, cx, cy, props);
+        ++portSymCount;
+    };
 
     for (const Shape &shape : block.shapes()) {
         const LayerPurpose purpose = layerPurpose(content, shapeLayerId(shape));
@@ -657,8 +878,7 @@ std::vector<std::string> symbolLinesFromBlock(const CellContent &content, double
             if (purpose == LayerPurpose::Pin) {
                 const std::int64_t cx = toQucsCoord((rect->box.llx + rect->box.urx) / 2, dbuPerEditorUnit);
                 const std::int64_t cy = toQucsCoord((rect->box.lly + rect->box.ury) / 2, dbuPerEditorUnit);
-                appendQucsPort(lines, cx, cy, shape.properties());
-                ++portSymCount;
+                emitPort(cx, cy, shape.properties());
                 break;
             }
             appendQucsLine(lines, toQucsCoord(rect->box.llx, dbuPerEditorUnit), toQucsCoord(rect->box.lly, dbuPerEditorUnit),
@@ -690,8 +910,8 @@ std::vector<std::string> symbolLinesFromBlock(const CellContent &content, double
     if (portSymCount == 0) {
         for (const Net &net : block.nets()) {
             for (const Term &term : net.terms()) {
-                appendQucsPort(lines, toQucsCoord(term.position().x, dbuPerEditorUnit),
-                               toQucsCoord(term.position().y, dbuPerEditorUnit), {Property{"lab", net.name()}});
+                emitPort(toQucsCoord(term.position().x, dbuPerEditorUnit),
+                         toQucsCoord(term.position().y, dbuPerEditorUnit), {Property{"lab", net.name()}});
             }
         }
     }

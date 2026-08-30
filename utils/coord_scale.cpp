@@ -123,6 +123,12 @@ Orient orientFromQucsSourcePlacement(int mirror, int rotateField)
     return orientFromQucsPlacement(mirror, visualRotate);
 }
 
+void orientToQucsSourcePlacement(Orient orient, int &mirror, int &rotate)
+{
+    orientToQucsPlacement(orient, mirror, rotate);
+    rotate = (rotate + 1) & 3;
+}
+
 Orient orientFromQucsLibToNativePdk(int mirror, int rotateField)
 {
     // Native Xschem/CORE PDK symbols are typically drawn N–S (rot0 vertical), while some Qucs

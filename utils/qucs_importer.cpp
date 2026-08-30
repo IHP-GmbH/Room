@@ -71,10 +71,49 @@ std::vector<std::string> splitQucsTokens(const std::string &line)
     return tokens;
 }
 
+std::string unescapeCStyle(const std::string &text)
+{
+    std::string out;
+    out.reserve(text.size());
+    for (std::size_t i = 0; i < text.size(); ++i) {
+        if (text[i] == '\\' && i + 1 < text.size()) {
+            switch (text[i + 1]) {
+            case 'n':
+                out.push_back('\n');
+                ++i;
+                break;
+            case 't':
+                out.push_back('\t');
+                ++i;
+                break;
+            case 'r':
+                out.push_back('\r');
+                ++i;
+                break;
+            case '\\':
+                out.push_back('\\');
+                ++i;
+                break;
+            case '"':
+                out.push_back('"');
+                ++i;
+                break;
+            default:
+                out.push_back(text[i]);
+                break;
+            }
+        } else {
+            out.push_back(text[i]);
+        }
+    }
+    return out;
+}
+
 std::string unquote(const std::string &token)
 {
     if (token.size() >= 2 && token.front() == '"' && token.back() == '"') {
-        return token.substr(1, token.size() - 2);
+        // Qucs writes escapes like \n inside quoted params (e.g. INCLSCR ".LIB … mos_tt\n").
+        return unescapeCStyle(token.substr(1, token.size() - 2));
     }
     return token;
 }
@@ -559,9 +598,9 @@ void appendShapesFromSymbolLines(const std::vector<std::string> &lines, Block &b
             arc.layerId = drawingLayer;
             arc.center = Point{toDbu(x + w / 2), toDbu(y + h / 2)};
             arc.radius = static_cast<double>(toDbu(std::max(w, h))) / 2.0 / dbuPerEditorUnit;
-            // Xschem Arc angles are radians.
-            arc.startAngle = startQt * 3.14159265358979323846 / 180.0;
-            arc.endAngle = (startQt + spanQt) * 3.14159265358979323846 / 180.0;
+            // Match xschem A-record semantics: start angle and span in degrees.
+            arc.startAngle = startQt;
+            arc.endAngle = spanQt;
             arc.width = 4;
             Shape shape(arc);
             addProperty(shape.properties(), "qucs.earc.x", tokens[1]);

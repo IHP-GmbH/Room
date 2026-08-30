@@ -21,6 +21,9 @@ double dbuToEditorUnits(std::int64_t dbu, double dbuPerEditorUnit);
 /*! Map abstract orientation to Qucs LibComp mirror/rotate fields (MultiViewComponent::recreate semantics). */
 void orientToQucsPlacement(Orient orient, int &mirror, int &rotate);
 
+/*! Inverse of orientFromQucsSourcePlacement for Xschem → Qucs export of Volt_/Ampere_ sources. */
+void orientToQucsSourcePlacement(Orient orient, int &mirror, int &rotate);
+
 /*! Inverse of orientToQucsPlacement for Qucs .sch import. */
 Orient orientFromQucsPlacement(int mirror, int rotate);
 
