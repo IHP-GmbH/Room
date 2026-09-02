@@ -8,11 +8,16 @@
 #include "cell.h"
 #include "coord_scale.h"
 #include "layer_spec.h"
+#include "net_name_propagation.h"
+#include "primitive_resolver.h"
+#include "pulse_params.h"
+#include "xschem_io.h"
 
 #include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <fstream>
+#include <optional>
 #include <sstream>
 #include <unordered_map>
 #include <utility>
@@ -299,6 +304,12 @@ Instance parseComponentLine(const std::string &line, std::vector<std::string> &w
         addProperty(inst.properties(), "visible." + std::to_string((i - 9) / 2), tokens[i + 1]);
     }
 
+    if (type == "Vpulse" || type == "Ipulse") {
+        if (std::optional<std::string> pulse = buildPulseSpiceValue(inst.properties())) {
+            addProperty(inst.properties(), "value", std::move(*pulse));
+        }
+    }
+
     return inst;
 }
 
@@ -569,16 +580,30 @@ void appendShapesFromSymbolLines(const std::vector<std::string> &lines, Block &b
                 warnings.push_back("Skipping malformed Symbol Text");
                 continue;
             }
+            auto editorTextSize = [](const std::string &token) -> std::int64_t {
+                try {
+                    const double value = std::stod(token);
+                    if (token.find('.') != std::string::npos) {
+                        return static_cast<std::int64_t>(std::llround(value * 16.0));
+                    }
+                    return static_cast<std::int64_t>(value);
+                } catch (...) {
+                    return 8;
+                }
+            };
             Shape::TextData text;
             text.layerId = labelLayer;
             text.position = Point{toDbu(parseInt64(tokens[1])), toDbu(parseInt64(tokens[2]))};
-            text.height = static_cast<std::uint32_t>(
-                toDbu(std::max<std::int64_t>(8, parseInt64(tokens[3]))));
-            text.text = unquote(tokens[6]);
+            const std::int64_t sizeX = editorTextSize(tokens[3]);
+            const std::int64_t sizeY =
+                tokens.size() >= 8 ? editorTextSize(tokens[4]) : editorTextSize(tokens[3]);
+            text.height = static_cast<std::uint32_t>(toDbu(std::max<std::int64_t>(8, sizeX)));
+            text.text = unquote(tokens.size() >= 8 ? tokens[7] : tokens[6]);
             Shape shape(text);
-            if (tokens.size() > 5) {
-                addProperty(shape.properties(), "rotate", tokens[5]);
-            }
+            addProperty(shape.properties(), "sizeX", tokens[3]);
+            addProperty(shape.properties(), "sizeY", tokens.size() >= 8 ? tokens[4] : tokens[3]);
+            addProperty(shape.properties(), "qucs.color", tokens.size() >= 8 ? tokens[5] : tokens[4]);
+            addProperty(shape.properties(), "qucs.show", tokens.size() >= 8 ? tokens[6] : tokens[5]);
             block.shapes().push_back(std::move(shape));
             continue;
         }
@@ -757,6 +782,14 @@ Database QucsImporter::importText(const std::string &text, const std::string &ce
         }
     } else if (!symbolOnly) {
         m_warnings.push_back("No <Wires> section found");
+    }
+
+    if (!symbolOnly) {
+        xschem::syncDualToolGraphProperties(block, content, xschem::GraphSyncDirection::FromQucsDiagram);
+        PrimitiveResolver resolver;
+        resolver.loadFromEnvironment();
+        canonicalizeBlockPrimitives(block, &resolver);
+        propagateNetNames(block, &resolver, content.dbuPerEditorUnit());
     }
 
     db.lib().recomputeAllBBoxes(symbolOnly ? ViewType::Symbol : ViewType::Schematic);

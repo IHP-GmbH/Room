@@ -112,8 +112,10 @@ add_library(core_utils STATIC
     utils/gds_exporter.cpp
     utils/qucs_importer.cpp
     utils/qucs_exporter.cpp
+    utils/pulse_params.cpp
     utils/qucs_block_codec.cpp
     utils/coord_scale.cpp
+    utils/net_name_propagation.cpp
     utils/pin_retarget.cpp
     utils/xschem_format.cpp
     utils/xschem_io.cpp

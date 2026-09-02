@@ -1,5 +1,6 @@
 #pragma once
 
+#include "block.h"
 #include "instance.h"
 #include "types.h"
 
@@ -15,6 +16,17 @@ std::string pinRetargetBaseName(const std::string &cellOrRef);
 /*! Resolve LibComp model (param.1) or bare cell name for pin tables. */
 std::string pinRetargetModelName(const Instance &inst);
 
+bool isIhpFetModel(const std::string &model);
+
+/*! Find a user-named CORE net whose term is within tolerance of pt (block DBU coords). */
+std::string coreNetAtPoint(const Block &block, Point ptDbu, double dbuPerEditorUnit, std::int64_t tolEditor = 2);
+
+/*! For IHP FET instances, map each symbol pin index to a CORE net name (xschem pin geometry). */
+std::vector<std::string> ihpFetPinNetNames(const Instance &inst, const Block &block, double dbuPerEditorUnit);
+
+/*! Qucs .lib pin center in schematic editor units (matches LibComp after recreate). */
+Point qucsLibPinWorldEditor(const Instance &inst, Point localQucs, double dbuPerEditorUnit, std::int64_t coordDivisor);
+
 /*! Qucs LibComp pin centers → native Xschem/CORE pin centers (same units as instance/wires).
  *  \param dbuPerEditorUnit  Scale for local pin offsets (1 for Qucs-origin, 1000 for Xschem-origin).
  */
@@ -24,6 +36,12 @@ void appendQucsToXschemPinRetargets(const Instance &inst, double dbuPerEditorUni
 /*! Native Xschem/CORE pin centers → Qucs LibComp pin centers. */
 void appendXschemToQucsPinRetargets(const Instance &inst, double dbuPerEditorUnit,
                                     std::vector<std::pair<Point, Point>> &out);
+
+/*! Xschem wire endpoints → Qucs .lib LibComp pin centers (matches MultiViewComponent::recreate).
+ *  \param coordDivisor  Same display divisor used when loading CORE into Qucs (computeDisplayDivisor).
+ */
+void appendNetlistLibPinRetargets(const Instance &inst, double dbuPerEditorUnit, std::int64_t coordDivisor,
+                                  std::vector<std::pair<Point, Point>> &out);
 
 /*! Move pt from pair.first → pair.second when within tolerance (same units as points).
  *  \param dbuPerEditorUnit  Used to scale the match tolerance (2 editor units).

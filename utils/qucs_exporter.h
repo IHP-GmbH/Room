@@ -49,7 +49,8 @@ public:
     std::vector<std::string>                            exportBlockWiresAsLines(const Block &block,
                                                                                 const std::vector<LayerSpec> &layers,
                                                                                 double dbuPerEditorUnit,
-                                                                                const std::string &sourceFormat) const;
+                                                                                const std::string &sourceFormat,
+                                                                                std::int64_t coordDivisor = 1) const;
 
     const std::vector<std::string> &                    warnings() const { return m_warnings; }
     const std::vector<std::string> &                    errors() const { return m_errors; }

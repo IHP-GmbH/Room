@@ -1,5 +1,6 @@
 #include "xschem_bridge.h"
 
+#include "core_paths.h"
 #include "database.h"
 #include "xschem_exporter.h"
 #include "xschem_format.h"
@@ -23,6 +24,18 @@ void appendMessages(Status &status, const std::vector<std::string> &messages, bo
     if (asError && !messages.empty()) {
         status.ok = false;
     }
+}
+
+std::string cellNameForImport(const std::string &corePath, const XschemImporter::Options &options)
+{
+    if (!options.cellName.empty()) {
+        return options.cellName;
+    }
+    const ParsedCorePath parsed = parseCoreFilePath(corePath);
+    if (parsed.valid && !parsed.cellName.empty()) {
+        return parsed.cellName;
+    }
+    return "cell";
 }
 
 } // namespace
@@ -135,7 +148,7 @@ Status importTextIntoCore(const std::string &text, const std::string &extension,
         }
 
         XschemImporter importer(options);
-        db = importer.importTextInto(std::move(db), text, extension, options.cellName);
+        db = importer.importTextInto(std::move(db), text, extension, cellNameForImport(corePath, options));
         appendMessages(status, importer.warnings(), false);
         appendMessages(status, importer.errors(), true);
         if (!status.ok) {

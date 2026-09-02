@@ -7,17 +7,24 @@
 
 #include "coord_scale.h"
 #include "net.h"
+#include "net_name_propagation.h"
 #include "pin_retarget.h"
+#include "pulse_params.h"
 #include "shape.h"
 #include "xschem_format.h"
 
+#include "block.h"
 #include "primitive_resolver.h"
 
+#include <algorithm>
+#include <array>
 #include <cctype>
 #include <cmath>
+#include <cstring>
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
+#include <optional>
 #include <sstream>
 #include <unordered_map>
 
@@ -229,8 +236,8 @@ std::string mapQucsSymbol(const std::string &qucsType)
         {"Ifile", "isource_pwl.sym"},
         {"Ipwl", "isource_pwl.sym"},
         {"Iarith", "isource_arith.sym"},
-        {"vdd", "vdd.sym"},
-        {"vss", "vss.sym"},
+        {"vdd", "analogLib/vdd.sym"},
+        {"vss", "analogLib/vss.sym"},
         {"R", "res.sym"},
         {"C", "capa.sym"},
         {"L", "ind.sym"},
@@ -244,15 +251,19 @@ std::string mapQucsSymbol(const std::string &qucsType)
         return it->second;
     }
     if (!qucsType.empty() && qucsType.front() == '.') {
-        // Prefer code_shown look for Xschem; keep qucs.type for Qucs round-trip.
+        if (qucsType == ".TR") {
+            return "analogLib/TR.sym";
+        }
         return "code_shown.sym";
     }
     if (qucsType == "TR") {
-        return "code_shown.sym";
+        return "analogLib/TR.sym";
     }
-    // INCLSCR / SpiceLib are spice include directives — same netlist path as .TR/.DC.
     if (qucsType == "INCLSCR" || qucsType == "SpiceLib") {
-        return "code_shown.sym";
+        return "analogLib/INCLSCR.sym";
+    }
+    if (qucsType == "launcher") {
+        return "analogLib/launcher.sym";
     }
     if (qucsType == "Lib" || qucsType == "Sub") {
         return "qucs_blackbox.sym";
@@ -260,8 +271,40 @@ std::string mapQucsSymbol(const std::string &qucsType)
     return "qucs_blackbox.sym";
 }
 
+std::string cellStem(const std::string &cellName)
+{
+    std::string type = cellName;
+    const auto slash = type.find_last_of("/\\");
+    if (slash != std::string::npos) {
+        type = type.substr(slash + 1);
+    }
+    if (type.size() > 4 && type.compare(type.size() - 4, 4, ".sym") == 0) {
+        type.resize(type.size() - 4);
+    }
+    return type;
+}
+
 void addProperty(std::vector<Property> &props, const std::string &name, const std::string &value)
 {
+    props.push_back({name, value});
+}
+
+void setProperty(std::vector<Property> &props, const std::string &name, const std::string &value)
+{
+    for (Property &prop : props) {
+        if (prop.name == name) {
+            prop.value = value;
+            return;
+        }
+    }
+    addProperty(props, name, value);
+}
+
+void replaceSingletonProperty(std::vector<Property> &props, const std::string &name, const std::string &value)
+{
+    props.erase(std::remove_if(props.begin(), props.end(),
+                               [&](const Property &prop) { return prop.name == name; }),
+                props.end());
     props.push_back({name, value});
 }
 
@@ -275,19 +318,80 @@ const std::string *findProperty(const std::vector<Property> &props, const std::s
     return nullptr;
 }
 
-Instance instanceForQucsExport(const Instance &src)
+void setProperty(std::vector<Property> &props, const std::string &name, const std::string &value);
+
+std::optional<std::string> analogLibControllerRef(const Instance &inst);
+std::string analogLibControllerCellName(const std::string &primitiveRef);
+bool isAnalogLibControllerSymbol(const std::string &cellName);
+void annotatePrimitiveReference(Instance &inst);
+
+std::string modelNameFromPrimitiveRef(const std::string &ref)
 {
-    const std::string qucsType = src.cellName();
-    // LibComp stores the real model in param.1 (library component name). After a Qucs CORE
-    // save, R/C/Vdc/GND/PDK devices often appear as cellName "Lib" — resolve before mapping.
-    std::string resolvedModel = qucsType;
-    if (qucsType == "Lib" || qucsType == "SpiceLib") {
-        if (const std::string *model = findProperty(src.properties(), "param.1"); model && !model->empty()) {
-            resolvedModel = *model;
+    std::string stem = cellStem(ref);
+    for (const char *suffix : {".symbol.core", ".schematic.core", ".symbol", ".schematic"}) {
+        const std::size_t len = std::strlen(suffix);
+        if (stem.size() > len && stem.compare(stem.size() - len, len, suffix) == 0) {
+            stem.resize(stem.size() - len);
+            break;
         }
     }
+    return stem;
+}
 
-    std::string symbol = mapQucsSymbol(resolvedModel);
+bool isPlaceholderLibModel(const std::string &model)
+{
+    return model.empty() || model == "Lib" || model == "Sub" || model == "SpiceLib";
+}
+
+std::string resolveLibCompModel(const Instance &src, const std::string &logicalType)
+{
+    const std::string stem = cellStem(src.cellName());
+    if (logicalType != "Lib" && logicalType != "SpiceLib" && stem != "qucs_blackbox") {
+        return logicalType;
+    }
+    for (const char *key : {"param.1", "qucs.model", "symname"}) {
+        if (const std::string *model = findProperty(src.properties(), key)) {
+            if (!isPlaceholderLibModel(*model)) {
+                return *model;
+            }
+        }
+    }
+    if (const std::string *prim = findProperty(src.properties(), "core.primitive"); prim && !prim->empty()) {
+        const std::string fromPrim = modelNameFromPrimitiveRef(*prim);
+        if (!isPlaceholderLibModel(fromPrim)) {
+            return fromPrim;
+        }
+    }
+    return logicalType;
+}
+
+bool instanceNeedsQucsExportRemap(const Instance &inst)
+{
+    if (findProperty(inst.properties(), "qucs.type") != nullptr) {
+        return true;
+    }
+    const std::string stem = cellStem(inst.cellName());
+    return stem == "Lib" || stem == "qucs_blackbox" || stem == "Sub" || stem == "Port" || stem == "GND"
+        || stem == "Vdc" || stem == "Vpulse" || stem == "INCLSCR" || stem == ".TR" || stem == "TR";
+}
+
+Instance instanceForQucsExport(const Instance &src)
+{
+    std::string logicalType = cellStem(src.cellName());
+    if (const std::string *qt = findProperty(src.properties(), "qucs.type"); qt && !qt->empty()) {
+        logicalType = *qt;
+    }
+    // LibComp stores the real model in param.1 (library component name). After a Qucs CORE
+    // save, R/C/Vdc/GND/PDK devices often appear as cellName "Lib" — resolve before mapping.
+    std::string resolvedModel = resolveLibCompModel(src, logicalType);
+
+    std::string symbol;
+    if (logicalType == ".TR" || logicalType == "TR") {
+        // Xschem batch netlist needs a full .control block; analogLib/TR.sym only emits bare .tran.
+        symbol = "devices/code_shown.sym";
+    } else {
+        symbol = mapQucsSymbol(logicalType);
+    }
     if (resolvedModel == "Port") {
         // Qucs Port Type: param.1 = analog|in|out|inout → commonLib pin cells.
         // For top-level net naming in Xschem, lab_pin is what propagates lab= onto nets.
@@ -305,9 +409,8 @@ Instance instanceForQucsExport(const Instance &src)
         }
     }
     bool remappedToNativePdk = false;
-    if (symbol == "qucs_blackbox.sym" && qucsType == "Lib" && !resolvedModel.empty() && resolvedModel != "Lib"
-        && resolvedModel.front() != '.') {
-        // PDK / analogLib cell: let Xschem resolve via CORE_PRIMITIVE index (cell.sym).
+    if (symbol == "qucs_blackbox.sym" && !isPlaceholderLibModel(resolvedModel) && resolvedModel.front() != '.') {
+        // PDK / analogLib / hierarchy cell: let Xschem resolve via CORE_PRIMITIVE index or sibling *.sym.
         symbol = resolvedModel + ".sym";
         remappedToNativePdk = true;
     }
@@ -340,34 +443,47 @@ Instance instanceForQucsExport(const Instance &src)
 
     // Qucs Port net name lives in param.0; Xschem pins need lab=.
     if (resolvedModel == "Port") {
-        if (const std::string *lab = findProperty(src.properties(), "param.0"); lab && !lab->empty()) {
-            addProperty(inst.properties(), "lab", *lab);
+        std::string lab;
+        if (const std::string *p0 = findProperty(src.properties(), "param.0"); p0 && !p0->empty()) {
+            lab = *p0;
+        }
+        if (!lab.empty() && !isAnonymousNetLabel(lab)) {
+            addProperty(inst.properties(), "lab", lab);
+        }
+        addProperty(inst.properties(), "sig_type", "std_logic");
+    }
+
+    if (symbol == "gnd.sym" || resolvedModel == "GND") {
+        if (!findProperty(inst.properties(), "lab")) {
+            addProperty(inst.properties(), "lab", "GND");
         }
     }
 
     if (symbol == "qucs_blackbox.sym") {
         addProperty(inst.properties(), "symname", resolvedModel);
-    } else if (symbol == "qucs_directive.sym" || symbol == "code_shown.sym") {
+    } else if (symbol == "qucs_directive.sym" || symbol == "code_shown.sym" || symbol == "devices/code_shown.sym") {
         // Xschem code_shown / directive: spice text via @value (type=netlist_commands).
         if (resolvedModel == "INCLSCR" || resolvedModel == "SpiceLib") {
             if (const std::string *code = findProperty(src.properties(), "param.0")) {
-                // Unescape so ".LIB … mos_tt\n" becomes a real newline (not section mos_ttn).
-                addProperty(inst.properties(), "value", unescapeCStyle(*code));
+                std::string libLine = unescapeCStyle(*code);
+                if (libLine.size() >= 4 && libLine.compare(0, 4, ".LIB") == 0) {
+                    libLine.replace(1, 3, "lib");
+                }
+                while (!libLine.empty() && (libLine.back() == '\n' || libLine.back() == '\r' || libLine.back() == ' ')) {
+                    libLine.pop_back();
+                }
+                addProperty(inst.properties(), "value", libLine);
             }
             addProperty(inst.properties(), "only_toplevel", "true");
         } else if (!resolvedModel.empty() && (resolvedModel.front() == '.' || resolvedModel == "TR")) {
             if (resolvedModel == ".TR" || resolvedModel == "TR") {
-                std::string start = "0";
-                std::string stop = "1m";
-                if (const std::string *s = findProperty(src.properties(), "param.1"); s && !s->empty()) {
-                    start = *s;
-                }
+                std::string stop = "2u";
                 if (const std::string *s = findProperty(src.properties(), "param.2"); s && !s->empty()) {
                     stop = *s;
                 }
-                // Match academy NGSPICE block: .control / tran / write — for Xschem batch use .tran line.
                 addProperty(inst.properties(), "value",
-                            "\n.control\nsave all\ntran 50n " + stop + "\nwrite test_inverter.raw\n.endc\n");
+                            std::string(".control\nsave all\ntran 50n ") + stop
+                                + "\nwrite test_inverter.raw\n.endc");
             } else if (const std::string *code = findProperty(src.properties(), "param.0")) {
                 addProperty(inst.properties(), "value", unescapeCStyle(*code));
             } else {
@@ -378,30 +494,15 @@ Instance instanceForQucsExport(const Instance &src)
     } else if (symbol == "vsource.sym" || symbol == "isource.sym" || symbol == "res.sym" || symbol == "capa.sym" ||
                symbol == "ind.sym" || symbol == "vsource_pwl.sym" || symbol == "isource_pwl.sym" ||
                symbol == "vsource_arith.sym" || symbol == "isource_arith.sym" || symbol == "gnd.sym") {
-        if (qucsType == "Lib") {
+        if (logicalType == "Lib") {
             // LibComp device params start at param.2 (0=lib, 1=model).
             if (const std::string *value = findProperty(src.properties(), "param.2")) {
                 addProperty(inst.properties(), "value", *value);
             }
         } else if (resolvedModel == "Vpulse" || resolvedModel == "Ipulse") {
-            // Rebuild SPICE PULSE(V1 V2 TD TR TF PW PER) from Qucs U1 U2 T1 T2 Tr Tf.
-            // Qucs T2 is end time; PW ≈ end - start (coarse) when Tr/Tf small.
-            auto p = [&](std::size_t i, const char *def) -> std::string {
-                if (const std::string *v = findProperty(src.properties(), "param." + std::to_string(i))) {
-                    if (!v->empty()) {
-                        return *v;
-                    }
-                }
-                return def;
-            };
-            const std::string u1 = p(0, "0");
-            const std::string u2 = p(1, "1.2");
-            const std::string t1 = p(2, "0.5u");
-            const std::string t2 = p(3, "2u");
-            const std::string tr = p(4, "10n");
-            const std::string tf = p(5, "10n");
-            addProperty(inst.properties(), "value",
-                        "PULSE(" + u1 + " " + u2 + " " + t1 + " " + tr + " " + tf + " 1u " + t2 + ")");
+            if (std::optional<std::string> pulse = buildPulseSpiceValue(src.properties())) {
+                addProperty(inst.properties(), "value", std::move(*pulse));
+            }
         } else if (const std::string *value = findProperty(src.properties(), "param.0")) {
             // Vdc "1.2 V" → "1.2" so ngspice does not see unknown parameter (v).
             if (symbol == "vsource.sym" || symbol == "isource.sym" || symbol == "res.sym" || symbol == "capa.sym"
@@ -410,11 +511,49 @@ Instance instanceForQucsExport(const Instance &src)
             } else {
                 addProperty(inst.properties(), "value", *value);
             }
+        } else if (const std::string *value = findProperty(src.properties(), "value")) {
+            addProperty(inst.properties(), "value", *value);
+        } else if (logicalType == "Vdc" || resolvedModel == "Vdc") {
+            if (const std::string *name = findProperty(src.properties(), "name"); name && *name == "Vdd") {
+                addProperty(inst.properties(), "value", "1.2");
+            }
+        }
+    } else if (symbol == "INCLSCR.sym" || symbol == "analogLib/INCLSCR.sym") {
+        if (const std::string *value = findProperty(src.properties(), "value")) {
+            addProperty(inst.properties(), "value", *value);
+        } else if (const std::string *code = findProperty(src.properties(), "param.0")) {
+            std::string libLine = unescapeCStyle(*code);
+            if (libLine.size() >= 4 && libLine.compare(0, 4, ".LIB") == 0) {
+                libLine.replace(1, 3, "lib");
+            }
+            while (!libLine.empty() && (libLine.back() == '\n' || libLine.back() == '\r' || libLine.back() == ' ')) {
+                libLine.pop_back();
+            }
+            addProperty(inst.properties(), "value", libLine);
+        }
+        addProperty(inst.properties(), "only_toplevel", "true");
+    } else if (symbol == "TR.sym" || symbol == "analogLib/TR.sym") {
+        if (const std::string *value = findProperty(src.properties(), "value")) {
+            addProperty(inst.properties(), "value", *value);
+        } else if (logicalType == ".TR" || logicalType == "TR" || resolvedModel == ".TR" || resolvedModel == "TR") {
+            std::string stop = "2u";
+            if (const std::string *s = findProperty(src.properties(), "param.2"); s && !s->empty()) {
+                stop = *s;
+            }
+            addProperty(inst.properties(), "value",
+                        std::string(".control\nsave all\ntran 50n ") + stop + "\nwrite test_inverter.raw\n.endc");
+        }
+        addProperty(inst.properties(), "only_toplevel", "true");
+    } else if (symbol == "launcher.sym" || symbol == "analogLib/launcher.sym") {
+        for (const char *key : {"descr", "tclcommand"}) {
+            if (const std::string *val = findProperty(src.properties(), key)) {
+                addProperty(inst.properties(), key, *val);
+            }
         }
     }
 
-    addProperty(inst.properties(), "qucs.type", qucsType);
-    if (resolvedModel != qucsType) {
+    addProperty(inst.properties(), "qucs.type", logicalType);
+    if (resolvedModel != logicalType) {
         addProperty(inst.properties(), "qucs.model", resolvedModel);
     }
     if (const std::string *rot = findProperty(src.properties(), "rotate")) {
@@ -422,6 +561,17 @@ Instance instanceForQucsExport(const Instance &src)
     }
     if (const std::string *mir = findProperty(src.properties(), "mirror")) {
         addProperty(inst.properties(), "mirror", *mir);
+    }
+    if (const std::optional<std::string> controllerRef = analogLibControllerRef(src)) {
+        Instance rebadged(analogLibControllerCellName(*controllerRef), inst.transform());
+        rebadged.properties() = inst.properties();
+        setProperty(rebadged.properties(), "core.primitive", *controllerRef);
+        inst = std::move(rebadged);
+    }
+    if (const std::string *corePrim = findProperty(src.properties(), "core.primitive")) {
+        addProperty(inst.properties(), "core.primitive", *corePrim);
+    } else {
+        annotatePrimitiveReference(inst);
     }
     return inst;
 }
@@ -701,8 +851,70 @@ void parseVersionRecord(const std::string &raw, SourceInfo &info)
     }
 }
 
+std::optional<std::string> analogLibControllerRef(const Instance &inst)
+{
+    std::string logical;
+    if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && !qt->empty()) {
+        logical = *qt;
+    } else {
+        logical = cellStem(inst.cellName());
+    }
+    if (logical == "INCLSCR" || logical == "SpiceLib") {
+        return "analogLib/INCLSCR.symbol.core";
+    }
+    if (logical == ".TR" || logical == "TR") {
+        return "analogLib/TR.symbol.core";
+    }
+    if (logical == "launcher" || cellStem(inst.cellName()) == "launcher") {
+        return "analogLib/launcher.symbol.core";
+    }
+    return std::nullopt;
+}
+
+std::string analogLibControllerCellName(const std::string &primitiveRef)
+{
+    const std::size_t slash = primitiveRef.find('/');
+    const std::string stem = slash != std::string::npos ? primitiveRef.substr(slash + 1) : primitiveRef;
+    const std::size_t dot = stem.find(".symbol");
+    const std::string cell = dot != std::string::npos ? stem.substr(0, dot) : stem;
+    const std::string lib = slash != std::string::npos ? primitiveRef.substr(0, slash) : std::string("analogLib");
+    return lib + "/" + cell + ".sym";
+}
+
+bool isAnalogLibControllerSymbol(const std::string &cellName)
+{
+    const std::string stem = cellStem(cellName);
+    return stem == "INCLSCR" || stem == "TR" || stem == ".TR" || stem == "launcher";
+}
+
+void normalizeAnalogLibController(Instance &inst)
+{
+    const std::optional<std::string> controllerRef = analogLibControllerRef(inst);
+    if (!controllerRef) {
+        return;
+    }
+
+    setProperty(inst.properties(), "core.primitive", *controllerRef);
+    const std::string sym = analogLibControllerCellName(*controllerRef);
+    if (inst.cellName() != sym) {
+        Instance normalized(sym, inst.transform());
+        normalized.properties() = inst.properties();
+        inst = std::move(normalized);
+    }
+    if (!findProperty(inst.properties(), "qucs.type")) {
+        if (*controllerRef == "analogLib/INCLSCR.symbol.core") {
+            addProperty(inst.properties(), "qucs.type", "INCLSCR");
+        } else if (*controllerRef == "analogLib/TR.symbol.core") {
+            addProperty(inst.properties(), "qucs.type", ".TR");
+        } else {
+            addProperty(inst.properties(), "qucs.type", "launcher");
+        }
+    }
+}
+
 void annotatePrimitiveReference(Instance &inst)
 {
+    normalizeAnalogLibController(inst);
     if (findProperty(inst.properties(), "core.primitive") != nullptr) {
         return;
     }
@@ -964,6 +1176,23 @@ void writeVersionRecord(std::ostream &out, const SourceInfo &info)
     out << "}\n";
 }
 
+void normalizeSubcircuitMetadata(std::vector<Property> &props)
+{
+    const std::string *type = findProperty(props, "type");
+    if (!type || *type != "subcircuit") {
+        return;
+    }
+    for (Property &prop : props) {
+        if (prop.name != "format") {
+            continue;
+        }
+        if (prop.value.find("@pinlist") == std::string::npos) {
+            prop.value = "@name @pinlist @symname";
+        }
+        break;
+    }
+}
+
 void writeSectionRecord(std::ostream &out, char kind, const std::string &body) { out << kind << " {" << body << "}\n"; }
 
 void writeNetRecord(std::ostream &out, const Shape::PathData &path, const std::vector<Property> &props)
@@ -986,6 +1215,93 @@ void writeNetRecord(std::ostream &out, const Shape::PathData &path, const std::v
     out << '\n';
 }
 
+bool pointNear(const Point &a, std::int64_t x, std::int64_t y, std::int64_t tol)
+{
+    return std::llabs(a.x - x) <= tol && std::llabs(a.y - y) <= tol;
+}
+
+bool isAnonymousXschemNetLabel(const std::string &lab)
+{
+    return isAnonymousNetLabel(lab);
+}
+
+bool pointOnWireSegment(Point p, Point a, Point b, std::int64_t tol)
+{
+    if (pointNear(p, a.x, a.y, tol) || pointNear(p, b.x, b.y, tol)) {
+        return true;
+    }
+    if (std::llabs(a.x - b.x) <= tol) {
+        if (std::llabs(p.x - a.x) > tol) {
+            return false;
+        }
+        const std::int64_t lo = std::min(a.y, b.y) - tol;
+        const std::int64_t hi = std::max(a.y, b.y) + tol;
+        return p.y >= lo && p.y <= hi;
+    }
+    if (std::llabs(a.y - b.y) <= tol) {
+        if (std::llabs(p.y - a.y) > tol) {
+            return false;
+        }
+        const std::int64_t lo = std::min(a.x, b.x) - tol;
+        const std::int64_t hi = std::max(a.x, b.x) + tol;
+        return p.x >= lo && p.x <= hi;
+    }
+    return false;
+}
+
+void setWireLabProperty(std::vector<Property> &props, const std::string &lab)
+{
+    for (Property &prop : props) {
+        if (prop.name == "lab" || prop.name == "label") {
+            prop.value = lab;
+            return;
+        }
+    }
+    addProperty(props, "lab", lab);
+}
+
+// Qucs→CORE wires often lack lab=; without it xschem assigns net1/net2 and does not short
+// separate gnd.sym pins to global GND — inverter floats and Vout stays 0.
+void applyGndLabelsToWireProps(const Block &block, double dbuPerEditorUnit,
+                               const std::vector<Shape::PathData> &wirePaths,
+                               std::vector<std::vector<Property>> &mutableWireProps)
+{
+    const std::int64_t tol = editorUnitsToDbu(1.0, dbuPerEditorUnit);
+    std::vector<Point> gndPins;
+    for (const Instance &inst : block.instances()) {
+        const std::string &cell = inst.cellName();
+        bool isGnd = (cell == "GND" || cell == "gnd.sym" || cell == "gnd");
+        if (!isGnd) {
+            if (const std::string *qt = findProperty(inst.properties(), "qucs.type")) {
+                isGnd = (*qt == "GND");
+            }
+        }
+        if (!isGnd) {
+            continue;
+        }
+        gndPins.push_back(Point{inst.transform().x, inst.transform().y});
+    }
+    if (gndPins.empty()) {
+        return;
+    }
+    for (std::size_t i = 0; i < wirePaths.size() && i < mutableWireProps.size(); ++i) {
+        const std::string *existing = findProperty(mutableWireProps[i], "lab");
+        if (existing != nullptr && !existing->empty() && !isAnonymousXschemNetLabel(*existing)) {
+            continue;
+        }
+        const auto &pts = wirePaths[i].points;
+        if (pts.size() < 2) {
+            continue;
+        }
+        for (const Point &g : gndPins) {
+            if (pointNear(pts.front(), g.x, g.y, tol) || pointNear(pts.back(), g.x, g.y, tol)) {
+                addProperty(mutableWireProps[i], "lab", "GND");
+                break;
+            }
+        }
+    }
+}
+
 void writeLineRecord(std::ostream &out, const Shape::PathData &path)
 {
     out << 'L' << ' ' << path.width << ' ';
@@ -999,12 +1315,53 @@ void writeLineRecord(std::ostream &out, const Shape::PathData &path)
     out << " {}\n";
 }
 
+int parseOptionalIntProperty(const std::vector<Property> &props, const char *name)
+{
+    if (const std::string *value = findProperty(props, name)) {
+        try {
+            return std::stoi(*value);
+        } catch (...) {
+            return 0;
+        }
+    }
+    return 0;
+}
+
 void writeTextRecord(std::ostream &out, const Shape::TextData &text, const std::vector<Property> &props)
 {
-    const int rotate = findProperty(props, "rotate") ? std::stoi(*findProperty(props, "rotate")) : 0;
-    const int mirror = findProperty(props, "mirror") ? std::stoi(*findProperty(props, "mirror")) : 0;
-    const double sizeX = dbuToEditorUnits(static_cast<std::int64_t>(text.height), g_dbuPerEditorUnit);
-    const double sizeY = findProperty(props, "sizeY") ? std::stod(*findProperty(props, "sizeY")) : sizeX;
+    const int rotate = parseOptionalIntProperty(props, "rotate");
+    const int mirror = parseOptionalIntProperty(props, "mirror");
+    auto qucsTextSize = [](const std::string &token) -> std::optional<double> {
+        try {
+            const double value = std::stod(token);
+            if (value > 0.0 && value <= 2.0) {
+                return std::max(0.25, value * 0.7);
+            }
+        } catch (...) {
+        }
+        return std::nullopt;
+    };
+    double sizeX = 0.35;
+    double sizeY = 0.35;
+    if (const std::string *sx = findProperty(props, "sizeX")) {
+        if (const std::optional<double> mapped = qucsTextSize(*sx)) {
+            sizeX = *mapped;
+        }
+    } else {
+        sizeX = dbuToEditorUnits(static_cast<std::int64_t>(text.height), g_dbuPerEditorUnit);
+        if (sizeX > 1.0) {
+            sizeX = 0.35;
+        }
+    }
+    if (const std::string *sy = findProperty(props, "sizeY")) {
+        if (const std::optional<double> mapped = qucsTextSize(*sy)) {
+            sizeY = *mapped;
+        } else {
+            sizeY = sizeX;
+        }
+    } else {
+        sizeY = sizeX;
+    }
     out << 'T' << ' ' << '{' << text.text << '}' << ' ';
     writeCoord(out, text.position.x);
     out << ' ';
@@ -1129,7 +1486,589 @@ void writeComponentRecord(std::ostream &out, const Instance &inst)
     out << ' ' << rotate << ' ' << mirror << ' ' << formatAttrBlock(inst.properties()) << '\n';
 }
 
+std::string toLowerAscii(std::string value)
+{
+    for (char &ch : value) {
+        ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+    return value;
+}
+
+std::optional<std::string> outputProbeNodeFromBlock(const Block &block)
+{
+    auto probeFromName = [](std::string name) -> std::optional<std::string> {
+        const std::string lower = toLowerAscii(std::move(name));
+        if (lower.find("out") != std::string::npos) {
+            return lower;
+        }
+        return std::nullopt;
+    };
+
+    for (const Instance &inst : block.instances()) {
+        const std::string stem = cellStem(inst.cellName());
+        const std::string *qucsType = findProperty(inst.properties(), "qucs.type");
+        if (stem != "Port" && (!qucsType || *qucsType != "Port")) {
+            continue;
+        }
+        if (const std::string *lab = findProperty(inst.properties(), "lab"); lab && !lab->empty()) {
+            if (std::optional<std::string> probe = probeFromName(*lab)) {
+                return probe;
+            }
+        }
+        if (const std::string *num = findProperty(inst.properties(), "param.0"); num && !num->empty()) {
+            if (std::optional<std::string> probe = probeFromName(*num)) {
+                return probe;
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<double> transientStopSecondsFromBlock(const Block &block)
+{
+    for (const Instance &inst : block.instances()) {
+        std::string logical = cellStem(inst.cellName());
+        if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && !qt->empty()) {
+            logical = *qt;
+        }
+        if (logical != ".TR" && logical != "TR") {
+            continue;
+        }
+        if (const std::string *stop = findProperty(inst.properties(), "param.2"); stop && !stop->empty()) {
+            return parseSpiceTimeValue(*stop);
+        }
+    }
+    return std::nullopt;
+}
+
+std::string instanceLogicalType(const Instance &inst)
+{
+    if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && !qt->empty()) {
+        return *qt;
+    }
+    return inst.cellName();
+}
+
+std::optional<double> supplyVoltageFromBlock(const Block &block)
+{
+    for (const Instance &inst : block.instances()) {
+        const std::string logical = instanceLogicalType(inst);
+        if (logical == "Vdc" || inst.cellName() == "Vdc") {
+            if (const std::string *value = findProperty(inst.properties(), "param.0"); value && !value->empty()) {
+                try {
+                    return std::stod(normalizeSpiceDeviceValue(*value));
+                } catch (...) {
+                    return std::nullopt;
+                }
+            }
+        }
+        if (inst.cellName() == "Lib") {
+            if (const std::string *model = findProperty(inst.properties(), "param.1"); model && *model == "Vdc") {
+                if (const std::string *value = findProperty(inst.properties(), "param.2"); value && !value->empty()) {
+                    try {
+                        return std::stod(normalizeSpiceDeviceValue(*value));
+                    } catch (...) {
+                        return std::nullopt;
+                    }
+                }
+            }
+        }
+    }
+    return std::nullopt;
+}
+
+struct DiagramAxisLimits {
+    double xMin = 0.0;
+    double xMax = 2e-6;
+    double yMin = -0.002;
+    double yMax = 1.3;
+    bool yManual = true;
+};
+
+std::optional<double> parseGraphAttrDouble(const std::string &graphRecord, const char *key)
+{
+    const std::string needle = std::string(key) + "=";
+    const std::size_t pos = graphRecord.find(needle);
+    if (pos == std::string::npos) {
+        return std::nullopt;
+    }
+    char *end = nullptr;
+    const double value = std::strtod(graphRecord.c_str() + pos + needle.size(), &end);
+    if (end == graphRecord.c_str() + pos + needle.size()) {
+        return std::nullopt;
+    }
+    return value;
+}
+
+DiagramAxisLimits defaultDiagramAxisLimits(const Block &block)
+{
+    DiagramAxisLimits limits;
+    if (const std::optional<double> tstop = transientStopSecondsFromBlock(block)) {
+        limits.xMax = *tstop;
+    }
+    double yMax = 1.0;
+    if (const std::optional<double> vdd = supplyVoltageFromBlock(block)) {
+        yMax = *vdd * 1.08;
+    }
+    limits.yMax = yMax;
+    limits.yMin = -0.002 * yMax;
+    limits.yManual = true;
+    return limits;
+}
+
+std::optional<DiagramAxisLimits> parseRectDiagramAxes(const std::string &line)
+{
+    const std::size_t pos = line.find(" 00 ");
+    if (pos == std::string::npos) {
+        return std::nullopt;
+    }
+    const char *cursor = line.c_str() + pos + 4;
+    DiagramAxisLimits limits;
+    int xAuto = 0;
+    double xStep = 0.0;
+    int yAuto = 0;
+    double yStep = 0.0;
+    if (std::sscanf(cursor, "%d %lf %lf %lf %d %lf %lf %lf", &xAuto, &limits.xMin, &xStep, &limits.xMax, &yAuto,
+                    &limits.yMin, &yStep, &limits.yMax)
+        < 8) {
+        return std::nullopt;
+    }
+    limits.yManual = yAuto == 0;
+    return limits;
+}
+
+std::optional<DiagramAxisLimits> qucsDiagramAxisLimitsFromContent(const CellContent &content)
+{
+    for (const Property &prop : content.properties()) {
+        if (prop.name != "section.Diagrams") {
+            continue;
+        }
+        const std::size_t tag = prop.value.find("<Rect ");
+        if (tag == std::string::npos) {
+            continue;
+        }
+        const std::size_t end = prop.value.find('>', tag);
+        if (end == std::string::npos) {
+            continue;
+        }
+        return parseRectDiagramAxes(prop.value.substr(tag, end - tag + 1));
+    }
+    return std::nullopt;
+}
+
+DiagramAxisLimits axisLimitsFromGraphRecord(const std::string &graphRecord, const Block &block)
+{
+    DiagramAxisLimits limits = defaultDiagramAxisLimits(block);
+    if (const std::optional<double> x2 = parseGraphAttrDouble(graphRecord, "x2")) {
+        limits.xMax = *x2;
+    }
+    if (const std::optional<double> y1 = parseGraphAttrDouble(graphRecord, "y1")) {
+        limits.yMin = *y1;
+    }
+    if (const std::optional<double> y2 = parseGraphAttrDouble(graphRecord, "y2")) {
+        limits.yMax = *y2;
+    }
+    limits.yManual = true;
+    return limits;
+}
+
+std::string formatRectDiagramOpening(int x, int bottomY, int w, int h, const DiagramAxisLimits &limits)
+{
+    const double xStep = limits.xMax > 0.0 ? limits.xMax / 4.0 : 0.5e-6;
+    const double ySpan = limits.yMax - limits.yMin;
+    const double yStep = ySpan > 0.0 ? ySpan / 10.0 : 0.1;
+    std::ostringstream rect;
+    rect << std::setprecision(12);
+    rect << "<Rect " << x << ' ' << bottomY << ' ' << w << ' ' << h << " 3 #c0c0c0 1 00 1 " << limits.xMin << ' '
+         << xStep << ' ' << limits.xMax << ' ' << (limits.yManual ? 0 : 1) << ' ' << limits.yMin << ' ' << yStep
+         << ' ' << limits.yMax << " 1 -1 0.2 1 315 0 225 1 0 0 \"\" \"\" \"\">";
+    return rect.str();
+}
+
+std::optional<std::array<int, 4>> qucsDiagramRectFromContent(const CellContent &content)
+{
+    for (const Property &prop : content.properties()) {
+        if (prop.name != "section.Diagrams") {
+            continue;
+        }
+        const std::string tag = "<Rect ";
+        const std::size_t pos = prop.value.find(tag);
+        if (pos == std::string::npos) {
+            continue;
+        }
+        int x = 0;
+        int y = 0;
+        int w = 0;
+        int h = 0;
+        if (std::sscanf(prop.value.c_str() + pos + tag.size(), "%d %d %d %d", &x, &y, &w, &h) == 4 && w > 0
+            && h > 0) {
+            return std::array<int, 4>{x, y, w, h};
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<std::string> probeFromDiagramSection(const CellContent &content)
+{
+    for (const Property &prop : content.properties()) {
+        if (prop.name != "section.Diagrams") {
+            continue;
+        }
+        const std::string lower = toLowerAscii(prop.value);
+        std::size_t search = 0;
+        while (search < lower.size()) {
+            std::size_t start = std::string::npos;
+            std::size_t prefixLen = 0;
+            if ((search = lower.find("ngspice/tran.v(", search)) != std::string::npos) {
+                start = search + 15;
+                prefixLen = 15;
+            } else if ((search = lower.find("ngspice/v(", search)) != std::string::npos) {
+                start = search + 10;
+                prefixLen = 10;
+            } else {
+                break;
+            }
+            const std::size_t end = lower.find(')', start);
+            if (end == std::string::npos) {
+                break;
+            }
+            const std::string node = lower.substr(start, end - start);
+            if (node.find("out") != std::string::npos) {
+                return node;
+            }
+            search = end + 1;
+        }
+    }
+    return std::nullopt;
+}
+
+std::optional<std::string> buildGraphRecordFromQucsDiagram(const Block &block, const CellContent &content)
+{
+    const std::optional<std::array<int, 4>> rect = qucsDiagramRectFromContent(content);
+    if (!rect) {
+        return std::nullopt;
+    }
+
+    std::optional<std::string> probe = probeFromDiagramSection(content);
+    if (!probe) {
+        probe = outputProbeNodeFromBlock(block);
+    }
+    const std::optional<double> tstopSec = transientStopSecondsFromBlock(block);
+    if (!probe || !tstopSec || *tstopSec <= 0.0) {
+        return std::nullopt;
+    }
+
+    DiagramAxisLimits limits = defaultDiagramAxisLimits(block);
+    if (const std::optional<DiagramAxisLimits> fromDiagram = qucsDiagramAxisLimitsFromContent(content)) {
+        if (fromDiagram->yManual && fromDiagram->yMax > fromDiagram->yMin) {
+            limits.yMin = fromDiagram->yMin;
+            limits.yMax = fromDiagram->yMax;
+            limits.yManual = true;
+        }
+        if (fromDiagram->xMax > fromDiagram->xMin) {
+            limits.xMin = fromDiagram->xMin;
+            limits.xMax = fromDiagram->xMax;
+        }
+    }
+
+    // Qucs <Rect cx cy x2 y2>: (cx, cy) is the bottom-left corner; the plot extends upward by y2.
+    const int gx1 = (*rect)[0];
+    const int gx2 = gx1 + (*rect)[2];
+    const int gy2 = (*rect)[1];
+    const int gy1 = gy2 - (*rect)[3];
+
+    std::ostringstream graph;
+    graph << "B 2 " << gx1 << ' ' << gy1 << ' ' << gx2 << ' ' << gy2 << " {flags=graph y1=" << limits.yMin
+          << " y2=" << limits.yMax
+          << " ypos1=0 ypos2=2 divy=5 subdivy=1 unity=1 x1=0 x2=" << *tstopSec
+          << " divx=5 subdivx=1 xlabmag=1.0 ylabmag=1.0 node=" << *probe
+          << " color=4 dataset=-1 unitx=1 logx=0 logy=0}\n";
+    return graph.str();
+}
+
+std::optional<std::string> buildTransientGraphRecord(const Block &block, double dbuPerEditorUnit)
+{
+    const std::optional<std::string> probe = outputProbeNodeFromBlock(block);
+    const std::optional<double> tstopSec = transientStopSecondsFromBlock(block);
+    if (!probe || !tstopSec || *tstopSec <= 0.0) {
+        return std::nullopt;
+    }
+
+    const DiagramAxisLimits limits = defaultDiagramAxisLimits(block);
+
+    const Box bbox = block.bbox();
+    const int gx1 = static_cast<int>(std::llround(dbuToEditorUnits(bbox.urx, dbuPerEditorUnit))) + 40;
+    const int gy2 = static_cast<int>(std::llround(dbuToEditorUnits(bbox.ury, dbuPerEditorUnit)));
+    const int gx2 = gx1 + 800;
+    const int gy1 = gy2 - 400;
+
+    std::ostringstream graph;
+    graph << "B 2 " << gx1 << ' ' << gy1 << ' ' << gx2 << ' ' << gy2 << " {flags=graph y1=" << limits.yMin
+          << " y2=" << limits.yMax
+          << " ypos1=0 ypos2=2 divy=5 subdivy=1 unity=1 x1=0 x2=" << *tstopSec
+          << " divx=5 subdivx=1 xlabmag=1.0 ylabmag=1.0 node=" << *probe
+          << " color=4 dataset=-1 unitx=1 logx=0 logy=0}\n";
+    return graph.str();
+}
+
+bool instanceLooksQucsNative(const Instance &inst)
+{
+    if (findProperty(inst.properties(), "qucs.type") != nullptr) {
+        return true;
+    }
+    const std::string stem = cellStem(inst.cellName());
+    return stem == "INCLSCR" || stem == ".TR" || stem == "TR" || stem == "GND" || stem == "Vdc" || stem == "Vpulse"
+        || stem == "Port" || stem == "Lib" || stem == "Sub";
+}
+
+bool blockLooksQucsNative(const Block &block)
+{
+    for (const Instance &inst : block.instances()) {
+        if (instanceLooksQucsNative(inst)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 } // namespace
+
+void annotateInstanceForStorage(Instance &inst)
+{
+    const std::string stem = cellStem(inst.cellName());
+    if (!findProperty(inst.properties(), "qucs.type")) {
+        if (stem == "INCLSCR" || stem == ".TR" || stem == "TR" || stem == "GND" || stem == "Vdc" || stem == "Vpulse"
+            || stem == "Port" || stem == "Lib" || stem == "launcher") {
+            addProperty(inst.properties(), "qucs.type", stem == "TR" ? ".TR" : stem);
+        }
+    }
+    annotatePrimitiveReference(inst);
+}
+
+void annotateBlockForStorage(Block &block)
+{
+    for (Instance &inst : block.instances()) {
+        annotateInstanceForStorage(inst);
+    }
+}
+
+std::optional<std::string> graphRecordForContent(const Block &block, const CellContent &content)
+{
+    if (std::optional<std::string> fromDiagram = buildGraphRecordFromQucsDiagram(block, content)) {
+        return fromDiagram;
+    }
+    return buildTransientGraphRecord(block, effectiveDbuPerEditorUnit(content));
+}
+
+std::vector<std::string> collectSectionLines(const std::vector<Property> &props, const std::string &name)
+{
+    std::vector<std::string> lines;
+    for (const Property &prop : props) {
+        if (prop.name == name) {
+            lines.push_back(prop.value);
+        }
+    }
+    return lines;
+}
+
+void replaceSectionLines(std::vector<Property> &props, const std::string &name, const std::vector<std::string> &lines)
+{
+    props.erase(std::remove_if(props.begin(), props.end(),
+                               [&](const Property &prop) { return prop.name == name; }),
+                props.end());
+    for (const std::string &line : lines) {
+        props.push_back({name, line});
+    }
+}
+
+void copyAllSectionLinesIfMissing(std::vector<Property> &dest, const std::vector<Property> &src,
+                                const std::string &name)
+{
+    for (const Property &prop : dest) {
+        if (prop.name == name) {
+            return;
+        }
+    }
+    for (const Property &prop : src) {
+        if (prop.name == name) {
+            dest.push_back(prop);
+        }
+    }
+}
+
+bool isValidGraphRecord(const std::string &record)
+{
+    return !record.empty() && record.find("B 2 ") != std::string::npos && record.find("flags=graph") != std::string::npos;
+}
+
+void removeInvalidGraphProperties(std::vector<Property> &props)
+{
+    props.erase(std::remove_if(props.begin(), props.end(),
+                               [](const Property &prop) {
+                                   return prop.name == "section.graph" && !isValidGraphRecord(prop.value);
+                               }),
+                props.end());
+}
+
+std::string portNetNameForGraph(const Instance &inst)
+{
+    if (const std::string *lab = findProperty(inst.properties(), "lab"); lab && !lab->empty()) {
+        return *lab;
+    }
+    if (const std::string *num = findProperty(inst.properties(), "param.0"); num && !num->empty()) {
+        return *num;
+    }
+    return {};
+}
+
+bool isPortInstance(const Instance &inst)
+{
+    if (cellStem(inst.cellName()) == "Port") {
+        return true;
+    }
+    if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && *qt == "Port") {
+        return true;
+    }
+    return false;
+}
+
+std::vector<std::string> graphRecordToDiagramLines(const std::string &graphRecord, const Block &block)
+{
+    const std::size_t tag = graphRecord.find("B 2 ");
+    if (tag == std::string::npos) {
+        return {};
+    }
+    int gx1 = 0;
+    int gy1 = 0;
+    int gx2 = 0;
+    int gy2 = 0;
+    if (std::sscanf(graphRecord.c_str() + tag + 4, "%d %d %d %d", &gx1, &gy1, &gx2, &gy2) != 4) {
+        return {};
+    }
+    const int w = std::abs(gx2 - gx1);
+    const int h = std::abs(gy2 - gy1);
+    if (w <= 0 || h <= 0) {
+        return {};
+    }
+    const int x = std::min(gx1, gx2);
+    const int bottomY = std::max(gy1, gy2);
+
+    std::string probe = "vout";
+    if (const std::size_t nodePos = graphRecord.find("node="); nodePos != std::string::npos) {
+        const std::size_t start = nodePos + 5;
+        const std::size_t end = graphRecord.find_first_of(" \t}\n", start);
+        if (end != std::string::npos) {
+            probe = graphRecord.substr(start, end - start);
+        }
+    }
+    std::string vin = "vin";
+    std::string vout = probe;
+    for (const Instance &inst : block.instances()) {
+        if (!isPortInstance(inst)) {
+            continue;
+        }
+        const std::string net = portNetNameForGraph(inst);
+        if (net.empty()) {
+            continue;
+        }
+        const std::string lower = toLowerAscii(net);
+        if (lower.find("in") != std::string::npos && lower.find("out") == std::string::npos) {
+            vin = lower;
+        } else if (lower.find("out") != std::string::npos) {
+            vout = lower;
+        }
+    }
+
+    std::ostringstream rect;
+    rect << formatRectDiagramOpening(x, bottomY, w, h, axisLimitsFromGraphRecord(graphRecord, block)) << '\n';
+    rect << "\t<\"ngspice/v(" << vout << ")\" #0000ff 0 3 0 0 0 0>\n";
+    rect << "\t<\"ngspice/v(" << vin << ")\" #ff0000 0 3 0 0 0 0>\n";
+    rect << "</Rect>";
+    return {rect.str()};
+}
+
+std::optional<std::string> graphRecordToDiagramRectLine(const std::string &graphRecord, const Block &block)
+{
+    const std::size_t tag = graphRecord.find("B 2 ");
+    if (tag == std::string::npos) {
+        return std::nullopt;
+    }
+    int gx1 = 0;
+    int gy1 = 0;
+    int gx2 = 0;
+    int gy2 = 0;
+    if (std::sscanf(graphRecord.c_str() + tag + 4, "%d %d %d %d", &gx1, &gy1, &gx2, &gy2) != 4) {
+        return std::nullopt;
+    }
+    const int w = std::abs(gx2 - gx1);
+    const int h = std::abs(gy2 - gy1);
+    if (w <= 0 || h <= 0) {
+        return std::nullopt;
+    }
+    const int x = std::min(gx1, gx2);
+    const int bottomY = std::max(gy1, gy2);
+    return formatRectDiagramOpening(x, bottomY, w, h, axisLimitsFromGraphRecord(graphRecord, block));
+}
+
+void updateDiagramRectFromGraphRecord(std::vector<std::string> &diagramLines, const std::string &graphRecord,
+                                    const Block &block)
+{
+    const std::optional<std::string> rectLine = graphRecordToDiagramRectLine(graphRecord, block);
+    if (!rectLine) {
+        return;
+    }
+    bool replaced = false;
+    for (std::string &line : diagramLines) {
+        if (line.rfind("<Rect ", 0) == 0) {
+            line = *rectLine;
+            replaced = true;
+            break;
+        }
+    }
+    if (!replaced) {
+        diagramLines.insert(diagramLines.begin(), *rectLine);
+    }
+}
+
+void syncDualToolGraphProperties(Block &block, CellContent &content, GraphSyncDirection direction)
+{
+    std::vector<Property> &properties = content.properties();
+    removeInvalidGraphProperties(properties);
+    const std::string *graphProp = findProperty(properties, "section.graph");
+    const bool hasGraph = graphProp != nullptr && isValidGraphRecord(*graphProp);
+    std::vector<std::string> diagramLines = collectSectionLines(properties, "section.Diagrams");
+    const bool hasDiagrams = !diagramLines.empty();
+
+    if (!hasGraph && !hasDiagrams) {
+        return;
+    }
+
+    const bool updateGraphFromDiagrams =
+        direction == GraphSyncDirection::FromQucsDiagram
+        || (direction == GraphSyncDirection::DeriveMissing && hasDiagrams && !hasGraph);
+    const bool updateDiagramsFromGraph =
+        direction == GraphSyncDirection::FromXschemGraph
+        || (direction == GraphSyncDirection::DeriveMissing && hasGraph && !hasDiagrams);
+
+    if (updateGraphFromDiagrams && hasDiagrams) {
+        if (std::optional<std::string> graph = buildGraphRecordFromQucsDiagram(block, content)) {
+            replaceSingletonProperty(properties, "section.graph", *graph);
+        }
+    }
+    if (updateDiagramsFromGraph) {
+        const std::string *graph = findProperty(properties, "section.graph");
+        if (graph != nullptr && !graph->empty()) {
+            if (hasDiagrams && direction == GraphSyncDirection::FromXschemGraph) {
+                updateDiagramRectFromGraphRecord(diagramLines, *graph, block);
+            } else {
+                diagramLines = graphRecordToDiagramLines(*graph, block);
+            }
+            if (!diagramLines.empty()) {
+                replaceSectionLines(properties, "section.Diagrams", diagramLines);
+            }
+        }
+    }
+}
 
 std::vector<std::string> readRecordsFromText(const std::string &text, std::vector<std::string> &errors)
 {
@@ -1205,9 +2144,13 @@ void importRecords(const std::vector<std::string> &records, Cell &cell, CellCont
         case 'E':
             parseMetadataRecord(raw[0], raw, cell, content);
             break;
-        case 'C':
+        case 'C': {
             parseComponentRecord(raw, block, warnings);
+            if (raw.find("launcher.sym") != std::string::npos || raw.find("{launcher.sym}") != std::string::npos) {
+                setProperty(content.properties(), "section.launcher", raw);
+            }
             break;
+        }
         case 'N': {
             WireRec wire = parseNetRecord(raw, warnings);
             wires.push_back(wire);
@@ -1232,7 +2175,11 @@ void importRecords(const std::vector<std::string> &records, Cell &cell, CellCont
             parsePolygonRecord(raw, block, drawingLayer);
             break;
         case 'B':
-            parsePinRecord(raw, block, pinLayer);
+            if (raw.find("flags=graph") != std::string::npos) {
+                setProperty(content.properties(), "section.graph", raw);
+            } else {
+                parsePinRecord(raw, block, pinLayer);
+            }
             break;
         case 'A':
             parseArcRecord(raw, block, drawingLayer);
@@ -1247,39 +2194,72 @@ void importRecords(const std::vector<std::string> &records, Cell &cell, CellCont
     if (content.dbuPerEditorUnit() <= 0.0) {
         content.setDbuPerEditorUnit(g_dbuPerEditorUnit);
     }
+    removeInvalidGraphProperties(content.properties());
+    syncDualToolGraphProperties(block, content, GraphSyncDirection::FromXschemGraph);
 }
 
 void exportRecords(std::ostream &out, const Cell &cell, const CellContent &content)
 {
-    const bool fromQucs = content.sourceInfo().format() == "qucs";
-    g_dbuPerEditorUnit = effectiveDbuPerEditorUnit(content);
+    CellContent working = content;
+    const bool fromQucs = working.sourceInfo().format() == "qucs" || working.sourceInfo().format() == "qucs_s"
+        || blockLooksQucsNative(working.block());
+    if (fromQucs) {
+        // Qucs diagram geometry is authoritative when opening in Xschem (fixes stale section.graph).
+        syncDualToolGraphProperties(working.block(), working, GraphSyncDirection::FromQucsDiagram);
+    } else {
+        syncDualToolGraphProperties(working.block(), working, GraphSyncDirection::DeriveMissing);
+    }
 
-    writeVersionRecord(out, content.sourceInfo());
-    if (!cell.properties().empty()) {
+    const Block &block = working.block();
+    g_dbuPerEditorUnit = effectiveDbuPerEditorUnit(working);
+
+    PrimitiveResolver resolver;
+    resolver.loadFromEnvironment();
+    canonicalizeBlockPrimitives(working.block(), &resolver);
+    propagateNetNames(working.block(), &resolver, g_dbuPerEditorUnit);
+
+    writeVersionRecord(out, working.sourceInfo());
+    if (working.viewType() == ViewType::Symbol && isAnalogLibControllerSymbol(cell.name())) {
+        out << "G {type=netlist_commands template=\"name=@name only_toplevel=true value=@value\" "
+               "format=\"tcleval(@value)\"}\n";
+    } else if (!cell.properties().empty()) {
         out << 'G' << ' ' << formatAttrBlock(cell.properties()) << '\n';
     } else {
         writeSectionRecord(out, 'G', "");
     }
 
     std::vector<Property> kProps;
-    for (const Property &prop : content.properties()) {
+    for (const Property &prop : working.properties()) {
         if (prop.name.rfind(kSectionPrefix, 0) == 0 || prop.name.rfind("editor.", 0) == 0) {
             continue;
         }
         kProps.push_back(prop);
     }
     if (!kProps.empty()) {
+        normalizeSubcircuitMetadata(kProps);
         out << 'K' << ' ' << formatAttrBlock(kProps) << '\n';
     }
 
-    const std::string *sectionV = findProperty(content.properties(), std::string(kSectionPrefix) + "v");
-    const std::string *sectionS = findProperty(content.properties(), std::string(kSectionPrefix) + "s");
-    const std::string *sectionE = findProperty(content.properties(), std::string(kSectionPrefix) + "e");
+    const std::string *sectionV = findProperty(working.properties(), std::string(kSectionPrefix) + "v");
+    const std::string *sectionS = findProperty(working.properties(), std::string(kSectionPrefix) + "s");
+    const std::string *sectionE = findProperty(working.properties(), std::string(kSectionPrefix) + "e");
     writeSectionRecord(out, 'V', sectionV ? *sectionV : "");
     writeSectionRecord(out, 'S', sectionS ? *sectionS : "");
     writeSectionRecord(out, 'E', sectionE ? *sectionE : "");
 
-    const Block &block = content.block();
+    std::optional<std::string> graphRecord;
+    if (fromQucs) {
+        if (std::optional<std::string> fromDiagram = buildGraphRecordFromQucsDiagram(block, working)) {
+            graphRecord = std::move(fromDiagram);
+        }
+    }
+    if (!graphRecord) {
+        if (const std::string *storedGraph = findProperty(working.properties(), "section.graph")) {
+            if (isValidGraphRecord(*storedGraph)) {
+                graphRecord = *storedGraph;
+            }
+        }
+    }
 
     std::vector<std::pair<Point, Point>> pinRetargets;
     if (fromQucs) {
@@ -1290,15 +2270,15 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
     }
 
     std::vector<Shape::PathData> wirePaths;
-    std::vector<const std::vector<Property> *> wireProps;
+    std::vector<std::vector<Property>> wirePropsOwned;
     for (const Shape &shape : block.shapes()) {
-        if (layerPurpose(content, shapeLayerId(shape)) != LayerPurpose::Wire) {
+        if (layerPurpose(working, shapeLayerId(shape)) != LayerPurpose::Wire) {
             continue;
         }
         if (const Shape::PathData *path = shape.path()) {
             if (path->points.size() >= 2) {
                 wirePaths.push_back(*path);
-                wireProps.push_back(&shape.properties());
+                wirePropsOwned.push_back(shape.properties());
             }
         }
     }
@@ -1314,11 +2294,11 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
         }
     }
     for (std::size_t i = 0; i < wirePaths.size(); ++i) {
-        writeNetRecord(out, wirePaths[i], *wireProps[i]);
+        writeNetRecord(out, wirePaths[i], wirePropsOwned[i]);
     }
 
-    for (const Shape &shape : block.shapes()) {
-        const LayerPurpose purpose = layerPurpose(content, shapeLayerId(shape));
+    for (const Shape &shape : working.block().shapes()) {
+        const LayerPurpose purpose = layerPurpose(working, shapeLayerId(shape));
         if (purpose == LayerPurpose::Wire) {
             continue;
         }
@@ -1351,14 +2331,15 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
 
     bool hasLauncher = false;
     bool needWaveLauncher = false;
-    std::string waveRawFile = "test_inverter.raw";
+    std::string waveRawFile;
 
     for (const Instance &inst : block.instances()) {
         const std::string cell = inst.cellName();
-        if (cell == "launcher.sym" || cell == "launcher" || cell.find("launcher") != std::string::npos) {
+        if (cell == "launcher.sym" || cell == "analogLib/launcher.sym" || cell == "launcher"
+            || cell.find("launcher") != std::string::npos) {
             hasLauncher = true;
         }
-        if (fromQucs) {
+        if (fromQucs || instanceNeedsQucsExportRemap(inst)) {
             Instance exported = instanceForQucsExport(inst);
             if (const std::string *val = findProperty(exported.properties(), "value")) {
                 const std::string raw = extractWriteRawFile(*val);
@@ -1373,19 +2354,39 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
         }
     }
 
-    // Qucs dual-tool TB uses .TR (no launcher). Restore academy "load waves" + graph for Xschem.
-    if (fromQucs && needWaveLauncher && !hasLauncher) {
-        Transform xf{editorUnitsToDbu(770.0, g_dbuPerEditorUnit), editorUnitsToDbu(-120.0, g_dbuPerEditorUnit)};
-        Instance launcher("launcher.sym", xf);
+    if (!hasLauncher) {
+        if (const std::string *storedLauncher = findProperty(working.properties(), "section.launcher")) {
+            out << *storedLauncher;
+            if (storedLauncher->empty() || storedLauncher->back() != '\n') {
+                out << '\n';
+            }
+            hasLauncher = true;
+        }
+    }
+
+    // Qucs dual-tool TB uses .TR (no launcher). Restore launcher for Xschem when derivable from CORE.
+    if (fromQucs && needWaveLauncher && !hasLauncher && !waveRawFile.empty()) {
+        const Box bbox = block.bbox();
+        double launchX = dbuToEditorUnits(bbox.urx, g_dbuPerEditorUnit) + 100.0;
+        double launchY = dbuToEditorUnits(bbox.ury, g_dbuPerEditorUnit) + 60.0;
+        if (const std::optional<std::array<int, 4>> rect = qucsDiagramRectFromContent(content)) {
+            launchX = static_cast<double>((*rect)[0] + std::min(170, (*rect)[2]));
+            launchY = static_cast<double>((*rect)[1] + std::min(60, (*rect)[3] / 3));
+        }
+        Transform xf{editorUnitsToDbu(launchX, g_dbuPerEditorUnit), editorUnitsToDbu(launchY, g_dbuPerEditorUnit)};
+        Instance launcher("analogLib/launcher.sym", xf);
         addProperty(launcher.properties(), "name", "h5");
         addProperty(launcher.properties(), "descr", "load waves");
         addProperty(launcher.properties(), "tclcommand",
                     "xschem raw_read $netlist_dir/" + waveRawFile + " tran");
         writeComponentRecord(out, launcher);
+    }
 
-        out << "B 2 710 -550 1510 -150 {flags=graph y1=0 y2=1.3 ypos1=0 ypos2=2 divy=5 subdivy=1 "
-               "unity=1 x1=0 x2=2e-06 divx=5 subdivx=1 xlabmag=1.0 ylabmag=1.0 node=Vout color=4 "
-               "dataset=-1 unitx=1 logx=0 logy=0}\n";
+    if (graphRecord) {
+        out << *graphRecord;
+        if (graphRecord->empty() || graphRecord->back() != '\n') {
+            out << '\n';
+        }
     }
 }
 

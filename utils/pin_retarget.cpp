@@ -1,5 +1,7 @@
 #include "pin_retarget.h"
 
+#include "block.h"
+#include "coord_scale.h"
 #include "property.h"
 
 #include <algorithm>
@@ -56,12 +58,95 @@ Point scaleEditorPin(Point editorUnits, double dbuPerEditorUnit)
                  static_cast<std::int64_t>(std::llround(editorUnits.y * dbuPerEditorUnit))};
 }
 
+bool isUserNamedCoreNet(const std::string &name)
+{
+    return !name.empty() && name.rfind("N$", 0) != 0;
+}
+
+Point xschemPinWorldDbu(const Instance &inst, Point localXschem, double dbuPerEditorUnit)
+{
+    double scale = (dbuPerEditorUnit > 0.0) ? dbuPerEditorUnit : 1.0;
+    const Transform &xf = inst.transform();
+    if (scale > 1.0) {
+        const std::int64_t mag = std::llabs(xf.x) + std::llabs(xf.y);
+        if (mag < 200000) {
+            scale = 1.0;
+        }
+    }
+    return transformLocal(scaleEditorPin(localXschem, scale), xf);
+}
+
+} // namespace
+
 bool isIhpFetModel(const std::string &model)
 {
     return model == "sg13_lv_nmos" || model == "sg13_hv_nmos" || model == "sg13_lv_pmos"
         || model == "sg13_hv_pmos" || model == "sg13_lv_rf_nmos" || model == "sg13_hv_rf_nmos"
         || model == "sg13_lv_rf_pmos" || model == "sg13_hv_rf_pmos";
 }
+
+std::string coreNetAtPoint(const Block &block, Point ptDbu, double dbuPerEditorUnit, std::int64_t tolEditor)
+{
+    const double scale = (dbuPerEditorUnit > 0.0) ? dbuPerEditorUnit : 1.0;
+    const std::int64_t tol =
+        std::max<std::int64_t>(2, static_cast<std::int64_t>(std::llround(static_cast<double>(tolEditor) * scale)));
+    const std::int64_t tol2 = tol * tol;
+    for (const Net &net : block.nets()) {
+        if (net.name().empty() || net.name().rfind("N$", 0) == 0) {
+            continue;
+        }
+        for (const Term &term : net.terms()) {
+            const std::int64_t dx = ptDbu.x - term.position().x;
+            const std::int64_t dy = ptDbu.y - term.position().y;
+            if (dx * dx + dy * dy <= tol2) {
+                return net.name();
+            }
+        }
+    }
+    return {};
+}
+
+std::vector<std::string> ihpFetPinNetNames(const Instance &inst, const Block &block, double dbuPerEditorUnit)
+{
+    std::vector<std::string> names;
+    if (!isIhpFetModel(pinRetargetModelName(inst))) {
+        return names;
+    }
+    static const Point kXschem[] = {{20, -30}, {20, 30}, {20, 0}, {-20, 0}};
+    names.reserve(4);
+    for (const Point &local : kXschem) {
+        names.push_back(coreNetAtPoint(block, xschemPinWorldDbu(inst, local, dbuPerEditorUnit), dbuPerEditorUnit));
+    }
+    return names;
+}
+
+Point qucsLibPinWorldEditor(const Instance &inst, Point localQucs, double dbuPerEditorUnit, std::int64_t coordDivisor)
+{
+    const std::int64_t divisor = coordDivisor > 0 ? coordDivisor : 1;
+    int mirror = 0;
+    int rotate = 0;
+    orientToQucsPlacement(inst.transform().orient, mirror, rotate);
+    Point placed = localQucs;
+    if (mirror != 0 && (rotate & 3) == 2) {
+        placed.x = -placed.x;
+    } else {
+        if (mirror != 0) {
+            placed.y = -placed.y;
+        }
+        for (int z = 0; z < (rotate & 3); ++z) {
+            const int tmp = -placed.x;
+            placed.x = placed.y;
+            placed.y = tmp;
+        }
+    }
+    const std::int64_t cx =
+        static_cast<std::int64_t>(std::llround(core::dbuToEditorUnits(inst.transform().x, dbuPerEditorUnit) / divisor));
+    const std::int64_t cy =
+        static_cast<std::int64_t>(std::llround(core::dbuToEditorUnits(inst.transform().y, dbuPerEditorUnit) / divisor));
+    return Point{cx + placed.x, cy + placed.y};
+}
+
+namespace {
 
 bool isIsolboxModel(const std::string &model)
 {
@@ -82,6 +167,24 @@ void appendMappedPins(const Transform &xfFrom, const Transform &xfTo, double dbu
         out.emplace_back(transformLocal(scaleEditorPin(from[i], scale), xfFrom),
                          transformLocal(scaleEditorPin(to[i], scale), xfTo));
     }
+}
+
+Point qucsLibPinOffset(Point local, int mirror, int rotate)
+{
+    Point p = local;
+    if (mirror != 0 && (rotate & 3) == 2) {
+        p.x = -p.x;
+        return p;
+    }
+    if (mirror != 0) {
+        p.y = -p.y;
+    }
+    for (int z = 0; z < (rotate & 3); ++z) {
+        const int tmp = -p.x;
+        p.x = p.y;
+        p.y = tmp;
+    }
+    return p;
 }
 
 } // namespace
@@ -134,6 +237,16 @@ void appendQucsToXschemPinRetargets(const Instance &inst, double dbuPerEditorUni
         static const Point kQucs[] = {{0, -90}, {0, -30}, {0, 30}};
         static const Point kXschem[] = {{0, -60}, {0, 0}, {0, 60}};
         appendMappedPins(xf, xf, dbuPerEditorUnit, kQucs, kXschem, 3, out);
+        return;
+    }
+
+    if (model == "inverter") {
+        // Qucs LibComp and native inverter.sym share pin offsets; snap wires onto exact pin centers.
+        static const Point kPins[] = {{-70, -80}, {-150, 0}, {130, 0}, {-70, 90}};
+        for (const Point &local : kPins) {
+            const Point world{xf.x + local.x, xf.y + local.y};
+            out.emplace_back(world, world);
+        }
     }
 }
 
@@ -156,6 +269,36 @@ void appendXschemToQucsPinRetargets(const Instance &inst, double dbuPerEditorUni
         static const Point kQucs[] = {{0, -90}, {0, -30}, {0, 30}};
         static const Point kXschem[] = {{0, -60}, {0, 0}, {0, 60}};
         appendMappedPins(xf, xf, dbuPerEditorUnit, kXschem, kQucs, 3, out);
+    }
+}
+
+void appendNetlistLibPinRetargets(const Instance &inst, double dbuPerEditorUnit, std::int64_t coordDivisor,
+                                  std::vector<std::pair<Point, Point>> &out)
+{
+    const std::string model = pinRetargetModelName(inst);
+    const std::int64_t divisor = coordDivisor > 0 ? coordDivisor : 1;
+
+    auto appendMapped = [&](const Point *kQucs, const Point *kXschem, std::size_t n) {
+        for (std::size_t i = 0; i < n; ++i) {
+            const Point from = xschemPinWorldDbu(inst, kXschem[i], dbuPerEditorUnit);
+            const Point editorPin = qucsLibPinWorldEditor(inst, kQucs[i], dbuPerEditorUnit, divisor);
+            const Point to{editorUnitsToDbu(static_cast<double>(editorPin.x) * divisor, dbuPerEditorUnit),
+                           editorUnitsToDbu(static_cast<double>(editorPin.y) * divisor, dbuPerEditorUnit)};
+            out.emplace_back(from, to);
+        }
+    };
+
+    if (isIhpFetModel(model)) {
+        static const Point kQucs[] = {{0, -30}, {0, 30}, {20, 0}, {-30, 0}};
+        static const Point kXschem[] = {{20, -30}, {20, 30}, {20, 0}, {-20, 0}};
+        appendMapped(kQucs, kXschem, 4);
+        return;
+    }
+
+    if (isIsolboxModel(model)) {
+        static const Point kQucs[] = {{0, -90}, {0, -30}, {0, 30}};
+        static const Point kXschem[] = {{0, -60}, {0, 0}, {0, 60}};
+        appendMapped(kQucs, kXschem, 3);
     }
 }
 

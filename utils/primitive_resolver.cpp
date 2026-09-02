@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <fstream>
+#include <unordered_set>
 
 namespace core {
 namespace {
@@ -76,6 +77,74 @@ std::string stemWithoutExtension(const std::string &stem)
         return stem;
     }
     return stem.substr(0, dot);
+}
+
+// commonLib hosts schematic infrastructure only (Cadence-like basic).
+// Legacy refs to simulation primitives under commonLib/ redirect to analogLib/.
+bool isCommonLibInfrastructureCell(const std::string &cellName)
+{
+    static const std::unordered_set<std::string> kCells = {
+        "adc_bridge",      "arch_declarations", "architecture",    "assign",     "attributes",
+        "bindkeys_cheatsheet", "bus_connect",   "bus_connect_nolab", "bus_tap",
+        "conn_10x2",       "conn_14x1",       "conn_3x1",        "conn_4x1",   "conn_6x1",
+        "conn_8x1",        "connect",         "connector",       "dac_bridge", "device_param_probe",
+        "flash_cell",      "generic_pin",     "intuitive_interface_cheatsheet", "iopin", "ipin",
+        "jumper",          "lab_generic",     "lab_pin",         "lab_show",   "lab_wire",
+        "noconn",          "opin",            "package",         "package_not_shown", "port_attributes",
+        "short",           "single2cm",       "single2dm",       "stop",       "title",
+        "title-2",         "title-3",         "use",
+    };
+    return kCells.find(cellName) != kCells.end();
+}
+
+std::string remapCommonLibToAnalogLib(const std::string &ref)
+{
+    std::string techLibrary;
+    std::string stem;
+    splitTechAndStem(ref, techLibrary, stem);
+    if (techLibrary != "commonLib") {
+        return ref;
+    }
+
+    std::string cell = stemWithoutExtension(stem);
+    if (cell.empty()) {
+        return ref;
+    }
+    if (isCommonLibInfrastructureCell(cell)) {
+        return ref;
+    }
+
+    // Xschem gnd.sym artwork was commonLib/gnd; canonical passives live in analogLib/GND.
+    if (cell == "gnd") {
+        return "analogLib/GND.symbol.core";
+    }
+
+    const std::size_t dot = stem.find('.');
+    const std::string suffix = dot == std::string::npos ? std::string{} : stem.substr(dot);
+    if (suffix == ".symbol.core" || suffix == ".sym" || suffix.empty()) {
+        return "analogLib/" + cell + (suffix.empty() ? ".symbol.core" : suffix);
+    }
+    return "analogLib/" + stem;
+}
+
+std::string remapLegacyPrimitiveRef(const std::string &ref)
+{
+    static const std::unordered_map<std::string, std::string> kLegacy = {
+        {"commonLib/launcher.symbol.core", "analogLib/launcher.symbol.core"},
+        {"commonLib/launcher.sym", "analogLib/launcher.sym"},
+        {"commonLib/launcher", "analogLib/launcher"},
+        {"commonLib/vdd.symbol.core", "analogLib/vdd.symbol.core"},
+        {"commonLib/vdd.sym", "analogLib/vdd.sym"},
+        {"commonLib/vdd", "analogLib/vdd"},
+        {"commonLib/gnd.symbol.core", "analogLib/GND.symbol.core"},
+        {"commonLib/gnd.sym", "analogLib/GND.sym"},
+        {"commonLib/gnd", "analogLib/GND"},
+        {"gnd.sym", "analogLib/GND.sym"},
+    };
+    if (const auto it = kLegacy.find(ref); it != kLegacy.end()) {
+        return it->second;
+    }
+    return remapCommonLibToAnalogLib(ref);
 }
 
 } // namespace
@@ -224,7 +293,8 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
         return resolved;
     }
 
-    const auto it = index_.find(ref);
+    const std::string lookup = remapLegacyPrimitiveRef(ref);
+    const auto it = index_.find(lookup);
     if (it != index_.end()) {
         resolved.found = true;
         resolved.corePath = it->second.corePath;
@@ -236,7 +306,7 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
 
     std::string techLibrary;
     std::string stem;
-    splitTechAndStem(ref, techLibrary, stem);
+    splitTechAndStem(lookup, techLibrary, stem);
     const std::string lowerStem = toLower(stem);
 
     if (endsWith(lowerStem, ".sym")) {
@@ -314,7 +384,7 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
         const ParsedCorePath parsed = parseCoreFilePath(stem);
         if (parsed.valid && parsed.view == ViewType::Symbol) {
             for (const std::string &corePath : corePaths_) {
-                if (fileNameOnly(corePath) == stem || corePath == ref) {
+                if (fileNameOnly(corePath) == stem || corePath == lookup || corePath == ref) {
                     resolved.found = true;
                     resolved.corePath = corePath;
                     resolved.cellName = parsed.cellName;

@@ -16,6 +16,7 @@ public:
     explicit Net(std::string name, SigType sigType = SigType::Signal);
 
     const std::string &                                 name() const { return m_name; }
+    void                                                setName(std::string name) { m_name = std::move(name); }
     SigType                                             sigType() const { return m_sigType; }
     void                                                setSigType(SigType type) { m_sigType = type; }
 
