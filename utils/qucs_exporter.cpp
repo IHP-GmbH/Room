@@ -86,15 +86,33 @@ void ensureDataSetProperties(std::vector<std::string> &propertyLines, const std:
 
 std::vector<std::string> normalizeDiagramLines(const std::vector<std::string> &lines)
 {
-    std::vector<std::string> normalized;
-    normalized.reserve(lines.size());
-    for (std::string line : lines) {
+    // Ngspice datasets store probes as "tran.v(node)" / "ac.v(node)".
+    // Dual-tool CORE graphs historically used bare "ngspice/v(node)"; rewrite on export
+    // so Qucs Graph::loadDatFile can resolve them against .dat.ngspice.
+    auto rewriteProbe = [](std::string &line, const char *bare, const char *withSim) {
         for (;;) {
-            const std::size_t pos = line.find("ngspice/tran.v(");
+            const std::size_t pos = line.find(bare);
             if (pos == std::string::npos) {
                 break;
             }
-            line.replace(pos, 15, "ngspice/v(");
+            // Skip if already has a simulation prefix after "ngspice/".
+            line.replace(pos, std::char_traits<char>::length(bare), withSim);
+        }
+    };
+
+    std::vector<std::string> normalized;
+    normalized.reserve(lines.size());
+    for (std::string line : lines) {
+        // Only rewrite bare ngspice/v( and ngspice/i( — leave existing tran./ac./dc. alone.
+        rewriteProbe(line, "ngspice/v(", "ngspice/tran.v(");
+        rewriteProbe(line, "ngspice/i(", "ngspice/tran.i(");
+        // Undo double-prefix if a previous pass already had tran.
+        for (;;) {
+            const std::size_t pos = line.find("ngspice/tran.tran.");
+            if (pos == std::string::npos) {
+                break;
+            }
+            line.replace(pos, 17, "ngspice/tran.");
         }
         normalized.push_back(std::move(line));
     }

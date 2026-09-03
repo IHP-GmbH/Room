@@ -1981,8 +1981,9 @@ std::vector<std::string> graphRecordToDiagramLines(const std::string &graphRecor
 
     std::ostringstream rect;
     rect << formatRectDiagramOpening(x, bottomY, w, h, axisLimitsFromGraphRecord(graphRecord, block)) << '\n';
-    rect << "\t<\"ngspice/v(" << vout << ")\" #0000ff 0 3 0 0 0 0>\n";
-    rect << "\t<\"ngspice/v(" << vin << ")\" #ff0000 0 3 0 0 0 0>\n";
+    // Match AbstractSpiceKernel::normalizeVarsNames transient prefix used in .dat.ngspice.
+    rect << "\t<\"ngspice/tran.v(" << vout << ")\" #0000ff 0 3 0 0 0 0>\n";
+    rect << "\t<\"ngspice/tran.v(" << vin << ")\" #ff0000 0 3 0 0 0 0>\n";
     rect << "</Rect>";
     return {rect.str()};
 }
@@ -2220,8 +2221,8 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
 
     writeVersionRecord(out, working.sourceInfo());
     if (working.viewType() == ViewType::Symbol && isAnalogLibControllerSymbol(cell.name())) {
-        out << "G {type=netlist_commands template=\"name=@name only_toplevel=true value=@value\" "
-               "format=\"tcleval(@value)\"}\n";
+        // Xschem applies type/format from K (not G) for netlist_commands.
+        writeSectionRecord(out, 'G', "");
     } else if (!cell.properties().empty()) {
         out << 'G' << ' ' << formatAttrBlock(cell.properties()) << '\n';
     } else {
@@ -2234,6 +2235,11 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
             continue;
         }
         kProps.push_back(prop);
+    }
+    if (working.viewType() == ViewType::Symbol && isAnalogLibControllerSymbol(cell.name())) {
+        replaceSingletonProperty(kProps, "type", "netlist_commands");
+        replaceSingletonProperty(kProps, "template", "name=@name only_toplevel=true value=@value");
+        replaceSingletonProperty(kProps, "format", "@value");
     }
     if (!kProps.empty()) {
         normalizeSubcircuitMetadata(kProps);
