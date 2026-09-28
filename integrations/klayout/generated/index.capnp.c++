@@ -196,7 +196,7 @@ const ::capnp::_::RawSchema s_dbbabef701dd4072 = {
 
 // =======================================================================================
 
-namespace core {
+namespace room {
 namespace schema {
 
 // CellIndexEntry

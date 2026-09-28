@@ -6,7 +6,7 @@ ROOM is compiled **into** a KLayout `db_plugins/mroom.dll` streamer (no separate
 
 `mroom` is the **internal KLayout streamer id** (folder name, `TARGET`, DLL name: `mroom.dll` / `mroom_ui.dll`). The user-visible format is still **ROOM** (`*.room`, title “CommonDB ROOM” in the file dialog).
 
-The name was chosen because KLayout builds streamers in **alphabetical SUBDIRS order**: `mroom` sorts **after** `lstream`, so `xcapnp` / `xkj` are already linked when `mroom.dll` is built. Renaming to `core` would require checking that build order still works.
+The name was chosen because KLayout builds streamers in **alphabetical SUBDIRS order**: `mroom` sorts **after** `lstream`, so `xcapnp` / `xkj` are already linked when `mroom.dll` is built.
 
 ## Setup (once)
 
@@ -93,7 +93,7 @@ klayout -b -r scripts\test_room_roundtrip.rb
 
 | Path | Role |
 |------|------|
-| `integrations/klayout/mroom/core.pri` | Lists CommonDB `src/*.cpp` + generated capnp |
+| `integrations/klayout/mroom/room.pri` | Lists CommonDB `src/*.cpp` + generated capnp |
 | `integrations/klayout/mroom/db_plugin/roomReader.cc` | `Database::loadFromFile` → `db::Layout` |
 | `integrations/klayout/mroom/db_plugin/roomWriter.cc` | `db::Layout` → `Database::saveToFile` (compact) |
 | `integrations/klayout/generated/` | Pre-generated capnp C++ (committed) |

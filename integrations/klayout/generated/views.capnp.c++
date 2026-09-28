@@ -520,7 +520,7 @@ const ::capnp::_::RawSchema s_8aadf8ce124f62f4 = {
 
 // =======================================================================================
 
-namespace core {
+namespace room {
 namespace schema {
 
 // LayoutViewData

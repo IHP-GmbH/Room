@@ -31,7 +31,7 @@ CAPNP_DECLARE_SCHEMA(8aadf8ce124f62f4);
 }  // namespace schemas
 }  // namespace capnp
 
-namespace core {
+namespace room {
 namespace schema {
 
 struct LayoutViewData {
@@ -151,13 +151,13 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayers() const;
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader getLayers() const;
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader getLayers() const;
 
   inline bool hasBlock() const;
-  inline  ::core::schema::Block::Reader getBlock() const;
+  inline  ::room::schema::Block::Reader getBlock() const;
 
   inline bool hasCompact() const;
-  inline  ::core::schema::CompactBlock::Reader getCompact() const;
+  inline  ::room::schema::CompactBlock::Reader getCompact() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -188,25 +188,25 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayers();
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder getLayers();
-  inline void setLayers( ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder initLayers(unsigned int size);
-  inline void adoptLayers(::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>> disownLayers();
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder getLayers();
+  inline void setLayers( ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder initLayers(unsigned int size);
+  inline void adoptLayers(::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>> disownLayers();
 
   inline bool hasBlock();
-  inline  ::core::schema::Block::Builder getBlock();
-  inline void setBlock( ::core::schema::Block::Reader value);
-  inline  ::core::schema::Block::Builder initBlock();
-  inline void adoptBlock(::capnp::Orphan< ::core::schema::Block>&& value);
-  inline ::capnp::Orphan< ::core::schema::Block> disownBlock();
+  inline  ::room::schema::Block::Builder getBlock();
+  inline void setBlock( ::room::schema::Block::Reader value);
+  inline  ::room::schema::Block::Builder initBlock();
+  inline void adoptBlock(::capnp::Orphan< ::room::schema::Block>&& value);
+  inline ::capnp::Orphan< ::room::schema::Block> disownBlock();
 
   inline bool hasCompact();
-  inline  ::core::schema::CompactBlock::Builder getCompact();
-  inline void setCompact( ::core::schema::CompactBlock::Reader value);
-  inline  ::core::schema::CompactBlock::Builder initCompact();
-  inline void adoptCompact(::capnp::Orphan< ::core::schema::CompactBlock>&& value);
-  inline ::capnp::Orphan< ::core::schema::CompactBlock> disownCompact();
+  inline  ::room::schema::CompactBlock::Builder getCompact();
+  inline void setCompact( ::room::schema::CompactBlock::Reader value);
+  inline  ::room::schema::CompactBlock::Builder initCompact();
+  inline void adoptCompact(::capnp::Orphan< ::room::schema::CompactBlock>&& value);
+  inline ::capnp::Orphan< ::room::schema::CompactBlock> disownCompact();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -226,8 +226,8 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::core::schema::Block::Pipeline getBlock();
-  inline  ::core::schema::CompactBlock::Pipeline getCompact();
+  inline  ::room::schema::Block::Pipeline getBlock();
+  inline  ::room::schema::CompactBlock::Pipeline getCompact();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   friend class ::capnp::PipelineHook;
@@ -254,13 +254,13 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayers() const;
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader getLayers() const;
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader getLayers() const;
 
   inline bool hasBlock() const;
-  inline  ::core::schema::Block::Reader getBlock() const;
+  inline  ::room::schema::Block::Reader getBlock() const;
 
   inline bool hasCompact() const;
-  inline  ::core::schema::CompactBlock::Reader getCompact() const;
+  inline  ::room::schema::CompactBlock::Reader getCompact() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -291,25 +291,25 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayers();
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder getLayers();
-  inline void setLayers( ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder initLayers(unsigned int size);
-  inline void adoptLayers(::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>> disownLayers();
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder getLayers();
+  inline void setLayers( ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder initLayers(unsigned int size);
+  inline void adoptLayers(::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>> disownLayers();
 
   inline bool hasBlock();
-  inline  ::core::schema::Block::Builder getBlock();
-  inline void setBlock( ::core::schema::Block::Reader value);
-  inline  ::core::schema::Block::Builder initBlock();
-  inline void adoptBlock(::capnp::Orphan< ::core::schema::Block>&& value);
-  inline ::capnp::Orphan< ::core::schema::Block> disownBlock();
+  inline  ::room::schema::Block::Builder getBlock();
+  inline void setBlock( ::room::schema::Block::Reader value);
+  inline  ::room::schema::Block::Builder initBlock();
+  inline void adoptBlock(::capnp::Orphan< ::room::schema::Block>&& value);
+  inline ::capnp::Orphan< ::room::schema::Block> disownBlock();
 
   inline bool hasCompact();
-  inline  ::core::schema::CompactBlock::Builder getCompact();
-  inline void setCompact( ::core::schema::CompactBlock::Reader value);
-  inline  ::core::schema::CompactBlock::Builder initCompact();
-  inline void adoptCompact(::capnp::Orphan< ::core::schema::CompactBlock>&& value);
-  inline ::capnp::Orphan< ::core::schema::CompactBlock> disownCompact();
+  inline  ::room::schema::CompactBlock::Builder getCompact();
+  inline void setCompact( ::room::schema::CompactBlock::Reader value);
+  inline  ::room::schema::CompactBlock::Builder initCompact();
+  inline void adoptCompact(::capnp::Orphan< ::room::schema::CompactBlock>&& value);
+  inline ::capnp::Orphan< ::room::schema::CompactBlock> disownCompact();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -329,8 +329,8 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::core::schema::Block::Pipeline getBlock();
-  inline  ::core::schema::CompactBlock::Pipeline getCompact();
+  inline  ::room::schema::Block::Pipeline getBlock();
+  inline  ::room::schema::CompactBlock::Pipeline getCompact();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   friend class ::capnp::PipelineHook;
@@ -357,13 +357,13 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayers() const;
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader getLayers() const;
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader getLayers() const;
 
   inline bool hasBlock() const;
-  inline  ::core::schema::Block::Reader getBlock() const;
+  inline  ::room::schema::Block::Reader getBlock() const;
 
   inline bool hasCompact() const;
-  inline  ::core::schema::CompactBlock::Reader getCompact() const;
+  inline  ::room::schema::CompactBlock::Reader getCompact() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -394,25 +394,25 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayers();
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder getLayers();
-  inline void setLayers( ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder initLayers(unsigned int size);
-  inline void adoptLayers(::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>> disownLayers();
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder getLayers();
+  inline void setLayers( ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder initLayers(unsigned int size);
+  inline void adoptLayers(::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>> disownLayers();
 
   inline bool hasBlock();
-  inline  ::core::schema::Block::Builder getBlock();
-  inline void setBlock( ::core::schema::Block::Reader value);
-  inline  ::core::schema::Block::Builder initBlock();
-  inline void adoptBlock(::capnp::Orphan< ::core::schema::Block>&& value);
-  inline ::capnp::Orphan< ::core::schema::Block> disownBlock();
+  inline  ::room::schema::Block::Builder getBlock();
+  inline void setBlock( ::room::schema::Block::Reader value);
+  inline  ::room::schema::Block::Builder initBlock();
+  inline void adoptBlock(::capnp::Orphan< ::room::schema::Block>&& value);
+  inline ::capnp::Orphan< ::room::schema::Block> disownBlock();
 
   inline bool hasCompact();
-  inline  ::core::schema::CompactBlock::Builder getCompact();
-  inline void setCompact( ::core::schema::CompactBlock::Reader value);
-  inline  ::core::schema::CompactBlock::Builder initCompact();
-  inline void adoptCompact(::capnp::Orphan< ::core::schema::CompactBlock>&& value);
-  inline ::capnp::Orphan< ::core::schema::CompactBlock> disownCompact();
+  inline  ::room::schema::CompactBlock::Builder getCompact();
+  inline void setCompact( ::room::schema::CompactBlock::Reader value);
+  inline  ::room::schema::CompactBlock::Builder initCompact();
+  inline void adoptCompact(::capnp::Orphan< ::room::schema::CompactBlock>&& value);
+  inline ::capnp::Orphan< ::room::schema::CompactBlock> disownCompact();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -432,8 +432,8 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::core::schema::Block::Pipeline getBlock();
-  inline  ::core::schema::CompactBlock::Pipeline getCompact();
+  inline  ::room::schema::Block::Pipeline getBlock();
+  inline  ::room::schema::CompactBlock::Pipeline getCompact();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   friend class ::capnp::PipelineHook;
@@ -460,13 +460,13 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayers() const;
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader getLayers() const;
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader getLayers() const;
 
   inline bool hasBlock() const;
-  inline  ::core::schema::Block::Reader getBlock() const;
+  inline  ::room::schema::Block::Reader getBlock() const;
 
   inline bool hasCompact() const;
-  inline  ::core::schema::CompactBlock::Reader getCompact() const;
+  inline  ::room::schema::CompactBlock::Reader getCompact() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -497,25 +497,25 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayers();
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder getLayers();
-  inline void setLayers( ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder initLayers(unsigned int size);
-  inline void adoptLayers(::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>> disownLayers();
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder getLayers();
+  inline void setLayers( ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder initLayers(unsigned int size);
+  inline void adoptLayers(::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>> disownLayers();
 
   inline bool hasBlock();
-  inline  ::core::schema::Block::Builder getBlock();
-  inline void setBlock( ::core::schema::Block::Reader value);
-  inline  ::core::schema::Block::Builder initBlock();
-  inline void adoptBlock(::capnp::Orphan< ::core::schema::Block>&& value);
-  inline ::capnp::Orphan< ::core::schema::Block> disownBlock();
+  inline  ::room::schema::Block::Builder getBlock();
+  inline void setBlock( ::room::schema::Block::Reader value);
+  inline  ::room::schema::Block::Builder initBlock();
+  inline void adoptBlock(::capnp::Orphan< ::room::schema::Block>&& value);
+  inline ::capnp::Orphan< ::room::schema::Block> disownBlock();
 
   inline bool hasCompact();
-  inline  ::core::schema::CompactBlock::Builder getCompact();
-  inline void setCompact( ::core::schema::CompactBlock::Reader value);
-  inline  ::core::schema::CompactBlock::Builder initCompact();
-  inline void adoptCompact(::capnp::Orphan< ::core::schema::CompactBlock>&& value);
-  inline ::capnp::Orphan< ::core::schema::CompactBlock> disownCompact();
+  inline  ::room::schema::CompactBlock::Builder getCompact();
+  inline void setCompact( ::room::schema::CompactBlock::Reader value);
+  inline  ::room::schema::CompactBlock::Builder initCompact();
+  inline void adoptCompact(::capnp::Orphan< ::room::schema::CompactBlock>&& value);
+  inline ::capnp::Orphan< ::room::schema::CompactBlock> disownCompact();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -535,8 +535,8 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::core::schema::Block::Pipeline getBlock();
-  inline  ::core::schema::CompactBlock::Pipeline getCompact();
+  inline  ::room::schema::Block::Pipeline getBlock();
+  inline  ::room::schema::CompactBlock::Pipeline getCompact();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   friend class ::capnp::PipelineHook;
@@ -656,23 +656,23 @@ public:
   inline Which which() const;
   inline bool isLayout() const;
   inline bool hasLayout() const;
-  inline  ::core::schema::LayoutViewData::Reader getLayout() const;
+  inline  ::room::schema::LayoutViewData::Reader getLayout() const;
 
   inline bool isSchematic() const;
   inline bool hasSchematic() const;
-  inline  ::core::schema::SchematicViewData::Reader getSchematic() const;
+  inline  ::room::schema::SchematicViewData::Reader getSchematic() const;
 
   inline bool isSymbol() const;
   inline bool hasSymbol() const;
-  inline  ::core::schema::SymbolViewData::Reader getSymbol() const;
+  inline  ::room::schema::SymbolViewData::Reader getSymbol() const;
 
   inline bool isAbstract() const;
   inline bool hasAbstract() const;
-  inline  ::core::schema::AbstractViewData::Reader getAbstract() const;
+  inline  ::room::schema::AbstractViewData::Reader getAbstract() const;
 
   inline bool isOpaque() const;
   inline bool hasOpaque() const;
-  inline  ::core::schema::OpaqueViewData::Reader getOpaque() const;
+  inline  ::room::schema::OpaqueViewData::Reader getOpaque() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -705,43 +705,43 @@ public:
   inline Which which();
   inline bool isLayout();
   inline bool hasLayout();
-  inline  ::core::schema::LayoutViewData::Builder getLayout();
-  inline void setLayout( ::core::schema::LayoutViewData::Reader value);
-  inline  ::core::schema::LayoutViewData::Builder initLayout();
-  inline void adoptLayout(::capnp::Orphan< ::core::schema::LayoutViewData>&& value);
-  inline ::capnp::Orphan< ::core::schema::LayoutViewData> disownLayout();
+  inline  ::room::schema::LayoutViewData::Builder getLayout();
+  inline void setLayout( ::room::schema::LayoutViewData::Reader value);
+  inline  ::room::schema::LayoutViewData::Builder initLayout();
+  inline void adoptLayout(::capnp::Orphan< ::room::schema::LayoutViewData>&& value);
+  inline ::capnp::Orphan< ::room::schema::LayoutViewData> disownLayout();
 
   inline bool isSchematic();
   inline bool hasSchematic();
-  inline  ::core::schema::SchematicViewData::Builder getSchematic();
-  inline void setSchematic( ::core::schema::SchematicViewData::Reader value);
-  inline  ::core::schema::SchematicViewData::Builder initSchematic();
-  inline void adoptSchematic(::capnp::Orphan< ::core::schema::SchematicViewData>&& value);
-  inline ::capnp::Orphan< ::core::schema::SchematicViewData> disownSchematic();
+  inline  ::room::schema::SchematicViewData::Builder getSchematic();
+  inline void setSchematic( ::room::schema::SchematicViewData::Reader value);
+  inline  ::room::schema::SchematicViewData::Builder initSchematic();
+  inline void adoptSchematic(::capnp::Orphan< ::room::schema::SchematicViewData>&& value);
+  inline ::capnp::Orphan< ::room::schema::SchematicViewData> disownSchematic();
 
   inline bool isSymbol();
   inline bool hasSymbol();
-  inline  ::core::schema::SymbolViewData::Builder getSymbol();
-  inline void setSymbol( ::core::schema::SymbolViewData::Reader value);
-  inline  ::core::schema::SymbolViewData::Builder initSymbol();
-  inline void adoptSymbol(::capnp::Orphan< ::core::schema::SymbolViewData>&& value);
-  inline ::capnp::Orphan< ::core::schema::SymbolViewData> disownSymbol();
+  inline  ::room::schema::SymbolViewData::Builder getSymbol();
+  inline void setSymbol( ::room::schema::SymbolViewData::Reader value);
+  inline  ::room::schema::SymbolViewData::Builder initSymbol();
+  inline void adoptSymbol(::capnp::Orphan< ::room::schema::SymbolViewData>&& value);
+  inline ::capnp::Orphan< ::room::schema::SymbolViewData> disownSymbol();
 
   inline bool isAbstract();
   inline bool hasAbstract();
-  inline  ::core::schema::AbstractViewData::Builder getAbstract();
-  inline void setAbstract( ::core::schema::AbstractViewData::Reader value);
-  inline  ::core::schema::AbstractViewData::Builder initAbstract();
-  inline void adoptAbstract(::capnp::Orphan< ::core::schema::AbstractViewData>&& value);
-  inline ::capnp::Orphan< ::core::schema::AbstractViewData> disownAbstract();
+  inline  ::room::schema::AbstractViewData::Builder getAbstract();
+  inline void setAbstract( ::room::schema::AbstractViewData::Reader value);
+  inline  ::room::schema::AbstractViewData::Builder initAbstract();
+  inline void adoptAbstract(::capnp::Orphan< ::room::schema::AbstractViewData>&& value);
+  inline ::capnp::Orphan< ::room::schema::AbstractViewData> disownAbstract();
 
   inline bool isOpaque();
   inline bool hasOpaque();
-  inline  ::core::schema::OpaqueViewData::Builder getOpaque();
-  inline void setOpaque( ::core::schema::OpaqueViewData::Reader value);
-  inline  ::core::schema::OpaqueViewData::Builder initOpaque();
-  inline void adoptOpaque(::capnp::Orphan< ::core::schema::OpaqueViewData>&& value);
-  inline ::capnp::Orphan< ::core::schema::OpaqueViewData> disownOpaque();
+  inline  ::room::schema::OpaqueViewData::Builder getOpaque();
+  inline void setOpaque( ::room::schema::OpaqueViewData::Reader value);
+  inline  ::room::schema::OpaqueViewData::Builder initOpaque();
+  inline void adoptOpaque(::capnp::Orphan< ::room::schema::OpaqueViewData>&& value);
+  inline ::capnp::Orphan< ::room::schema::OpaqueViewData> disownOpaque();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -779,29 +779,29 @@ inline bool LayoutViewData::Builder::hasLayers() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader LayoutViewData::Reader::getLayers() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader LayoutViewData::Reader::getLayers() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder LayoutViewData::Builder::getLayers() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder LayoutViewData::Builder::getLayers() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void LayoutViewData::Builder::setLayers( ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void LayoutViewData::Builder::setLayers( ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder LayoutViewData::Builder::initLayers(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder LayoutViewData::Builder::initLayers(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), size);
 }
 inline void LayoutViewData::Builder::adoptLayers(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>> LayoutViewData::Builder::disownLayers() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>> LayoutViewData::Builder::disownLayers() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -813,34 +813,34 @@ inline bool LayoutViewData::Builder::hasBlock() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::Block::Reader LayoutViewData::Reader::getBlock() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::get(_reader.getPointerField(
+inline  ::room::schema::Block::Reader LayoutViewData::Reader::getBlock() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::Block::Builder LayoutViewData::Builder::getBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::get(_builder.getPointerField(
+inline  ::room::schema::Block::Builder LayoutViewData::Builder::getBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::Block::Pipeline LayoutViewData::Pipeline::getBlock() {
-  return  ::core::schema::Block::Pipeline(_typeless.getPointerField(1));
+inline  ::room::schema::Block::Pipeline LayoutViewData::Pipeline::getBlock() {
+  return  ::room::schema::Block::Pipeline(_typeless.getPointerField(1));
 }
 #endif  // !CAPNP_LITE
-inline void LayoutViewData::Builder::setBlock( ::core::schema::Block::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Block>::set(_builder.getPointerField(
+inline void LayoutViewData::Builder::setBlock( ::room::schema::Block::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Block>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::Block::Builder LayoutViewData::Builder::initBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::init(_builder.getPointerField(
+inline  ::room::schema::Block::Builder LayoutViewData::Builder::initBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 inline void LayoutViewData::Builder::adoptBlock(
-    ::capnp::Orphan< ::core::schema::Block>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Block>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::Block>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Block>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::Block> LayoutViewData::Builder::disownBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::Block> LayoutViewData::Builder::disownBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -852,34 +852,34 @@ inline bool LayoutViewData::Builder::hasCompact() {
   return !_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::CompactBlock::Reader LayoutViewData::Reader::getCompact() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::get(_reader.getPointerField(
+inline  ::room::schema::CompactBlock::Reader LayoutViewData::Reader::getCompact() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::get(_reader.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::CompactBlock::Builder LayoutViewData::Builder::getCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::get(_builder.getPointerField(
+inline  ::room::schema::CompactBlock::Builder LayoutViewData::Builder::getCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::get(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::CompactBlock::Pipeline LayoutViewData::Pipeline::getCompact() {
-  return  ::core::schema::CompactBlock::Pipeline(_typeless.getPointerField(2));
+inline  ::room::schema::CompactBlock::Pipeline LayoutViewData::Pipeline::getCompact() {
+  return  ::room::schema::CompactBlock::Pipeline(_typeless.getPointerField(2));
 }
 #endif  // !CAPNP_LITE
-inline void LayoutViewData::Builder::setCompact( ::core::schema::CompactBlock::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::set(_builder.getPointerField(
+inline void LayoutViewData::Builder::setCompact( ::room::schema::CompactBlock::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::set(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::CompactBlock::Builder LayoutViewData::Builder::initCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::init(_builder.getPointerField(
+inline  ::room::schema::CompactBlock::Builder LayoutViewData::Builder::initCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::init(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 inline void LayoutViewData::Builder::adoptCompact(
-    ::capnp::Orphan< ::core::schema::CompactBlock>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::CompactBlock>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::adopt(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::CompactBlock> LayoutViewData::Builder::disownCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::CompactBlock> LayoutViewData::Builder::disownCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::disown(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 
@@ -891,29 +891,29 @@ inline bool SchematicViewData::Builder::hasLayers() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader SchematicViewData::Reader::getLayers() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader SchematicViewData::Reader::getLayers() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder SchematicViewData::Builder::getLayers() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder SchematicViewData::Builder::getLayers() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void SchematicViewData::Builder::setLayers( ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void SchematicViewData::Builder::setLayers( ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder SchematicViewData::Builder::initLayers(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder SchematicViewData::Builder::initLayers(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), size);
 }
 inline void SchematicViewData::Builder::adoptLayers(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>> SchematicViewData::Builder::disownLayers() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>> SchematicViewData::Builder::disownLayers() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -925,34 +925,34 @@ inline bool SchematicViewData::Builder::hasBlock() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::Block::Reader SchematicViewData::Reader::getBlock() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::get(_reader.getPointerField(
+inline  ::room::schema::Block::Reader SchematicViewData::Reader::getBlock() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::Block::Builder SchematicViewData::Builder::getBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::get(_builder.getPointerField(
+inline  ::room::schema::Block::Builder SchematicViewData::Builder::getBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::Block::Pipeline SchematicViewData::Pipeline::getBlock() {
-  return  ::core::schema::Block::Pipeline(_typeless.getPointerField(1));
+inline  ::room::schema::Block::Pipeline SchematicViewData::Pipeline::getBlock() {
+  return  ::room::schema::Block::Pipeline(_typeless.getPointerField(1));
 }
 #endif  // !CAPNP_LITE
-inline void SchematicViewData::Builder::setBlock( ::core::schema::Block::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Block>::set(_builder.getPointerField(
+inline void SchematicViewData::Builder::setBlock( ::room::schema::Block::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Block>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::Block::Builder SchematicViewData::Builder::initBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::init(_builder.getPointerField(
+inline  ::room::schema::Block::Builder SchematicViewData::Builder::initBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 inline void SchematicViewData::Builder::adoptBlock(
-    ::capnp::Orphan< ::core::schema::Block>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Block>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::Block>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Block>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::Block> SchematicViewData::Builder::disownBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::Block> SchematicViewData::Builder::disownBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -964,34 +964,34 @@ inline bool SchematicViewData::Builder::hasCompact() {
   return !_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::CompactBlock::Reader SchematicViewData::Reader::getCompact() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::get(_reader.getPointerField(
+inline  ::room::schema::CompactBlock::Reader SchematicViewData::Reader::getCompact() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::get(_reader.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::CompactBlock::Builder SchematicViewData::Builder::getCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::get(_builder.getPointerField(
+inline  ::room::schema::CompactBlock::Builder SchematicViewData::Builder::getCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::get(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::CompactBlock::Pipeline SchematicViewData::Pipeline::getCompact() {
-  return  ::core::schema::CompactBlock::Pipeline(_typeless.getPointerField(2));
+inline  ::room::schema::CompactBlock::Pipeline SchematicViewData::Pipeline::getCompact() {
+  return  ::room::schema::CompactBlock::Pipeline(_typeless.getPointerField(2));
 }
 #endif  // !CAPNP_LITE
-inline void SchematicViewData::Builder::setCompact( ::core::schema::CompactBlock::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::set(_builder.getPointerField(
+inline void SchematicViewData::Builder::setCompact( ::room::schema::CompactBlock::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::set(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::CompactBlock::Builder SchematicViewData::Builder::initCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::init(_builder.getPointerField(
+inline  ::room::schema::CompactBlock::Builder SchematicViewData::Builder::initCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::init(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 inline void SchematicViewData::Builder::adoptCompact(
-    ::capnp::Orphan< ::core::schema::CompactBlock>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::CompactBlock>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::adopt(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::CompactBlock> SchematicViewData::Builder::disownCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::CompactBlock> SchematicViewData::Builder::disownCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::disown(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 
@@ -1003,29 +1003,29 @@ inline bool SymbolViewData::Builder::hasLayers() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader SymbolViewData::Reader::getLayers() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader SymbolViewData::Reader::getLayers() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder SymbolViewData::Builder::getLayers() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder SymbolViewData::Builder::getLayers() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void SymbolViewData::Builder::setLayers( ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void SymbolViewData::Builder::setLayers( ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder SymbolViewData::Builder::initLayers(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder SymbolViewData::Builder::initLayers(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), size);
 }
 inline void SymbolViewData::Builder::adoptLayers(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>> SymbolViewData::Builder::disownLayers() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>> SymbolViewData::Builder::disownLayers() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -1037,34 +1037,34 @@ inline bool SymbolViewData::Builder::hasBlock() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::Block::Reader SymbolViewData::Reader::getBlock() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::get(_reader.getPointerField(
+inline  ::room::schema::Block::Reader SymbolViewData::Reader::getBlock() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::Block::Builder SymbolViewData::Builder::getBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::get(_builder.getPointerField(
+inline  ::room::schema::Block::Builder SymbolViewData::Builder::getBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::Block::Pipeline SymbolViewData::Pipeline::getBlock() {
-  return  ::core::schema::Block::Pipeline(_typeless.getPointerField(1));
+inline  ::room::schema::Block::Pipeline SymbolViewData::Pipeline::getBlock() {
+  return  ::room::schema::Block::Pipeline(_typeless.getPointerField(1));
 }
 #endif  // !CAPNP_LITE
-inline void SymbolViewData::Builder::setBlock( ::core::schema::Block::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Block>::set(_builder.getPointerField(
+inline void SymbolViewData::Builder::setBlock( ::room::schema::Block::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Block>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::Block::Builder SymbolViewData::Builder::initBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::init(_builder.getPointerField(
+inline  ::room::schema::Block::Builder SymbolViewData::Builder::initBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 inline void SymbolViewData::Builder::adoptBlock(
-    ::capnp::Orphan< ::core::schema::Block>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Block>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::Block>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Block>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::Block> SymbolViewData::Builder::disownBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::Block> SymbolViewData::Builder::disownBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -1076,34 +1076,34 @@ inline bool SymbolViewData::Builder::hasCompact() {
   return !_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::CompactBlock::Reader SymbolViewData::Reader::getCompact() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::get(_reader.getPointerField(
+inline  ::room::schema::CompactBlock::Reader SymbolViewData::Reader::getCompact() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::get(_reader.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::CompactBlock::Builder SymbolViewData::Builder::getCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::get(_builder.getPointerField(
+inline  ::room::schema::CompactBlock::Builder SymbolViewData::Builder::getCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::get(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::CompactBlock::Pipeline SymbolViewData::Pipeline::getCompact() {
-  return  ::core::schema::CompactBlock::Pipeline(_typeless.getPointerField(2));
+inline  ::room::schema::CompactBlock::Pipeline SymbolViewData::Pipeline::getCompact() {
+  return  ::room::schema::CompactBlock::Pipeline(_typeless.getPointerField(2));
 }
 #endif  // !CAPNP_LITE
-inline void SymbolViewData::Builder::setCompact( ::core::schema::CompactBlock::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::set(_builder.getPointerField(
+inline void SymbolViewData::Builder::setCompact( ::room::schema::CompactBlock::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::set(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::CompactBlock::Builder SymbolViewData::Builder::initCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::init(_builder.getPointerField(
+inline  ::room::schema::CompactBlock::Builder SymbolViewData::Builder::initCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::init(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 inline void SymbolViewData::Builder::adoptCompact(
-    ::capnp::Orphan< ::core::schema::CompactBlock>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::CompactBlock>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::adopt(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::CompactBlock> SymbolViewData::Builder::disownCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::CompactBlock> SymbolViewData::Builder::disownCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::disown(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 
@@ -1115,29 +1115,29 @@ inline bool AbstractViewData::Builder::hasLayers() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader AbstractViewData::Reader::getLayers() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader AbstractViewData::Reader::getLayers() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder AbstractViewData::Builder::getLayers() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder AbstractViewData::Builder::getLayers() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void AbstractViewData::Builder::setLayers( ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void AbstractViewData::Builder::setLayers( ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder AbstractViewData::Builder::initLayers(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>::Builder AbstractViewData::Builder::initLayers(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), size);
 }
 inline void AbstractViewData::Builder::adoptLayers(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>> AbstractViewData::Builder::disownLayers() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>> AbstractViewData::Builder::disownLayers() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::LayerSpec,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -1149,34 +1149,34 @@ inline bool AbstractViewData::Builder::hasBlock() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::Block::Reader AbstractViewData::Reader::getBlock() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::get(_reader.getPointerField(
+inline  ::room::schema::Block::Reader AbstractViewData::Reader::getBlock() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::Block::Builder AbstractViewData::Builder::getBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::get(_builder.getPointerField(
+inline  ::room::schema::Block::Builder AbstractViewData::Builder::getBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::Block::Pipeline AbstractViewData::Pipeline::getBlock() {
-  return  ::core::schema::Block::Pipeline(_typeless.getPointerField(1));
+inline  ::room::schema::Block::Pipeline AbstractViewData::Pipeline::getBlock() {
+  return  ::room::schema::Block::Pipeline(_typeless.getPointerField(1));
 }
 #endif  // !CAPNP_LITE
-inline void AbstractViewData::Builder::setBlock( ::core::schema::Block::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Block>::set(_builder.getPointerField(
+inline void AbstractViewData::Builder::setBlock( ::room::schema::Block::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Block>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::Block::Builder AbstractViewData::Builder::initBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::init(_builder.getPointerField(
+inline  ::room::schema::Block::Builder AbstractViewData::Builder::initBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 inline void AbstractViewData::Builder::adoptBlock(
-    ::capnp::Orphan< ::core::schema::Block>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Block>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::Block>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Block>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::Block> AbstractViewData::Builder::disownBlock() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Block>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::Block> AbstractViewData::Builder::disownBlock() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Block>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -1188,34 +1188,34 @@ inline bool AbstractViewData::Builder::hasCompact() {
   return !_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::CompactBlock::Reader AbstractViewData::Reader::getCompact() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::get(_reader.getPointerField(
+inline  ::room::schema::CompactBlock::Reader AbstractViewData::Reader::getCompact() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::get(_reader.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::CompactBlock::Builder AbstractViewData::Builder::getCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::get(_builder.getPointerField(
+inline  ::room::schema::CompactBlock::Builder AbstractViewData::Builder::getCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::get(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::CompactBlock::Pipeline AbstractViewData::Pipeline::getCompact() {
-  return  ::core::schema::CompactBlock::Pipeline(_typeless.getPointerField(2));
+inline  ::room::schema::CompactBlock::Pipeline AbstractViewData::Pipeline::getCompact() {
+  return  ::room::schema::CompactBlock::Pipeline(_typeless.getPointerField(2));
 }
 #endif  // !CAPNP_LITE
-inline void AbstractViewData::Builder::setCompact( ::core::schema::CompactBlock::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::set(_builder.getPointerField(
+inline void AbstractViewData::Builder::setCompact( ::room::schema::CompactBlock::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::set(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::CompactBlock::Builder AbstractViewData::Builder::initCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::init(_builder.getPointerField(
+inline  ::room::schema::CompactBlock::Builder AbstractViewData::Builder::initCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::init(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 inline void AbstractViewData::Builder::adoptCompact(
-    ::capnp::Orphan< ::core::schema::CompactBlock>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::CompactBlock>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::adopt(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::CompactBlock> AbstractViewData::Builder::disownCompact() {
-  return ::capnp::_::PointerHelpers< ::core::schema::CompactBlock>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::CompactBlock> AbstractViewData::Builder::disownCompact() {
+  return ::capnp::_::PointerHelpers< ::room::schema::CompactBlock>::disown(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 
@@ -1287,11 +1287,11 @@ inline ::capnp::Orphan< ::capnp::Data> OpaqueViewData::Builder::disownData() {
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
-inline  ::core::schema::ViewPayload::Which ViewPayload::Reader::which() const {
+inline  ::room::schema::ViewPayload::Which ViewPayload::Reader::which() const {
   return _reader.getDataField<Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS);
 }
-inline  ::core::schema::ViewPayload::Which ViewPayload::Builder::which() {
+inline  ::room::schema::ViewPayload::Which ViewPayload::Builder::which() {
   return _builder.getDataField<Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS);
 }
@@ -1312,41 +1312,41 @@ inline bool ViewPayload::Builder::hasLayout() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::LayoutViewData::Reader ViewPayload::Reader::getLayout() const {
+inline  ::room::schema::LayoutViewData::Reader ViewPayload::Reader::getLayout() const {
   KJ_IREQUIRE((which() == ViewPayload::LAYOUT),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::LayoutViewData>::get(_reader.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::LayoutViewData>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::LayoutViewData::Builder ViewPayload::Builder::getLayout() {
+inline  ::room::schema::LayoutViewData::Builder ViewPayload::Builder::getLayout() {
   KJ_IREQUIRE((which() == ViewPayload::LAYOUT),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::LayoutViewData>::get(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::LayoutViewData>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void ViewPayload::Builder::setLayout( ::core::schema::LayoutViewData::Reader value) {
+inline void ViewPayload::Builder::setLayout( ::room::schema::LayoutViewData::Reader value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::LAYOUT);
-  ::capnp::_::PointerHelpers< ::core::schema::LayoutViewData>::set(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::LayoutViewData>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::LayoutViewData::Builder ViewPayload::Builder::initLayout() {
+inline  ::room::schema::LayoutViewData::Builder ViewPayload::Builder::initLayout() {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::LAYOUT);
-  return ::capnp::_::PointerHelpers< ::core::schema::LayoutViewData>::init(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::LayoutViewData>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 inline void ViewPayload::Builder::adoptLayout(
-    ::capnp::Orphan< ::core::schema::LayoutViewData>&& value) {
+    ::capnp::Orphan< ::room::schema::LayoutViewData>&& value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::LAYOUT);
-  ::capnp::_::PointerHelpers< ::core::schema::LayoutViewData>::adopt(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::LayoutViewData>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::LayoutViewData> ViewPayload::Builder::disownLayout() {
+inline ::capnp::Orphan< ::room::schema::LayoutViewData> ViewPayload::Builder::disownLayout() {
   KJ_IREQUIRE((which() == ViewPayload::LAYOUT),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::LayoutViewData>::disown(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::LayoutViewData>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -1366,41 +1366,41 @@ inline bool ViewPayload::Builder::hasSchematic() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::SchematicViewData::Reader ViewPayload::Reader::getSchematic() const {
+inline  ::room::schema::SchematicViewData::Reader ViewPayload::Reader::getSchematic() const {
   KJ_IREQUIRE((which() == ViewPayload::SCHEMATIC),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::SchematicViewData>::get(_reader.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::SchematicViewData>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::SchematicViewData::Builder ViewPayload::Builder::getSchematic() {
+inline  ::room::schema::SchematicViewData::Builder ViewPayload::Builder::getSchematic() {
   KJ_IREQUIRE((which() == ViewPayload::SCHEMATIC),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::SchematicViewData>::get(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::SchematicViewData>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void ViewPayload::Builder::setSchematic( ::core::schema::SchematicViewData::Reader value) {
+inline void ViewPayload::Builder::setSchematic( ::room::schema::SchematicViewData::Reader value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::SCHEMATIC);
-  ::capnp::_::PointerHelpers< ::core::schema::SchematicViewData>::set(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::SchematicViewData>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::SchematicViewData::Builder ViewPayload::Builder::initSchematic() {
+inline  ::room::schema::SchematicViewData::Builder ViewPayload::Builder::initSchematic() {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::SCHEMATIC);
-  return ::capnp::_::PointerHelpers< ::core::schema::SchematicViewData>::init(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::SchematicViewData>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 inline void ViewPayload::Builder::adoptSchematic(
-    ::capnp::Orphan< ::core::schema::SchematicViewData>&& value) {
+    ::capnp::Orphan< ::room::schema::SchematicViewData>&& value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::SCHEMATIC);
-  ::capnp::_::PointerHelpers< ::core::schema::SchematicViewData>::adopt(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::SchematicViewData>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::SchematicViewData> ViewPayload::Builder::disownSchematic() {
+inline ::capnp::Orphan< ::room::schema::SchematicViewData> ViewPayload::Builder::disownSchematic() {
   KJ_IREQUIRE((which() == ViewPayload::SCHEMATIC),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::SchematicViewData>::disown(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::SchematicViewData>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -1420,41 +1420,41 @@ inline bool ViewPayload::Builder::hasSymbol() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::SymbolViewData::Reader ViewPayload::Reader::getSymbol() const {
+inline  ::room::schema::SymbolViewData::Reader ViewPayload::Reader::getSymbol() const {
   KJ_IREQUIRE((which() == ViewPayload::SYMBOL),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::SymbolViewData>::get(_reader.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::SymbolViewData>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::SymbolViewData::Builder ViewPayload::Builder::getSymbol() {
+inline  ::room::schema::SymbolViewData::Builder ViewPayload::Builder::getSymbol() {
   KJ_IREQUIRE((which() == ViewPayload::SYMBOL),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::SymbolViewData>::get(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::SymbolViewData>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void ViewPayload::Builder::setSymbol( ::core::schema::SymbolViewData::Reader value) {
+inline void ViewPayload::Builder::setSymbol( ::room::schema::SymbolViewData::Reader value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::SYMBOL);
-  ::capnp::_::PointerHelpers< ::core::schema::SymbolViewData>::set(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::SymbolViewData>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::SymbolViewData::Builder ViewPayload::Builder::initSymbol() {
+inline  ::room::schema::SymbolViewData::Builder ViewPayload::Builder::initSymbol() {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::SYMBOL);
-  return ::capnp::_::PointerHelpers< ::core::schema::SymbolViewData>::init(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::SymbolViewData>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 inline void ViewPayload::Builder::adoptSymbol(
-    ::capnp::Orphan< ::core::schema::SymbolViewData>&& value) {
+    ::capnp::Orphan< ::room::schema::SymbolViewData>&& value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::SYMBOL);
-  ::capnp::_::PointerHelpers< ::core::schema::SymbolViewData>::adopt(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::SymbolViewData>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::SymbolViewData> ViewPayload::Builder::disownSymbol() {
+inline ::capnp::Orphan< ::room::schema::SymbolViewData> ViewPayload::Builder::disownSymbol() {
   KJ_IREQUIRE((which() == ViewPayload::SYMBOL),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::SymbolViewData>::disown(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::SymbolViewData>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -1474,41 +1474,41 @@ inline bool ViewPayload::Builder::hasAbstract() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::AbstractViewData::Reader ViewPayload::Reader::getAbstract() const {
+inline  ::room::schema::AbstractViewData::Reader ViewPayload::Reader::getAbstract() const {
   KJ_IREQUIRE((which() == ViewPayload::ABSTRACT),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::AbstractViewData>::get(_reader.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::AbstractViewData>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::AbstractViewData::Builder ViewPayload::Builder::getAbstract() {
+inline  ::room::schema::AbstractViewData::Builder ViewPayload::Builder::getAbstract() {
   KJ_IREQUIRE((which() == ViewPayload::ABSTRACT),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::AbstractViewData>::get(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::AbstractViewData>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void ViewPayload::Builder::setAbstract( ::core::schema::AbstractViewData::Reader value) {
+inline void ViewPayload::Builder::setAbstract( ::room::schema::AbstractViewData::Reader value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::ABSTRACT);
-  ::capnp::_::PointerHelpers< ::core::schema::AbstractViewData>::set(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::AbstractViewData>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::AbstractViewData::Builder ViewPayload::Builder::initAbstract() {
+inline  ::room::schema::AbstractViewData::Builder ViewPayload::Builder::initAbstract() {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::ABSTRACT);
-  return ::capnp::_::PointerHelpers< ::core::schema::AbstractViewData>::init(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::AbstractViewData>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 inline void ViewPayload::Builder::adoptAbstract(
-    ::capnp::Orphan< ::core::schema::AbstractViewData>&& value) {
+    ::capnp::Orphan< ::room::schema::AbstractViewData>&& value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::ABSTRACT);
-  ::capnp::_::PointerHelpers< ::core::schema::AbstractViewData>::adopt(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::AbstractViewData>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::AbstractViewData> ViewPayload::Builder::disownAbstract() {
+inline ::capnp::Orphan< ::room::schema::AbstractViewData> ViewPayload::Builder::disownAbstract() {
   KJ_IREQUIRE((which() == ViewPayload::ABSTRACT),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::AbstractViewData>::disown(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::AbstractViewData>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -1528,41 +1528,41 @@ inline bool ViewPayload::Builder::hasOpaque() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::OpaqueViewData::Reader ViewPayload::Reader::getOpaque() const {
+inline  ::room::schema::OpaqueViewData::Reader ViewPayload::Reader::getOpaque() const {
   KJ_IREQUIRE((which() == ViewPayload::OPAQUE),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::OpaqueViewData>::get(_reader.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::OpaqueViewData>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::OpaqueViewData::Builder ViewPayload::Builder::getOpaque() {
+inline  ::room::schema::OpaqueViewData::Builder ViewPayload::Builder::getOpaque() {
   KJ_IREQUIRE((which() == ViewPayload::OPAQUE),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::OpaqueViewData>::get(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::OpaqueViewData>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void ViewPayload::Builder::setOpaque( ::core::schema::OpaqueViewData::Reader value) {
+inline void ViewPayload::Builder::setOpaque( ::room::schema::OpaqueViewData::Reader value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::OPAQUE);
-  ::capnp::_::PointerHelpers< ::core::schema::OpaqueViewData>::set(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::OpaqueViewData>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::OpaqueViewData::Builder ViewPayload::Builder::initOpaque() {
+inline  ::room::schema::OpaqueViewData::Builder ViewPayload::Builder::initOpaque() {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::OPAQUE);
-  return ::capnp::_::PointerHelpers< ::core::schema::OpaqueViewData>::init(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::OpaqueViewData>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 inline void ViewPayload::Builder::adoptOpaque(
-    ::capnp::Orphan< ::core::schema::OpaqueViewData>&& value) {
+    ::capnp::Orphan< ::room::schema::OpaqueViewData>&& value) {
   _builder.setDataField<ViewPayload::Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::OPAQUE);
-  ::capnp::_::PointerHelpers< ::core::schema::OpaqueViewData>::adopt(_builder.getPointerField(
+  ::capnp::_::PointerHelpers< ::room::schema::OpaqueViewData>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::OpaqueViewData> ViewPayload::Builder::disownOpaque() {
+inline ::capnp::Orphan< ::room::schema::OpaqueViewData> ViewPayload::Builder::disownOpaque() {
   KJ_IREQUIRE((which() == ViewPayload::OPAQUE),
               "Must check which() before get()ing a union member.");
-  return ::capnp::_::PointerHelpers< ::core::schema::OpaqueViewData>::disown(_builder.getPointerField(
+  return ::capnp::_::PointerHelpers< ::room::schema::OpaqueViewData>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 

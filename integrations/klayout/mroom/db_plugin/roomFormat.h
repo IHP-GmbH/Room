@@ -21,7 +21,7 @@ public:
 
   const std::string &format_name () const override
   {
-    static const std::string name ("CORE");
+    static const std::string name ("ROOM");
     return name;
   }
 };
@@ -39,7 +39,7 @@ public:
 
   const std::string &format_name () const override
   {
-    static const std::string name ("CORE");
+    static const std::string name ("ROOM");
     return name;
   }
 };

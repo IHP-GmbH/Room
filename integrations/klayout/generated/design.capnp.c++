@@ -1044,7 +1044,7 @@ const ::capnp::_::RawSchema s_fa32feab91698bde = {
 
 // =======================================================================================
 
-namespace core {
+namespace room {
 namespace schema {
 
 // RectGeom

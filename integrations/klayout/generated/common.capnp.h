@@ -38,7 +38,7 @@ CAPNP_DECLARE_SCHEMA(8dfcb0388d353aec);
 }  // namespace schemas
 }  // namespace capnp
 
-namespace core {
+namespace room {
 namespace schema {
 
 struct Point {
@@ -298,7 +298,7 @@ public:
 
   inline  ::int64_t getY() const;
 
-  inline  ::core::schema::Orient getOrient() const;
+  inline  ::room::schema::Orient getOrient() const;
 
   inline double getMag() const;
 
@@ -336,8 +336,8 @@ public:
   inline  ::int64_t getY();
   inline void setY( ::int64_t value);
 
-  inline  ::core::schema::Orient getOrient();
-  inline void setOrient( ::core::schema::Orient value);
+  inline  ::room::schema::Orient getOrient();
+  inline void setOrient( ::room::schema::Orient value);
 
   inline double getMag();
   inline void setMag(double value);
@@ -573,17 +573,17 @@ inline void Transform::Builder::setY( ::int64_t value) {
       ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
 }
 
-inline  ::core::schema::Orient Transform::Reader::getOrient() const {
-  return _reader.getDataField< ::core::schema::Orient>(
+inline  ::room::schema::Orient Transform::Reader::getOrient() const {
+  return _reader.getDataField< ::room::schema::Orient>(
       ::capnp::bounded<8>() * ::capnp::ELEMENTS);
 }
 
-inline  ::core::schema::Orient Transform::Builder::getOrient() {
-  return _builder.getDataField< ::core::schema::Orient>(
+inline  ::room::schema::Orient Transform::Builder::getOrient() {
+  return _builder.getDataField< ::room::schema::Orient>(
       ::capnp::bounded<8>() * ::capnp::ELEMENTS);
 }
-inline void Transform::Builder::setOrient( ::core::schema::Orient value) {
-  _builder.setDataField< ::core::schema::Orient>(
+inline void Transform::Builder::setOrient( ::room::schema::Orient value) {
+  _builder.setDataField< ::room::schema::Orient>(
       ::capnp::bounded<8>() * ::capnp::ELEMENTS, value);
 }
 

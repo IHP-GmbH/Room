@@ -12,7 +12,7 @@ isEmpty(KLAYOUT_SRC) {
 
 include($$KLAYOUT_SRC/plugins/db_plugin.pri)
 
-include($$PWD/../core.pri)
+include($$PWD/../room.pri)
 
 HEADERS += \
   roomPlugin.h \

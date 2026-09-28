@@ -43,7 +43,7 @@ CAPNP_DECLARE_SCHEMA(8aa5551eb7e9651e);
 }  // namespace schemas
 }  // namespace capnp
 
-namespace core {
+namespace room {
 namespace schema {
 
 typedef ::capnp::schemas::ViewType_f833eb6914324996 ViewType;
@@ -91,7 +91,7 @@ public:
   inline bool hasName() const;
   inline  ::capnp::Text::Reader getName() const;
 
-  inline  ::core::schema::LayerPurpose getPurpose() const;
+  inline  ::room::schema::LayerPurpose getPurpose() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -134,8 +134,8 @@ public:
   inline void adoptName(::capnp::Orphan< ::capnp::Text>&& value);
   inline ::capnp::Orphan< ::capnp::Text> disownName();
 
-  inline  ::core::schema::LayerPurpose getPurpose();
-  inline void setPurpose( ::core::schema::LayerPurpose value);
+  inline  ::room::schema::LayerPurpose getPurpose();
+  inline void setPurpose( ::room::schema::LayerPurpose value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -227,17 +227,17 @@ inline ::capnp::Orphan< ::capnp::Text> LayerSpec::Builder::disownName() {
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
-inline  ::core::schema::LayerPurpose LayerSpec::Reader::getPurpose() const {
-  return _reader.getDataField< ::core::schema::LayerPurpose>(
+inline  ::room::schema::LayerPurpose LayerSpec::Reader::getPurpose() const {
+  return _reader.getDataField< ::room::schema::LayerPurpose>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS);
 }
 
-inline  ::core::schema::LayerPurpose LayerSpec::Builder::getPurpose() {
-  return _builder.getDataField< ::core::schema::LayerPurpose>(
+inline  ::room::schema::LayerPurpose LayerSpec::Builder::getPurpose() {
+  return _builder.getDataField< ::room::schema::LayerPurpose>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS);
 }
-inline void LayerSpec::Builder::setPurpose( ::core::schema::LayerPurpose value) {
-  _builder.setDataField< ::core::schema::LayerPurpose>(
+inline void LayerSpec::Builder::setPurpose( ::room::schema::LayerPurpose value) {
+  _builder.setDataField< ::room::schema::LayerPurpose>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
 }
 

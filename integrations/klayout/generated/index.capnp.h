@@ -25,7 +25,7 @@ CAPNP_DECLARE_SCHEMA(dbbabef701dd4072);
 }  // namespace schemas
 }  // namespace capnp
 
-namespace core {
+namespace room {
 namespace schema {
 
 struct CellIndexEntry {
@@ -81,7 +81,7 @@ public:
   inline  ::capnp::Text::Reader getName() const;
 
   inline bool hasBbox() const;
-  inline  ::core::schema::Box::Reader getBbox() const;
+  inline  ::room::schema::Box::Reader getBbox() const;
 
   inline bool hasChildRefs() const;
   inline  ::capnp::List< ::capnp::Text,  ::capnp::Kind::BLOB>::Reader getChildRefs() const;
@@ -124,11 +124,11 @@ public:
   inline ::capnp::Orphan< ::capnp::Text> disownName();
 
   inline bool hasBbox();
-  inline  ::core::schema::Box::Builder getBbox();
-  inline void setBbox( ::core::schema::Box::Reader value);
-  inline  ::core::schema::Box::Builder initBbox();
-  inline void adoptBbox(::capnp::Orphan< ::core::schema::Box>&& value);
-  inline ::capnp::Orphan< ::core::schema::Box> disownBbox();
+  inline  ::room::schema::Box::Builder getBbox();
+  inline void setBbox( ::room::schema::Box::Reader value);
+  inline  ::room::schema::Box::Builder initBbox();
+  inline void adoptBbox(::capnp::Orphan< ::room::schema::Box>&& value);
+  inline ::capnp::Orphan< ::room::schema::Box> disownBbox();
 
   inline bool hasChildRefs();
   inline  ::capnp::List< ::capnp::Text,  ::capnp::Kind::BLOB>::Builder getChildRefs();
@@ -159,7 +159,7 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::core::schema::Box::Pipeline getBbox();
+  inline  ::room::schema::Box::Pipeline getBbox();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   friend class ::capnp::PipelineHook;
@@ -189,7 +189,7 @@ public:
   inline  ::capnp::List< ::capnp::Text,  ::capnp::Kind::BLOB>::Reader getTopCells() const;
 
   inline bool hasEntries() const;
-  inline  ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Reader getEntries() const;
+  inline  ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Reader getEntries() const;
 
   inline  ::uint64_t getPlacementCount() const;
 
@@ -230,11 +230,11 @@ public:
   inline ::capnp::Orphan< ::capnp::List< ::capnp::Text,  ::capnp::Kind::BLOB>> disownTopCells();
 
   inline bool hasEntries();
-  inline  ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Builder getEntries();
-  inline void setEntries( ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Builder initEntries(unsigned int size);
-  inline void adoptEntries(::capnp::Orphan< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>> disownEntries();
+  inline  ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Builder getEntries();
+  inline void setEntries( ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Builder initEntries(unsigned int size);
+  inline void adoptEntries(::capnp::Orphan< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>> disownEntries();
 
   inline  ::uint64_t getPlacementCount();
   inline void setPlacementCount( ::uint64_t value);
@@ -309,34 +309,34 @@ inline bool CellIndexEntry::Builder::hasBbox() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::Box::Reader CellIndexEntry::Reader::getBbox() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::Box>::get(_reader.getPointerField(
+inline  ::room::schema::Box::Reader CellIndexEntry::Reader::getBbox() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::Box>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::Box::Builder CellIndexEntry::Builder::getBbox() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Box>::get(_builder.getPointerField(
+inline  ::room::schema::Box::Builder CellIndexEntry::Builder::getBbox() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Box>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::Box::Pipeline CellIndexEntry::Pipeline::getBbox() {
-  return  ::core::schema::Box::Pipeline(_typeless.getPointerField(1));
+inline  ::room::schema::Box::Pipeline CellIndexEntry::Pipeline::getBbox() {
+  return  ::room::schema::Box::Pipeline(_typeless.getPointerField(1));
 }
 #endif  // !CAPNP_LITE
-inline void CellIndexEntry::Builder::setBbox( ::core::schema::Box::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Box>::set(_builder.getPointerField(
+inline void CellIndexEntry::Builder::setBbox( ::room::schema::Box::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Box>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::Box::Builder CellIndexEntry::Builder::initBbox() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Box>::init(_builder.getPointerField(
+inline  ::room::schema::Box::Builder CellIndexEntry::Builder::initBbox() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Box>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 inline void CellIndexEntry::Builder::adoptBbox(
-    ::capnp::Orphan< ::core::schema::Box>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Box>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::Box>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Box>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::Box> CellIndexEntry::Builder::disownBbox() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Box>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::Box> CellIndexEntry::Builder::disownBbox() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Box>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -438,29 +438,29 @@ inline bool LibIndex::Builder::hasEntries() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Reader LibIndex::Reader::getEntries() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Reader LibIndex::Reader::getEntries() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Builder LibIndex::Builder::getEntries() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Builder LibIndex::Builder::getEntries() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline void LibIndex::Builder::setEntries( ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void LibIndex::Builder::setEntries( ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Builder LibIndex::Builder::initEntries(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>::Builder LibIndex::Builder::initEntries(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), size);
 }
 inline void LibIndex::Builder::adoptEntries(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>> LibIndex::Builder::disownEntries() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>> LibIndex::Builder::disownEntries() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CellIndexEntry,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 

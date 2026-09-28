@@ -634,7 +634,7 @@ const ::capnp::_::RawSchema s_ed0e75b18be624c4 = {
 
 // =======================================================================================
 
-namespace core {
+namespace room {
 namespace schema {
 
 // CellContent

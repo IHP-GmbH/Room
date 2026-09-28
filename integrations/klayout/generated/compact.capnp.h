@@ -30,7 +30,7 @@ CAPNP_DECLARE_SCHEMA(f667d7479de80d34);
 }  // namespace schemas
 }  // namespace capnp
 
-namespace core {
+namespace room {
 namespace schema {
 
 struct CompactRectArray {
@@ -615,19 +615,19 @@ public:
   inline  ::capnp::List< ::uint32_t,  ::capnp::Kind::PRIMITIVE>::Reader getShapePropertyCounts() const;
 
   inline bool hasShapeProperties() const;
-  inline  ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Reader getShapeProperties() const;
+  inline  ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Reader getShapeProperties() const;
 
   inline bool hasRectArrays() const;
-  inline  ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Reader getRectArrays() const;
+  inline  ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Reader getRectArrays() const;
 
   inline bool hasRectGroups() const;
-  inline  ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Reader getRectGroups() const;
+  inline  ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Reader getRectGroups() const;
 
   inline bool hasPolygonRepeats() const;
-  inline  ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Reader getPolygonRepeats() const;
+  inline  ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Reader getPolygonRepeats() const;
 
   inline bool hasPathRepeats() const;
-  inline  ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Reader getPathRepeats() const;
+  inline  ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Reader getPathRepeats() const;
 
   inline bool hasPolygonDeltasPacked() const;
   inline  ::capnp::Data::Reader getPolygonDeltasPacked() const;
@@ -755,39 +755,39 @@ public:
   inline ::capnp::Orphan< ::capnp::List< ::uint32_t,  ::capnp::Kind::PRIMITIVE>> disownShapePropertyCounts();
 
   inline bool hasShapeProperties();
-  inline  ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Builder getShapeProperties();
-  inline void setShapeProperties( ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Builder initShapeProperties(unsigned int size);
-  inline void adoptShapeProperties(::capnp::Orphan< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>> disownShapeProperties();
+  inline  ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Builder getShapeProperties();
+  inline void setShapeProperties( ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Builder initShapeProperties(unsigned int size);
+  inline void adoptShapeProperties(::capnp::Orphan< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>> disownShapeProperties();
 
   inline bool hasRectArrays();
-  inline  ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Builder getRectArrays();
-  inline void setRectArrays( ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Builder initRectArrays(unsigned int size);
-  inline void adoptRectArrays(::capnp::Orphan< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>> disownRectArrays();
+  inline  ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Builder getRectArrays();
+  inline void setRectArrays( ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Builder initRectArrays(unsigned int size);
+  inline void adoptRectArrays(::capnp::Orphan< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>> disownRectArrays();
 
   inline bool hasRectGroups();
-  inline  ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Builder getRectGroups();
-  inline void setRectGroups( ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Builder initRectGroups(unsigned int size);
-  inline void adoptRectGroups(::capnp::Orphan< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>> disownRectGroups();
+  inline  ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Builder getRectGroups();
+  inline void setRectGroups( ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Builder initRectGroups(unsigned int size);
+  inline void adoptRectGroups(::capnp::Orphan< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>> disownRectGroups();
 
   inline bool hasPolygonRepeats();
-  inline  ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Builder getPolygonRepeats();
-  inline void setPolygonRepeats( ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Builder initPolygonRepeats(unsigned int size);
-  inline void adoptPolygonRepeats(::capnp::Orphan< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>> disownPolygonRepeats();
+  inline  ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Builder getPolygonRepeats();
+  inline void setPolygonRepeats( ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Builder initPolygonRepeats(unsigned int size);
+  inline void adoptPolygonRepeats(::capnp::Orphan< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>> disownPolygonRepeats();
 
   inline bool hasPathRepeats();
-  inline  ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Builder getPathRepeats();
-  inline void setPathRepeats( ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Builder initPathRepeats(unsigned int size);
-  inline void adoptPathRepeats(::capnp::Orphan< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>> disownPathRepeats();
+  inline  ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Builder getPathRepeats();
+  inline void setPathRepeats( ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Builder initPathRepeats(unsigned int size);
+  inline void adoptPathRepeats(::capnp::Orphan< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>> disownPathRepeats();
 
   inline bool hasPolygonDeltasPacked();
   inline  ::capnp::Data::Builder getPolygonDeltasPacked();
@@ -847,16 +847,16 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayerShapes() const;
-  inline  ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Reader getLayerShapes() const;
+  inline  ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Reader getLayerShapes() const;
 
   inline bool hasInstances() const;
-  inline  ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>::Reader getInstances() const;
+  inline  ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>::Reader getInstances() const;
 
   inline bool hasNets() const;
-  inline  ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>::Reader getNets() const;
+  inline  ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>::Reader getNets() const;
 
   inline bool hasBbox() const;
-  inline  ::core::schema::Box::Reader getBbox() const;
+  inline  ::room::schema::Box::Reader getBbox() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -887,32 +887,32 @@ public:
 #endif  // !CAPNP_LITE
 
   inline bool hasLayerShapes();
-  inline  ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Builder getLayerShapes();
-  inline void setLayerShapes( ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Builder initLayerShapes(unsigned int size);
-  inline void adoptLayerShapes(::capnp::Orphan< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>> disownLayerShapes();
+  inline  ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Builder getLayerShapes();
+  inline void setLayerShapes( ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Builder initLayerShapes(unsigned int size);
+  inline void adoptLayerShapes(::capnp::Orphan< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>> disownLayerShapes();
 
   inline bool hasInstances();
-  inline  ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>::Builder getInstances();
-  inline void setInstances( ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>::Builder initInstances(unsigned int size);
-  inline void adoptInstances(::capnp::Orphan< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>> disownInstances();
+  inline  ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>::Builder getInstances();
+  inline void setInstances( ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>::Builder initInstances(unsigned int size);
+  inline void adoptInstances(::capnp::Orphan< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>> disownInstances();
 
   inline bool hasNets();
-  inline  ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>::Builder getNets();
-  inline void setNets( ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>::Reader value);
-  inline  ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>::Builder initNets(unsigned int size);
-  inline void adoptNets(::capnp::Orphan< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>>&& value);
-  inline ::capnp::Orphan< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>> disownNets();
+  inline  ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>::Builder getNets();
+  inline void setNets( ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>::Builder initNets(unsigned int size);
+  inline void adoptNets(::capnp::Orphan< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>> disownNets();
 
   inline bool hasBbox();
-  inline  ::core::schema::Box::Builder getBbox();
-  inline void setBbox( ::core::schema::Box::Reader value);
-  inline  ::core::schema::Box::Builder initBbox();
-  inline void adoptBbox(::capnp::Orphan< ::core::schema::Box>&& value);
-  inline ::capnp::Orphan< ::core::schema::Box> disownBbox();
+  inline  ::room::schema::Box::Builder getBbox();
+  inline void setBbox( ::room::schema::Box::Reader value);
+  inline  ::room::schema::Box::Builder initBbox();
+  inline void adoptBbox(::capnp::Orphan< ::room::schema::Box>&& value);
+  inline ::capnp::Orphan< ::room::schema::Box> disownBbox();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -932,7 +932,7 @@ public:
   inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
       : _typeless(kj::mv(typeless)) {}
 
-  inline  ::core::schema::Box::Pipeline getBbox();
+  inline  ::room::schema::Box::Pipeline getBbox();
 private:
   ::capnp::AnyPointer::Pipeline _typeless;
   friend class ::capnp::PipelineHook;
@@ -1869,29 +1869,29 @@ inline bool CompactLayerShapes::Builder::hasShapeProperties() {
   return !_builder.getPointerField(
       ::capnp::bounded<11>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getShapeProperties() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getShapeProperties() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<11>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getShapeProperties() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getShapeProperties() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<11>() * ::capnp::POINTERS));
 }
-inline void CompactLayerShapes::Builder::setShapeProperties( ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void CompactLayerShapes::Builder::setShapeProperties( ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<11>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initShapeProperties(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initShapeProperties(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<11>() * ::capnp::POINTERS), size);
 }
 inline void CompactLayerShapes::Builder::adoptShapeProperties(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<11>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownShapeProperties() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Property,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownShapeProperties() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<11>() * ::capnp::POINTERS));
 }
 
@@ -1903,29 +1903,29 @@ inline bool CompactLayerShapes::Builder::hasRectArrays() {
   return !_builder.getPointerField(
       ::capnp::bounded<12>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getRectArrays() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getRectArrays() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<12>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getRectArrays() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getRectArrays() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<12>() * ::capnp::POINTERS));
 }
-inline void CompactLayerShapes::Builder::setRectArrays( ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void CompactLayerShapes::Builder::setRectArrays( ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<12>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initRectArrays(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initRectArrays(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<12>() * ::capnp::POINTERS), size);
 }
 inline void CompactLayerShapes::Builder::adoptRectArrays(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<12>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownRectArrays() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownRectArrays() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectArray,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<12>() * ::capnp::POINTERS));
 }
 
@@ -1937,29 +1937,29 @@ inline bool CompactLayerShapes::Builder::hasRectGroups() {
   return !_builder.getPointerField(
       ::capnp::bounded<13>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getRectGroups() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getRectGroups() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<13>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getRectGroups() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getRectGroups() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<13>() * ::capnp::POINTERS));
 }
-inline void CompactLayerShapes::Builder::setRectGroups( ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void CompactLayerShapes::Builder::setRectGroups( ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<13>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initRectGroups(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initRectGroups(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<13>() * ::capnp::POINTERS), size);
 }
 inline void CompactLayerShapes::Builder::adoptRectGroups(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<13>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownRectGroups() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownRectGroups() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactRectGroup,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<13>() * ::capnp::POINTERS));
 }
 
@@ -1971,29 +1971,29 @@ inline bool CompactLayerShapes::Builder::hasPolygonRepeats() {
   return !_builder.getPointerField(
       ::capnp::bounded<14>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getPolygonRepeats() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getPolygonRepeats() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<14>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getPolygonRepeats() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getPolygonRepeats() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<14>() * ::capnp::POINTERS));
 }
-inline void CompactLayerShapes::Builder::setPolygonRepeats( ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void CompactLayerShapes::Builder::setPolygonRepeats( ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<14>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initPolygonRepeats(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initPolygonRepeats(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<14>() * ::capnp::POINTERS), size);
 }
 inline void CompactLayerShapes::Builder::adoptPolygonRepeats(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<14>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownPolygonRepeats() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownPolygonRepeats() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPolygonRepeat,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<14>() * ::capnp::POINTERS));
 }
 
@@ -2005,29 +2005,29 @@ inline bool CompactLayerShapes::Builder::hasPathRepeats() {
   return !_builder.getPointerField(
       ::capnp::bounded<15>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getPathRepeats() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Reader CompactLayerShapes::Reader::getPathRepeats() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<15>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getPathRepeats() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::getPathRepeats() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<15>() * ::capnp::POINTERS));
 }
-inline void CompactLayerShapes::Builder::setPathRepeats( ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void CompactLayerShapes::Builder::setPathRepeats( ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<15>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initPathRepeats(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>::Builder CompactLayerShapes::Builder::initPathRepeats(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<15>() * ::capnp::POINTERS), size);
 }
 inline void CompactLayerShapes::Builder::adoptPathRepeats(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<15>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownPathRepeats() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>> CompactLayerShapes::Builder::disownPathRepeats() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactPathRepeat,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<15>() * ::capnp::POINTERS));
 }
 
@@ -2107,29 +2107,29 @@ inline bool CompactBlock::Builder::hasLayerShapes() {
   return !_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Reader CompactBlock::Reader::getLayerShapes() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Reader CompactBlock::Reader::getLayerShapes() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::getLayerShapes() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::getLayerShapes() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
-inline void CompactBlock::Builder::setLayerShapes( ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void CompactBlock::Builder::setLayerShapes( ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::initLayerShapes(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::initLayerShapes(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), size);
 }
 inline void CompactBlock::Builder::adoptLayerShapes(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>> CompactBlock::Builder::disownLayerShapes() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>> CompactBlock::Builder::disownLayerShapes() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::CompactLayerShapes,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 
@@ -2141,29 +2141,29 @@ inline bool CompactBlock::Builder::hasInstances() {
   return !_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>::Reader CompactBlock::Reader::getInstances() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>::Reader CompactBlock::Reader::getInstances() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::getInstances() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::getInstances() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
-inline void CompactBlock::Builder::setInstances( ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void CompactBlock::Builder::setInstances( ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::initInstances(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::initInstances(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), size);
 }
 inline void CompactBlock::Builder::adoptInstances(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>> CompactBlock::Builder::disownInstances() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Instance,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>> CompactBlock::Builder::disownInstances() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Instance,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
@@ -2175,29 +2175,29 @@ inline bool CompactBlock::Builder::hasNets() {
   return !_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
 }
-inline  ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>::Reader CompactBlock::Reader::getNets() const {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+inline  ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>::Reader CompactBlock::Reader::getNets() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
-inline  ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::getNets() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::getNets() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
-inline void CompactBlock::Builder::setNets( ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>::Reader value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+inline void CompactBlock::Builder::setNets( ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), value);
 }
-inline  ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::initNets(unsigned int size) {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+inline  ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>::Builder CompactBlock::Builder::initNets(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), size);
 }
 inline void CompactBlock::Builder::adoptNets(
-    ::capnp::Orphan< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>>&& value) {
-  ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>> CompactBlock::Builder::disownNets() {
-  return ::capnp::_::PointerHelpers< ::capnp::List< ::core::schema::Net,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>> CompactBlock::Builder::disownNets() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Net,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
 }
 
@@ -2209,34 +2209,34 @@ inline bool CompactBlock::Builder::hasBbox() {
   return !_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
 }
-inline  ::core::schema::Box::Reader CompactBlock::Reader::getBbox() const {
-  return ::capnp::_::PointerHelpers< ::core::schema::Box>::get(_reader.getPointerField(
+inline  ::room::schema::Box::Reader CompactBlock::Reader::getBbox() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::Box>::get(_reader.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
-inline  ::core::schema::Box::Builder CompactBlock::Builder::getBbox() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Box>::get(_builder.getPointerField(
+inline  ::room::schema::Box::Builder CompactBlock::Builder::getBbox() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Box>::get(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
 #if !CAPNP_LITE
-inline  ::core::schema::Box::Pipeline CompactBlock::Pipeline::getBbox() {
-  return  ::core::schema::Box::Pipeline(_typeless.getPointerField(3));
+inline  ::room::schema::Box::Pipeline CompactBlock::Pipeline::getBbox() {
+  return  ::room::schema::Box::Pipeline(_typeless.getPointerField(3));
 }
 #endif  // !CAPNP_LITE
-inline void CompactBlock::Builder::setBbox( ::core::schema::Box::Reader value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Box>::set(_builder.getPointerField(
+inline void CompactBlock::Builder::setBbox( ::room::schema::Box::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Box>::set(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS), value);
 }
-inline  ::core::schema::Box::Builder CompactBlock::Builder::initBbox() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Box>::init(_builder.getPointerField(
+inline  ::room::schema::Box::Builder CompactBlock::Builder::initBbox() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Box>::init(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
 inline void CompactBlock::Builder::adoptBbox(
-    ::capnp::Orphan< ::core::schema::Box>&& value) {
-  ::capnp::_::PointerHelpers< ::core::schema::Box>::adopt(_builder.getPointerField(
+    ::capnp::Orphan< ::room::schema::Box>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::Box>::adopt(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS), kj::mv(value));
 }
-inline ::capnp::Orphan< ::core::schema::Box> CompactBlock::Builder::disownBbox() {
-  return ::capnp::_::PointerHelpers< ::core::schema::Box>::disown(_builder.getPointerField(
+inline ::capnp::Orphan< ::room::schema::Box> CompactBlock::Builder::disownBbox() {
+  return ::capnp::_::PointerHelpers< ::room::schema::Box>::disown(_builder.getPointerField(
       ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
 

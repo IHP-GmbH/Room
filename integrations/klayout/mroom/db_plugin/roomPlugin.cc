@@ -13,7 +13,7 @@ namespace roomdb
 class CoreFormatDeclaration
   : public db::StreamFormatDeclaration
 {
-  std::string format_name () const override { return "CORE"; }
+  std::string format_name () const override { return "ROOM"; }
   std::string format_desc () const override { return "IHP CommonDB ROOM"; }
   std::string format_title () const override { return "CommonDB ROOM"; }
   std::string file_format () const override
@@ -42,6 +42,6 @@ class CoreFormatDeclaration
 };
 
 static tl::RegisteredClass<db::StreamFormatDeclaration>
-  format_decl (new CoreFormatDeclaration (), 2100, "CORE");
+  format_decl (new CoreFormatDeclaration (), 2100, "ROOM");
 
 }

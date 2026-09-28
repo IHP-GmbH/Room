@@ -214,7 +214,7 @@ const ::capnp::_::RawSchema s_8aa5551eb7e9651e = {
 
 // =======================================================================================
 
-namespace core {
+namespace room {
 namespace schema {
 
 // LayerSpec

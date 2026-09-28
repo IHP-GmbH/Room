@@ -370,7 +370,7 @@ const ::capnp::_::RawSchema s_8dfcb0388d353aec = {
 
 // =======================================================================================
 
-namespace core {
+namespace room {
 namespace schema {
 
 // Point

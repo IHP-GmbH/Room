@@ -999,7 +999,7 @@ const ::capnp::_::RawSchema s_f667d7479de80d34 = {
 
 // =======================================================================================
 
-namespace core {
+namespace room {
 namespace schema {
 
 // CompactRectArray

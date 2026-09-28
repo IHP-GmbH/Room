@@ -17,7 +17,7 @@ public:
   explicit Reader (tl::InputStream &stream);
   ~Reader () noexcept override;
 
-  const char *format () const override { return "CORE"; }
+  const char *format () const override { return "ROOM"; }
 
 protected:
   void do_read (db::Layout &layout) override;
