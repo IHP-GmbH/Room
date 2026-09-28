@@ -5,5 +5,5 @@
  
  SUBDIRS = $$SUBDIR_LIST
 +
-+# CommonDB CORE reader (streamers/mcore → CommonDB/integrations/klayout/mcore)
-+SUBDIRS += mcore
++# CommonDB ROOM reader (streamers/mroom → CommonDB/integrations/klayout/mroom)
++SUBDIRS += mroom

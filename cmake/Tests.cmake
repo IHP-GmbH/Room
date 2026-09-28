@@ -1,52 +1,52 @@
-option(CORE_BUILD_TESTS "Build CORE tests" ON)
-option(CORE_BUILD_OAS_TESTS "Build OAS tests (requires zlib; round-trip also needs KLayout)" ON)
+option(ROOM_BUILD_TESTS "Build ROOM tests" ON)
+option(ROOM_BUILD_OAS_TESTS "Build OAS tests (requires zlib; round-trip also needs KLayout)" ON)
 
-if(CORE_BUILD_TESTS)
+if(ROOM_BUILD_TESTS)
     enable_testing()
 
     set(_sample_gds "${CMAKE_SOURCE_DIR}/testdata/sample.gds")
-    set(_sg13g2_gds "${CMAKE_SOURCE_DIR}/examples/gds_to_core/data/sg13g2_stdcell.gds")
+    set(_sg13g2_gds "${CMAKE_SOURCE_DIR}/examples/gds_to_room/data/sg13g2_stdcell.gds")
     set(_ctest_out "${CMAKE_BINARY_DIR}/tests")
 
-    add_executable(gds_core_roundtrip tests/gds_core_roundtrip.cpp)
-    target_link_libraries(gds_core_roundtrip PRIVATE core_utils)
+    add_executable(gds_room_roundtrip tests/gds_room_roundtrip.cpp)
+    target_link_libraries(gds_room_roundtrip PRIVATE room_utils)
 
     add_executable(lib_index tests/lib_index.cpp)
-    target_link_libraries(lib_index PRIVATE core_utils)
+    target_link_libraries(lib_index PRIVATE room_utils)
 
     add_executable(view_payload_roundtrip tests/view_payload_roundtrip.cpp)
-    target_link_libraries(view_payload_roundtrip PRIVATE core_utils)
+    target_link_libraries(view_payload_roundtrip PRIVATE room_utils)
 
     add_executable(xschem_api_roundtrip tests/xschem_api_roundtrip.cpp)
-    target_link_libraries(xschem_api_roundtrip PRIVATE core_utils)
+    target_link_libraries(xschem_api_roundtrip PRIVATE room_utils)
 
-    add_executable(core_file_sniff tests/core_file_sniff.cpp)
-    target_link_libraries(core_file_sniff PRIVATE core_utils)
+    add_executable(room_file_sniff tests/room_file_sniff.cpp)
+    target_link_libraries(room_file_sniff PRIVATE room_utils)
 
-    add_executable(core_paths_unit tests/core_paths_unit.cpp)
-    target_link_libraries(core_paths_unit PRIVATE core)
+    add_executable(room_paths_unit tests/room_paths_unit.cpp)
+    target_link_libraries(room_paths_unit PRIVATE room)
 
     add_executable(encapsulation_roundtrip tests/encapsulation_roundtrip.cpp)
-    target_link_libraries(encapsulation_roundtrip PRIVATE core_utils)
+    target_link_libraries(encapsulation_roundtrip PRIVATE room_utils)
 
     add_executable(lib_index_persist tests/lib_index_persist.cpp)
-    target_link_libraries(lib_index_persist PRIVATE core_utils)
+    target_link_libraries(lib_index_persist PRIVATE room_utils)
 
     add_executable(compact_geometry_size tests/compact_geometry_size.cpp)
-    target_link_libraries(compact_geometry_size PRIVATE core_utils)
+    target_link_libraries(compact_geometry_size PRIVATE room_utils)
 
     add_executable(compact_repetition_unit tests/compact_repetition_unit.cpp)
-    target_link_libraries(compact_repetition_unit PRIVATE core)
+    target_link_libraries(compact_repetition_unit PRIVATE room)
 
     add_executable(gds_properties_roundtrip tests/gds_properties_roundtrip.cpp)
-    target_link_libraries(gds_properties_roundtrip PRIVATE core_utils)
+    target_link_libraries(gds_properties_roundtrip PRIVATE room_utils)
 
     add_test(
         NAME gds_properties_roundtrip
         COMMAND gds_properties_roundtrip
                 "${_ctest_out}/gds_props_fixture.gds"
                 "${_ctest_out}/gds_props_roundtrip.gds"
-                "${_ctest_out}/gds_props_roundtrip.core"
+                "${_ctest_out}/gds_props_roundtrip.room"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(gds_properties_roundtrip PROPERTIES
@@ -60,7 +60,7 @@ if(CORE_BUILD_TESTS)
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(compact_repetition_unit PROPERTIES
-        LABELS "core;compact"
+        LABELS "room;compact"
         TIMEOUT 30
     )
 
@@ -85,78 +85,78 @@ if(CORE_BUILD_TESTS)
 
     add_test(
         NAME view_payload_roundtrip
-        COMMAND view_payload_roundtrip "${_sample_gds}" "${_ctest_out}/view_payload_roundtrip.core"
+        COMMAND view_payload_roundtrip "${_sample_gds}" "${_ctest_out}/view_payload_roundtrip.room"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(view_payload_roundtrip PROPERTIES
-        LABELS "core;payload"
+        LABELS "room;payload"
         TIMEOUT 60
     )
 
     add_test(
         NAME xschem_api_roundtrip
         COMMAND xschem_api_roundtrip
-                "${CMAKE_SOURCE_DIR}/examples/xschem_to_core/data/test.sch"
-                "${_ctest_out}/xschem_api_roundtrip.schematic.core"
+                "${CMAKE_SOURCE_DIR}/examples/xschem_to_room/data/test.sch"
+                "${_ctest_out}/xschem_api_roundtrip.schematic.room"
                 "${_ctest_out}/xschem_api_roundtrip.out.sch"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(xschem_api_roundtrip PROPERTIES
-        LABELS "core;xschem;api"
+        LABELS "room;xschem;api"
         TIMEOUT 60
     )
 
     add_test(
-        NAME core_file_sniff
-        COMMAND core_file_sniff
-                "${CMAKE_SOURCE_DIR}/examples/xschem_to_core/data/test.sch"
-                "${_ctest_out}/core_file_sniff.schematic.core"
+        NAME room_file_sniff
+        COMMAND room_file_sniff
+                "${CMAKE_SOURCE_DIR}/examples/xschem_to_room/data/test.sch"
+                "${_ctest_out}/room_file_sniff.schematic.room"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
-    set_tests_properties(core_file_sniff PROPERTIES
-        LABELS "core;sniff"
+    set_tests_properties(room_file_sniff PROPERTIES
+        LABELS "room;sniff"
         TIMEOUT 30
     )
 
     add_test(
-        NAME core_paths_unit
-        COMMAND core_paths_unit
+        NAME room_paths_unit
+        COMMAND room_paths_unit
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
-    set_tests_properties(core_paths_unit PROPERTIES
-        LABELS "core;paths"
+    set_tests_properties(room_paths_unit PROPERTIES
+        LABELS "room;paths"
         TIMEOUT 10
     )
 
     add_test(
         NAME encapsulation_roundtrip
-        COMMAND encapsulation_roundtrip "${_sample_gds}" "${_ctest_out}/encapsulation_roundtrip.core"
+        COMMAND encapsulation_roundtrip "${_sample_gds}" "${_ctest_out}/encapsulation_roundtrip.room"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(encapsulation_roundtrip PROPERTIES
-        LABELS "core;encapsulation"
+        LABELS "room;encapsulation"
         TIMEOUT 60
     )
 
     add_test(
         NAME lib_index_persist
-        COMMAND lib_index_persist "${_sample_gds}" "${_ctest_out}/lib_index_persist.core"
+        COMMAND lib_index_persist "${_sample_gds}" "${_ctest_out}/lib_index_persist.room"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(lib_index_persist PROPERTIES
-        LABELS "core;index"
+        LABELS "room;index"
         TIMEOUT 60
     )
 
     add_test(
         NAME compact_geometry_size
         COMMAND compact_geometry_size "${_sg13g2_gds}"
-                "${_ctest_out}/compact_compare_verbose.core"
-                "${_ctest_out}/compact_compare_compact.core"
+                "${_ctest_out}/compact_compare_verbose.room"
+                "${_ctest_out}/compact_compare_compact.room"
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     )
     set_tests_properties(compact_geometry_size PROPERTIES
-        LABELS "core;compact"
+        LABELS "room;compact"
         TIMEOUT 120
     )
 
@@ -208,7 +208,7 @@ if(CORE_BUILD_TESTS)
         message(STATUS "KLayout not found; sg13g2_stdcell_gds_roundtrip test not registered")
     endif()
 
-    if(CORE_BUILD_OAS_TESTS)
+    if(ROOM_BUILD_OAS_TESTS)
         find_package(ZLIB QUIET)
         if(ZLIB_FOUND)
             set(_zlib_bin_dir "")
@@ -220,9 +220,9 @@ if(CORE_BUILD_TESTS)
                 endif()
             endif()
 
-            # core_oas is defined in CMakeLists.txt when CORE_BUILD_EXAMPLES is on.
-            if(NOT TARGET core_oas)
-                add_library(core_oas STATIC
+            # room_oas is defined in CMakeLists.txt when ROOM_BUILD_EXAMPLES is on.
+            if(NOT TARGET room_oas)
+                add_library(room_oas STATIC
                     utils/oas_reader.cpp
                     utils/oas_writer.cpp
                     utils/oas_geometry.cpp
@@ -231,21 +231,21 @@ if(CORE_BUILD_TESTS)
                     utils/oas_importer.cpp
                     utils/oas_exporter.cpp
                 )
-                target_include_directories(core_oas PUBLIC
+                target_include_directories(room_oas PUBLIC
                     "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/utils>"
                 )
-                target_link_libraries(core_oas PUBLIC core_utils ZLIB::ZLIB)
-                target_compile_definitions(core_oas PRIVATE OAS_TRACE=0)
+                target_link_libraries(room_oas PUBLIC room_utils ZLIB::ZLIB)
+                target_compile_definitions(room_oas PRIVATE OAS_TRACE=0)
             endif()
 
             add_executable(oas_hierarchy tests/oas_hierarchy.cpp)
-            target_link_libraries(oas_hierarchy PRIVATE core_oas)
+            target_link_libraries(oas_hierarchy PRIVATE room_oas)
 
-            add_executable(oas_core_roundtrip tests/oas_core_roundtrip.cpp)
-            target_link_libraries(oas_core_roundtrip PRIVATE core_oas)
+            add_executable(oas_room_roundtrip tests/oas_room_roundtrip.cpp)
+            target_link_libraries(oas_room_roundtrip PRIVATE room_oas)
 
             if(WIN32 AND EXISTS "${_zlib_bin_dir}/zlib1.dll")
-                foreach(_oas_tool oas_hierarchy oas_core_roundtrip)
+                foreach(_oas_tool oas_hierarchy oas_room_roundtrip)
                     add_custom_command(TARGET ${_oas_tool} POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                                 "${_zlib_bin_dir}/zlib1.dll"
@@ -280,28 +280,28 @@ if(CORE_BUILD_TESTS)
             if(KLAYOUT_EXECUTABLE)
                 if(WIN32)
                     add_test(
-                        NAME oas_core_roundtrip
-                        COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_core_roundtrip_test.cmd"
+                        NAME oas_room_roundtrip
+                        COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_room_roundtrip_test.cmd"
                                 "${CMAKE_BINARY_DIR}"
                                 "${_sg13g2_gds}"
                         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
                     )
                 else()
                     add_test(
-                        NAME oas_core_roundtrip
-                        COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_core_roundtrip_test.sh"
+                        NAME oas_room_roundtrip
+                        COMMAND "${CMAKE_SOURCE_DIR}/scripts/run_oas_room_roundtrip_test.sh"
                                 "${CMAKE_BINARY_DIR}"
                                 ""
                                 "${_sg13g2_gds}"
                         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
                     )
                 endif()
-                set_tests_properties(oas_core_roundtrip PROPERTIES
+                set_tests_properties(oas_room_roundtrip PROPERTIES
                     LABELS "oas;roundtrip"
                     TIMEOUT 300
                 )
             else()
-                message(STATUS "KLayout not found; oas_core_roundtrip test not registered")
+                message(STATUS "KLayout not found; oas_room_roundtrip test not registered")
             endif()
         else()
             message(STATUS "zlib not found; OAS tests not registered")

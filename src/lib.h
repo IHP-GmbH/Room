@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Lib class represents a design library containing cells, layers, and metadata.
@@ -50,4 +50,4 @@ private:
     bool                                                m_hasIndex = false;
 };
 
-} // namespace core
+} // namespace room

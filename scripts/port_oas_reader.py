@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Port LibMan oasReader.cpp from Qt to std C++ for CORE."""
+"""Port LibMan oasReader.cpp from Qt to std C++ for ROOM."""
 
 from __future__ import annotations
 
@@ -162,7 +162,7 @@ preamble = textwrap.dedent(
 
     #include <zlib.h>
 
-    namespace core {
+    namespace room {
     namespace {
 
     using StringList = std::vector<std::string>;
@@ -297,7 +297,7 @@ epilogue = textwrap.dedent(
         return true;
     }
 
-    } // namespace core
+    } // namespace room
     '''
 ).lstrip("\n")
 

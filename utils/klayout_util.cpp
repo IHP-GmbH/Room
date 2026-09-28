@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace core {
+namespace room {
 namespace {
 
 std::string quoteArg(const std::string &value)
@@ -142,4 +142,4 @@ bool runKLayoutBatch(const std::string &scriptName,
     return true;
 }
 
-} // namespace core
+} // namespace room

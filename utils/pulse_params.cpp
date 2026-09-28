@@ -4,7 +4,7 @@
 #include <cmath>
 #include <sstream>
 
-namespace core {
+namespace room {
 namespace {
 
 const std::string *findProperty(const std::vector<Property> &props, const std::string &name)
@@ -252,4 +252,4 @@ std::optional<std::string> buildPulseSpiceValue(const std::vector<Property> &pro
     return formatCanonicalPulse(u1, u2, td, tr, tf, pw, per);
 }
 
-} // namespace core
+} // namespace room

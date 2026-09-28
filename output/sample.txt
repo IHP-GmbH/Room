@@ -1,6 +1,6 @@
-=== CORE text dump ===
+=== ROOM text dump ===
 version: 0.1
-generator: CORE GdsImporter
+generator: ROOM GdsImporter
 technology: 
 lib: gds_import
 cells: 2

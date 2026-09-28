@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
- * \brief The GdsExporter class writes a CORE Database to a GDSII layout file.
+ * \brief The GdsExporter class writes a ROOM Database to a GDSII layout file.
  *****************************************************************************************/
 class GdsExporter {
 public:
@@ -22,4 +22,4 @@ private:
     mutable std::vector<std::string>                    m_errors;
 };
 
-} // namespace core
+} // namespace room

@@ -25,13 +25,13 @@ if not exist "%INPUT_GDS%" (
   exit /b 1
 )
 
-set "ROUNDTRIP=%BUILD%\gds_core_roundtrip.exe"
-if not exist "%ROUNDTRIP%" set "ROUNDTRIP=%BUILD%\gds_core_roundtrip"
+set "ROUNDTRIP=%BUILD%\gds_room_roundtrip.exe"
+if not exist "%ROUNDTRIP%" set "ROUNDTRIP=%BUILD%\gds_room_roundtrip"
 if not exist "%ROUNDTRIP%" (
-  echo Missing gds_core_roundtrip. Run: cmake --build build --target gds_core_roundtrip >&2
+  echo Missing gds_room_roundtrip. Run: cmake --build build --target gds_room_roundtrip >&2
   exit /b 1
 )
 
-echo === sample.gds: GDS -^> CORE -^> GDS ===
+echo === sample.gds: GDS -^> ROOM -^> GDS ===
 "%ROUNDTRIP%" "%INPUT_GDS%" "%ROUND_GDS%"
 exit /b %ERRORLEVEL%

@@ -1,6 +1,6 @@
 #include "cell_content.h"
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Constructs cell content for a single view.
@@ -24,4 +24,4 @@ void CellContent::clearOpaquePayload()
     m_opaqueData.clear();
 }
 
-} // namespace core
+} // namespace room

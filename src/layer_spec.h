@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <string>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The LayerSpec class describes a layer in the library layer table (GDS layer/datatype).
@@ -22,4 +22,4 @@ public:
         : layerNum(ln), dataType(dt), name(std::move(n)), purpose(p) {}
 };
 
-} // namespace core
+} // namespace room

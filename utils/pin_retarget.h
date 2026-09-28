@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*! Strip path and optional .sym suffix → bare cell/model name. */
 std::string pinRetargetBaseName(const std::string &cellOrRef);
@@ -18,27 +18,27 @@ std::string pinRetargetModelName(const Instance &inst);
 
 bool isIhpFetModel(const std::string &model);
 
-/*! Find a user-named CORE net whose term is within tolerance of pt (block DBU coords). */
+/*! Find a user-named ROOM net whose term is within tolerance of pt (block DBU coords). */
 std::string coreNetAtPoint(const Block &block, Point ptDbu, double dbuPerEditorUnit, std::int64_t tolEditor = 2);
 
-/*! For IHP FET instances, map each symbol pin index to a CORE net name (xschem pin geometry). */
+/*! For IHP FET instances, map each symbol pin index to a ROOM net name (xschem pin geometry). */
 std::vector<std::string> ihpFetPinNetNames(const Instance &inst, const Block &block, double dbuPerEditorUnit);
 
 /*! Qucs .lib pin center in schematic editor units (matches LibComp after recreate). */
 Point qucsLibPinWorldEditor(const Instance &inst, Point localQucs, double dbuPerEditorUnit, std::int64_t coordDivisor);
 
-/*! Qucs LibComp pin centers → native Xschem/CORE pin centers (same units as instance/wires).
+/*! Qucs LibComp pin centers → native Xschem/ROOM pin centers (same units as instance/wires).
  *  \param dbuPerEditorUnit  Scale for local pin offsets (1 for Qucs-origin, 1000 for Xschem-origin).
  */
 void appendQucsToXschemPinRetargets(const Instance &inst, double dbuPerEditorUnit,
                                     std::vector<std::pair<Point, Point>> &out);
 
-/*! Native Xschem/CORE pin centers → Qucs LibComp pin centers. */
+/*! Native Xschem/ROOM pin centers → Qucs LibComp pin centers. */
 void appendXschemToQucsPinRetargets(const Instance &inst, double dbuPerEditorUnit,
                                     std::vector<std::pair<Point, Point>> &out);
 
 /*! Xschem wire endpoints → Qucs .lib LibComp pin centers (matches MultiViewComponent::recreate).
- *  \param coordDivisor  Same display divisor used when loading CORE into Qucs (computeDisplayDivisor).
+ *  \param coordDivisor  Same display divisor used when loading ROOM into Qucs (computeDisplayDivisor).
  */
 void appendNetlistLibPinRetargets(const Instance &inst, double dbuPerEditorUnit, std::int64_t coordDivisor,
                                   std::vector<std::pair<Point, Point>> &out);
@@ -49,11 +49,11 @@ void appendNetlistLibPinRetargets(const Instance &inst, double dbuPerEditorUnit,
 void retargetPoint(Point &pt, const std::vector<std::pair<Point, Point>> &retargets,
                    double dbuPerEditorUnit = 1.0);
 
-/*! Retarget Qucs-.lib wire polylines onto CORE/Xschem pin centers and lift T-junction
- *  buses so both tools draw the same Manhattan topology against CORE symbols.
+/*! Retarget Qucs-.lib wire polylines onto ROOM/Xschem pin centers and lift T-junction
+ *  buses so both tools draw the same Manhattan topology against ROOM symbols.
  */
 void retargetWirePolylinesQucsToCore(std::vector<std::vector<Point>> &polylines,
                                      const std::vector<std::pair<Point, Point>> &pinRetargets,
                                      double dbuPerEditorUnit);
 
-} // namespace core
+} // namespace room

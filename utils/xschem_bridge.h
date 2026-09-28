@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace core::xschem_bridge {
+namespace room::xschem_bridge {
 
 struct Status {
     bool                                                ok = true;
@@ -13,17 +13,17 @@ struct Status {
     std::vector<std::string>                            warnings;
 };
 
-std::vector<std::string> listCells(const std::string &corePath, Status &status);
+std::vector<std::string> listCells(const std::string &roomPath, Status &status);
 
-Status exportCell(const std::string &corePath, const std::string &cellName, const std::string &outputPath);
+Status exportCell(const std::string &roomPath, const std::string &cellName, const std::string &outputPath);
 
-std::string exportCellToString(const std::string &corePath, const std::string &cellName, Status &status);
+std::string exportCellToString(const std::string &roomPath, const std::string &cellName, Status &status);
 
-Status exportAll(const std::string &corePath, const std::string &outputDir, std::size_t &exportedCount);
+Status exportAll(const std::string &roomPath, const std::string &outputDir, std::size_t &exportedCount);
 
-Status importIntoCore(const std::string &inputPath, const std::string &corePath, const XschemImporter::Options &options);
+Status importIntoCore(const std::string &inputPath, const std::string &roomPath, const XschemImporter::Options &options);
 
-Status importTextIntoCore(const std::string &text, const std::string &extension, const std::string &corePath,
+Status importTextIntoCore(const std::string &text, const std::string &extension, const std::string &roomPath,
                           const XschemImporter::Options &options);
 
-} // namespace core::xschem_bridge
+} // namespace room::xschem_bridge

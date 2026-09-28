@@ -3,7 +3,7 @@ setlocal EnableExtensions
 
 set "ROOT=%~dp0.."
 set "BUILD=%ROOT%\build"
-set "INPUT_GDS=%ROOT%\examples\gds_to_core\data\sg13g2_stdcell.gds"
+set "INPUT_GDS=%ROOT%\examples\gds_to_room\data\sg13g2_stdcell.gds"
 set "WORK_DIR=%BUILD%\tests\sg13g2_stdcell"
 set "ROUND_GDS=%WORK_DIR%\roundtrip.gds"
 
@@ -17,10 +17,10 @@ if not exist "%INPUT_GDS%" (
 
 if not exist "%WORK_DIR%" mkdir "%WORK_DIR%"
 
-set "ROUNDTRIP=%BUILD%\gds_core_roundtrip.exe"
-if not exist "%ROUNDTRIP%" set "ROUNDTRIP=%BUILD%\gds_core_roundtrip"
+set "ROUNDTRIP=%BUILD%\gds_room_roundtrip.exe"
+if not exist "%ROUNDTRIP%" set "ROUNDTRIP=%BUILD%\gds_room_roundtrip"
 if not exist "%ROUNDTRIP%" (
-  echo Missing gds_core_roundtrip. Run: cmake --build build --target gds_core_roundtrip >&2
+  echo Missing gds_room_roundtrip. Run: cmake --build build --target gds_room_roundtrip >&2
   exit /b 1
 )
 
@@ -36,7 +36,7 @@ if not defined KLAYOUT (
   exit /b 1
 )
 
-echo === sg13g2_stdcell.gds: GDS -^> CORE -^> GDS ===
+echo === sg13g2_stdcell.gds: GDS -^> ROOM -^> GDS ===
 "%ROUNDTRIP%" "%INPUT_GDS%" "%ROUND_GDS%"
 if errorlevel 1 exit /b 1
 

@@ -24,11 +24,11 @@
 
 namespace {
 
-std::size_t shapeCount(const core::Database &db)
+std::size_t shapeCount(const room::Database &db)
 {
     std::size_t total = 0;
     for (const auto &cell : db.lib().cells()) {
-        const core::CellContent *content = cell.findContent(core::ViewType::Layout);
+        const room::CellContent *content = cell.findContent(room::ViewType::Layout);
         if (content != nullptr) {
             total += content->block().shapes().size();
         }
@@ -61,39 +61,39 @@ void ensureDirectory(const std::string &dirPath)
 #endif
 }
 
-bool payloadMatchesViewType(core::schema::ViewPayload::Reader payload, core::schema::ViewType viewType)
+bool payloadMatchesViewType(room::schema::ViewPayload::Reader payload, room::schema::ViewType viewType)
 {
     switch (viewType) {
-    case core::schema::ViewType::LAYOUT:
-        return payload.which() == core::schema::ViewPayload::LAYOUT;
-    case core::schema::ViewType::SCHEMATIC:
-        return payload.which() == core::schema::ViewPayload::SCHEMATIC;
-    case core::schema::ViewType::SYMBOL:
-        return payload.which() == core::schema::ViewPayload::SYMBOL;
-    case core::schema::ViewType::ABSTRACT:
-        return payload.which() == core::schema::ViewPayload::ABSTRACT;
+    case room::schema::ViewType::LAYOUT:
+        return payload.which() == room::schema::ViewPayload::LAYOUT;
+    case room::schema::ViewType::SCHEMATIC:
+        return payload.which() == room::schema::ViewPayload::SCHEMATIC;
+    case room::schema::ViewType::SYMBOL:
+        return payload.which() == room::schema::ViewPayload::SYMBOL;
+    case room::schema::ViewType::ABSTRACT:
+        return payload.which() == room::schema::ViewPayload::ABSTRACT;
     }
     return false;
 }
 
-void verifyPayloadInFile(const std::string &corePath)
+void verifyPayloadInFile(const std::string &roomPath)
 {
-    std::ifstream in(corePath, std::ios::binary | std::ios::ate);
+    std::ifstream in(roomPath, std::ios::binary | std::ios::ate);
     if (!in) {
-        throw std::runtime_error("Cannot open core file: " + corePath);
+        throw std::runtime_error("Cannot open core file: " + roomPath);
     }
 
     const std::streamsize fileSize = in.tellg();
     in.seekg(0, std::ios::beg);
     std::vector<char> buffer(static_cast<std::size_t>(fileSize));
     if (!in.read(buffer.data(), fileSize)) {
-        throw std::runtime_error("Cannot read core file: " + corePath);
+        throw std::runtime_error("Cannot read core file: " + roomPath);
     }
 
     kj::ArrayInputStream inputStream(
         kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
     capnp::InputStreamMessageReader reader(inputStream);
-    const auto root = reader.getRoot<core::schema::Database>();
+    const auto root = reader.getRoot<room::schema::Database>();
 
     if (root.getVersion().cStr() != std::string("1.0")) {
         throw std::runtime_error("Expected format version 1.0");
@@ -107,13 +107,13 @@ void verifyPayloadInFile(const std::string &corePath)
                 continue;
             }
             foundPayload = true;
-            if (content.getViewType() == core::schema::ViewType::LAYOUT) {
+            if (content.getViewType() == room::schema::ViewType::LAYOUT) {
                 const auto layout = payload.getLayout();
                 if (layout.getLayers().size() == 0) {
                     throw std::runtime_error("Layout payload missing layers");
                 }
                 const bool hasBlockShapes = layout.getBlock().getShapes().size() > 0;
-                const bool hasCompactShapes = core::compactBlockHasGeometry(layout.getCompact());
+                const bool hasCompactShapes = room::compactBlockHasGeometry(layout.getCompact());
                 if (!hasBlockShapes && !hasCompactShapes) {
                     throw std::runtime_error("Layout payload missing shapes");
                 }
@@ -122,7 +122,7 @@ void verifyPayloadInFile(const std::string &corePath)
     }
 
     if (!foundPayload) {
-        throw std::runtime_error("No per-view payload found in .core file");
+        throw std::runtime_error("No per-view payload found in .room file");
     }
 }
 
@@ -131,10 +131,10 @@ void verifyPayloadInFile(const std::string &corePath)
 int main(int argc, char *argv[])
 {
     const std::string gdsPath = (argc > 1) ? argv[1] : "testdata/sample.gds";
-    const std::string corePath = (argc > 2) ? argv[2] : "build/tests/view_payload_roundtrip.core";
+    const std::string roomPath = (argc > 2) ? argv[2] : "build/tests/view_payload_roundtrip.room";
 
-    core::GdsImporter importer;
-    core::Database original = importer.importFile(gdsPath);
+    room::GdsImporter importer;
+    room::Database original = importer.importFile(gdsPath);
     if (!importer.errors().empty()) {
         for (const auto &msg : importer.errors()) {
             std::cerr << "error: " << msg << '\n';
@@ -143,33 +143,33 @@ int main(int argc, char *argv[])
     }
 
     original.setVersion("1.0");
-    const std::size_t slash = corePath.find_last_of("/\\");
+    const std::size_t slash = roomPath.find_last_of("/\\");
     if (slash != std::string::npos) {
-        ensureDirectory(corePath.substr(0, slash));
+        ensureDirectory(roomPath.substr(0, slash));
     }
-    original.saveToFile(corePath, core::ViewType::Layout);
+    original.saveToFile(roomPath, room::ViewType::Layout);
 
     try {
-        verifyPayloadInFile(corePath);
+        verifyPayloadInFile(roomPath);
     } catch (const std::exception &ex) {
         std::cerr << "error: " << ex.what() << '\n';
         return 2;
     }
 
-    const core::Database reloaded = core::Database::loadFromFile(corePath);
+    const room::Database reloaded = room::Database::loadFromFile(roomPath);
     if (shapeCount(reloaded) != shapeCount(original)) {
         std::cerr << "error: shape count mismatch after payload round-trip\n";
         return 3;
     }
 
     for (const auto &cell : original.lib().cells()) {
-        const core::CellContent *layout = cell.findContent(core::ViewType::Layout);
+        const room::CellContent *layout = cell.findContent(room::ViewType::Layout);
         if (layout == nullptr) {
             continue;
         }
-        const core::Cell *reloadedCell = reloaded.lib().findCell(cell.name());
-        const core::CellContent *reloadedLayout =
-            reloadedCell != nullptr ? reloadedCell->findContent(core::ViewType::Layout) : nullptr;
+        const room::Cell *reloadedCell = reloaded.lib().findCell(cell.name());
+        const room::CellContent *reloadedLayout =
+            reloadedCell != nullptr ? reloadedCell->findContent(room::ViewType::Layout) : nullptr;
         if (reloadedLayout == nullptr || reloadedLayout->layers().size() != layout->layers().size()) {
             std::cerr << "error: per-view layer count mismatch after payload round-trip\n";
             return 4;
@@ -177,6 +177,6 @@ int main(int argc, char *argv[])
     }
 
     std::cout << "payload round-trip OK (" << shapeCount(reloaded) << " shapes)\n";
-    std::remove(corePath.c_str());
+    std::remove(roomPath.c_str());
     return 0;
 }

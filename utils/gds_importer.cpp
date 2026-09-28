@@ -1,6 +1,6 @@
 /*!****************************************************************************************
  * \file gds_importer.cpp
- * \brief GDSII reader: parses records into a CORE Database with layout views.
+ * \brief GDSII reader: parses records into a ROOM Database with layout views.
  *****************************************************************************************/
 
 #include "gds_importer.h"
@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace core {
+namespace room {
 namespace {
 
 constexpr std::uint16_t GDS_UNITS    = 0x0305;
@@ -211,7 +211,7 @@ public:
         }
 
         Database db;
-        db.setGenerator("CORE GdsImporter");
+        db.setGenerator("ROOM GdsImporter");
         db.lib() = Lib(m_options.libName);
 
         bool sawEndLib = false;
@@ -529,4 +529,4 @@ Database GdsImporter::importFile(const std::string &gdsPath) const
     return db;
 }
 
-} // namespace core
+} // namespace room

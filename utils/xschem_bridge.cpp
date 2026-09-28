@@ -1,20 +1,20 @@
 #include "xschem_bridge.h"
 
-#include "core_paths.h"
+#include "room_paths.h"
 #include "database.h"
 #include "xschem_exporter.h"
 #include "xschem_format.h"
 
 #include <fstream>
 
-namespace core::xschem_bridge {
+namespace room::xschem_bridge {
 namespace {
 
 ViewType fileViewForPath(const std::string &path)
 {
     const std::size_t dot = path.find_last_of('.');
     const std::string ext = dot == std::string::npos ? ".sch" : path.substr(dot);
-    return core::xschem::viewTypeForExtension(ext);
+    return room::xschem::viewTypeForExtension(ext);
 }
 
 void appendMessages(Status &status, const std::vector<std::string> &messages, bool asError)
@@ -26,12 +26,12 @@ void appendMessages(Status &status, const std::vector<std::string> &messages, bo
     }
 }
 
-std::string cellNameForImport(const std::string &corePath, const XschemImporter::Options &options)
+std::string cellNameForImport(const std::string &roomPath, const XschemImporter::Options &options)
 {
     if (!options.cellName.empty()) {
         return options.cellName;
     }
-    const ParsedCorePath parsed = parseCoreFilePath(corePath);
+    const ParsedRoomPath parsed = parseRoomFilePath(roomPath);
     if (parsed.valid && !parsed.cellName.empty()) {
         return parsed.cellName;
     }
@@ -40,11 +40,11 @@ std::string cellNameForImport(const std::string &corePath, const XschemImporter:
 
 } // namespace
 
-std::vector<std::string> listCells(const std::string &corePath, Status &status)
+std::vector<std::string> listCells(const std::string &roomPath, Status &status)
 {
     std::vector<std::string> cells;
     try {
-        const Database db = Database::loadFromFile(corePath);
+        const Database db = Database::loadFromFile(roomPath);
         for (const Cell &cell : db.lib().cells()) {
             cells.push_back(cell.name());
         }
@@ -55,11 +55,11 @@ std::vector<std::string> listCells(const std::string &corePath, Status &status)
     return cells;
 }
 
-Status exportCell(const std::string &corePath, const std::string &cellName, const std::string &outputPath)
+Status exportCell(const std::string &roomPath, const std::string &cellName, const std::string &outputPath)
 {
     Status status;
     try {
-        const Database db = Database::loadFromFile(corePath);
+        const Database db = Database::loadFromFile(roomPath);
         XschemExporter exporter;
         exporter.exportCell(db, cellName, outputPath);
         appendMessages(status, exporter.warnings(), false);
@@ -71,11 +71,11 @@ Status exportCell(const std::string &corePath, const std::string &cellName, cons
     return status;
 }
 
-std::string exportCellToString(const std::string &corePath, const std::string &cellName, Status &status)
+std::string exportCellToString(const std::string &roomPath, const std::string &cellName, Status &status)
 {
     status = Status{};
     try {
-        const Database db = Database::loadFromFile(corePath);
+        const Database db = Database::loadFromFile(roomPath);
         XschemExporter exporter;
         const std::string data = exporter.exportCellToString(db, cellName);
         appendMessages(status, exporter.warnings(), false);
@@ -91,12 +91,12 @@ std::string exportCellToString(const std::string &corePath, const std::string &c
     }
 }
 
-Status exportAll(const std::string &corePath, const std::string &outputDir, std::size_t &exportedCount)
+Status exportAll(const std::string &roomPath, const std::string &outputDir, std::size_t &exportedCount)
 {
     Status status;
     exportedCount = 0;
     try {
-        const Database db = Database::loadFromFile(corePath);
+        const Database db = Database::loadFromFile(roomPath);
         XschemExporter exporter;
         exportedCount = exporter.exportAll(db, outputDir);
         appendMessages(status, exporter.warnings(), false);
@@ -108,13 +108,13 @@ Status exportAll(const std::string &corePath, const std::string &outputDir, std:
     return status;
 }
 
-Status importIntoCore(const std::string &inputPath, const std::string &corePath, const XschemImporter::Options &options)
+Status importIntoCore(const std::string &inputPath, const std::string &roomPath, const XschemImporter::Options &options)
 {
     Status status;
     try {
         Database db;
-        if (std::ifstream(corePath).good()) {
-            db = Database::loadFromFile(corePath);
+        if (std::ifstream(roomPath).good()) {
+            db = Database::loadFromFile(roomPath);
         } else {
             db.lib() = Lib(options.libName);
         }
@@ -127,7 +127,7 @@ Status importIntoCore(const std::string &inputPath, const std::string &corePath,
             return status;
         }
 
-        db.saveToFile(corePath, fileViewForPath(inputPath));
+        db.saveToFile(roomPath, fileViewForPath(inputPath));
     } catch (const std::exception &ex) {
         status.ok = false;
         status.errors.push_back(ex.what());
@@ -135,27 +135,27 @@ Status importIntoCore(const std::string &inputPath, const std::string &corePath,
     return status;
 }
 
-Status importTextIntoCore(const std::string &text, const std::string &extension, const std::string &corePath,
+Status importTextIntoCore(const std::string &text, const std::string &extension, const std::string &roomPath,
                           const XschemImporter::Options &options)
 {
     Status status;
     try {
         Database db;
-        if (std::ifstream(corePath).good()) {
-            db = Database::loadFromFile(corePath);
+        if (std::ifstream(roomPath).good()) {
+            db = Database::loadFromFile(roomPath);
         } else {
             db.lib() = Lib(options.libName);
         }
 
         XschemImporter importer(options);
-        db = importer.importTextInto(std::move(db), text, extension, cellNameForImport(corePath, options));
+        db = importer.importTextInto(std::move(db), text, extension, cellNameForImport(roomPath, options));
         appendMessages(status, importer.warnings(), false);
         appendMessages(status, importer.errors(), true);
         if (!status.ok) {
             return status;
         }
 
-        db.saveToFile(corePath, fileViewForPath("placeholder" + extension));
+        db.saveToFile(roomPath, fileViewForPath("placeholder" + extension));
     } catch (const std::exception &ex) {
         status.ok = false;
         status.errors.push_back(ex.what());
@@ -163,4 +163,4 @@ Status importTextIntoCore(const std::string &text, const std::string &extension,
     return status;
 }
 
-} // namespace core::xschem_bridge
+} // namespace room::xschem_bridge

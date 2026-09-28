@@ -1,6 +1,6 @@
 /*!****************************************************************************************
  * \file gds_exporter.cpp
- * \brief GDSII writer: exports layout views from a CORE Database.
+ * \brief GDSII writer: exports layout views from a ROOM Database.
  *****************************************************************************************/
 
 #include "gds_exporter.h"
@@ -15,7 +15,7 @@
 #include <optional>
 #include <vector>
 
-namespace core {
+namespace room {
 namespace {
 
 constexpr std::uint16_t GDS_HEADER   = 0x0002;
@@ -446,4 +446,4 @@ void GdsExporter::exportFile(const Database &db, const std::string &gdsPath) con
     std::fclose(f);
 }
 
-} // namespace core
+} // namespace room

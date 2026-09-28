@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace core {
+namespace room {
 
 class Database;
 
@@ -37,4 +37,4 @@ private:
     std::unordered_map<std::uint64_t, std::string>      m_cellNamesByRef;
 };
 
-} // namespace core
+} // namespace room

@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
- * \brief The QucsImporter class reads Qucs schematic (.sch) files into a CORE Database.
+ * \brief The QucsImporter class reads Qucs schematic (.sch) files into a ROOM Database.
  *****************************************************************************************/
 class QucsImporter {
 public:
@@ -52,4 +52,4 @@ private:
     mutable std::vector<std::string>                    m_errors;
 };
 
-} // namespace core
+} // namespace room

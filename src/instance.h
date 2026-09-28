@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Instance class places a reference to another cell with a transform and properties.
@@ -27,4 +27,4 @@ private:
     std::vector<Property>                               m_properties;
 };
 
-} // namespace core
+} // namespace room

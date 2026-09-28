@@ -2,7 +2,7 @@
 
 #include "cell_content.h"
 #include "coord_scale.h"
-#include "core_paths.h"
+#include "room_paths.h"
 #include "database.h"
 #include "layer_spec.h"
 #include "pin_retarget.h"
@@ -17,7 +17,7 @@
 #include <numeric>
 #include <unordered_map>
 
-namespace core {
+namespace room {
 namespace {
 
 const std::string *findProperty(const std::vector<Property> &props, const std::string &name)
@@ -179,29 +179,29 @@ void setWireLabel(std::vector<Property> &props, const std::string &label, const 
     setProperty(props, "labelY", std::to_string(midY - 10 * scale));
 }
 
-std::string symbolCorePathFromAnyCorePath(const std::string &corePath)
+std::string symbolCorePathFromAnyCorePath(const std::string &roomPath)
 {
-    const std::size_t schematic = corePath.find(".schematic.core");
+    const std::size_t schematic = roomPath.find(".schematic.room");
     if (schematic != std::string::npos) {
-        return corePath.substr(0, schematic) + ".symbol.core";
+        return roomPath.substr(0, schematic) + ".symbol.room";
     }
-    return corePath;
+    return roomPath;
 }
 
 std::string resolveSymbolCorePath(const Instance &inst, const PrimitiveResolver &resolver)
 {
     if (const std::string *primitive = findProperty(inst.properties(), "core.primitive"); primitive && !primitive->empty()) {
         const ResolvedPrimitive resolved = resolver.resolveReference(*primitive);
-        if (resolved.found && !resolved.corePath.empty()) {
-            return symbolCorePathFromAnyCorePath(resolved.corePath);
+        if (resolved.found && !resolved.roomPath.empty()) {
+            return symbolCorePathFromAnyCorePath(resolved.roomPath);
         }
     }
 
     if (const std::string *p0 = findProperty(inst.properties(), "param.0")) {
         if (const std::string *p1 = findProperty(inst.properties(), "param.1"); p1 && !p0->empty() && !p1->empty()) {
             const ResolvedPrimitive resolved = resolver.resolveReference(*p0 + "/" + *p1);
-            if (resolved.found && !resolved.corePath.empty()) {
-                return symbolCorePathFromAnyCorePath(resolved.corePath);
+            if (resolved.found && !resolved.roomPath.empty()) {
+                return symbolCorePathFromAnyCorePath(resolved.roomPath);
             }
         }
     }
@@ -209,8 +209,8 @@ std::string resolveSymbolCorePath(const Instance &inst, const PrimitiveResolver 
     const std::string model = pinRetargetModelName(inst);
     if (!model.empty()) {
         const ResolvedPrimitive resolved = resolver.resolveReference(model);
-        if (resolved.found && !resolved.corePath.empty()) {
-            return symbolCorePathFromAnyCorePath(resolved.corePath);
+        if (resolved.found && !resolved.roomPath.empty()) {
+            return symbolCorePathFromAnyCorePath(resolved.roomPath);
         }
     }
     return {};
@@ -284,7 +284,7 @@ void appendSymbolPinAnchors(const Instance &inst, const PrimitiveResolver &resol
 
     try {
         const Database db = Database::loadFromFile(symbolPath);
-        const ParsedCorePath parsed = parseCoreFilePath(symbolPath);
+        const ParsedRoomPath parsed = parseRoomFilePath(symbolPath);
         if (!parsed.valid) {
             return;
         }
@@ -637,15 +637,15 @@ void canonicalizeBlockPrimitives(Block &block, const PrimitiveResolver *resolver
         }
         setProperty(inst.properties(), "qucs.type", canonical);
 
-        std::string ref = "analogLib/" + canonical + ".symbol.core";
+        std::string ref = "analogLib/" + canonical + ".symbol.room";
         if (canonical == ".TR") {
-            ref = "analogLib/TR.symbol.core";
+            ref = "analogLib/TR.symbol.room";
         } else if (canonical == "INCLSCR" || canonical == "SpiceLib") {
-            ref = "analogLib/INCLSCR.symbol.core";
+            ref = "analogLib/INCLSCR.symbol.room";
         } else if (canonical == "Port") {
-            ref = "commonLib/lab_pin.symbol.core";
+            ref = "commonLib/lab_pin.symbol.room";
         } else if (canonical == "GND") {
-            ref = "analogLib/GND.symbol.core";
+            ref = "analogLib/GND.symbol.room";
         }
 
         const ResolvedPrimitive resolved = resolver->resolveReference(ref);
@@ -707,4 +707,4 @@ void propagateNetNames(Block &block, const PrimitiveResolver *resolver, double d
     }
 }
 
-} // namespace core
+} // namespace room

@@ -7,12 +7,12 @@ p = Path(__file__).resolve().parents[1] / "docs" / "html" / "index.html"
 t = p.read_text(encoding="utf-8", errors="replace")
 
 replacements = [
-    ("CORE \ufffd Documentation", "CORE &mdash; Documentation"),
-    ("Common Open Repository for EDA \ufffd Cap", "Common Open Repository for EDA &middot; Cap"),
+    ("ROOM \ufffd Documentation", "ROOM &mdash; Documentation"),
+    ("Reusable Open Object Model \ufffd Cap", "Reusable Open Object Model &middot; Cap"),
     ("Proto \ufffd C++17", "Proto &middot; C++17"),
     (
-        "CORE \ufffd Common Open Repository for EDA \ufffd is",
-        "CORE &mdash; Common Open Repository for EDA &mdash; is",
+        "ROOM \ufffd Reusable Open Object Model \ufffd is",
+        "ROOM &mdash; Reusable Open Object Model &mdash; is",
     ),
     ("CellContent.payload</code> \ufffd not", "CellContent.payload</code> &mdash; not"),
     (
@@ -24,8 +24,8 @@ replacements = [
         "Qucs schematic import</a> &middot;",
     ),
     (
-        ".schematic.core</code> \ufffd see",
-        ".schematic.core</code> &mdash; see",
+        ".schematic.room</code> \ufffd see",
+        ".schematic.room</code> &mdash; see",
     ),
     ("(Database, Cell, Shape, \ufffd)", "(Database, Cell, Shape, &hellip;)"),
     ("box.cpp</code>, \ufffd</td>", "box.cpp</code>, &hellip;</td>"),

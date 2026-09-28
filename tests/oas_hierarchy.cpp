@@ -17,7 +17,7 @@ void printMs(const char *label, Clock::duration duration)
     std::cout << label << ": " << std::fixed << std::setprecision(3) << ms << " ms\n";
 }
 
-std::size_t placementCount(const core::OasHierarchy &hierarchy)
+std::size_t placementCount(const room::OasHierarchy &hierarchy)
 {
     std::size_t count = 0;
     for (const auto &entry : hierarchy.children) {
@@ -26,10 +26,10 @@ std::size_t placementCount(const core::OasHierarchy &hierarchy)
     return count;
 }
 
-bool readHierarchyFile(const std::string &path, core::OasHierarchy &hierarchy, Clock::duration &elapsed)
+bool readHierarchyFile(const std::string &path, room::OasHierarchy &hierarchy, Clock::duration &elapsed)
 {
     const Clock::time_point t0 = Clock::now();
-    core::OasReader reader(path);
+    room::OasReader reader(path);
     const bool ok = reader.readHierarchy(hierarchy);
     elapsed = Clock::now() - t0;
 
@@ -41,7 +41,7 @@ bool readHierarchyFile(const std::string &path, core::OasHierarchy &hierarchy, C
     return ok;
 }
 
-void printHierarchyStats(const core::OasHierarchy &hierarchy)
+void printHierarchyStats(const room::OasHierarchy &hierarchy)
 {
     std::cout << "cells: " << hierarchy.allCells.size() << '\n';
     std::cout << "top cells: " << hierarchy.topCells.size() << '\n';
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         std::cout << "cell:   " << cellName << "\n\n";
 
         const Clock::time_point t0 = Clock::now();
-        core::OasWriter writer(path);
+        room::OasWriter writer(path);
         writer.createMinimalFile(cellName);
         const Clock::time_point t1 = Clock::now();
 
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         }
         printMs("  OAS create", t1 - t0);
 
-        core::OasHierarchy hierarchy;
+        room::OasHierarchy hierarchy;
         Clock::duration readElapsed{};
         if (!readHierarchyFile(path, hierarchy, readElapsed)) {
             return 3;
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
         std::cout << "=== OAS hierarchy read ===\n";
         std::cout << "input: " << path << "\n\n";
 
-        core::OasHierarchy hierarchy;
+        room::OasHierarchy hierarchy;
         Clock::duration readElapsed{};
         if (!readHierarchyFile(path, hierarchy, readElapsed)) {
             return 2;

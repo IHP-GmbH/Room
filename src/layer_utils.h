@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace core {
+namespace room {
 
 std::vector<LayerSpec> collectLayersForBlock(const Block &block, const std::vector<LayerSpec> &libLayers);
 
@@ -25,4 +25,4 @@ LayerPurpose gdsShapePurpose(Shape::Type shapeType);
 
 void mergeLayerPurpose(LayerSpec &layer, LayerPurpose purpose);
 
-} // namespace core
+} // namespace room

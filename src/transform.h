@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Transform class describes placement: translation, orientation, and magnification.
@@ -21,4 +21,4 @@ public:
         : x(x_), y(y_), orient(o), mag(m) {}
 };
 
-} // namespace core
+} // namespace room

@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace core {
+namespace room {
 
 Database::Database() = default;
 
@@ -67,4 +67,4 @@ Database Database::loadFromFile(const std::string &path)
     return readDatabase(reader.getRoot<schema::Database>());
 }
 
-} // namespace core
+} // namespace room

@@ -1,4 +1,4 @@
-# CORE production roadmap
+# ROOM production roadmap
 
 Target: **commercial-quality open-source IC design database** — robust, performant, extensible, suitable for production EDA flows (not a teaching prototype).
 
@@ -13,7 +13,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 1. Charter + v1 Definition of Done  
 2. Skip-friendly opaque views + extension registry  
 3. ~~Native OAS read/write (strict)~~ (done; preserved round-trip XOR 0; layout editor owns edited export)  
-4. Streaming + optional `.core` compression  
+4. Streaming + optional `.room` compression  
 5. Benchmark CI table + large-design stress tests  
 6. API stability + licensing strategy  
 
@@ -23,7 +23,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 - [x] **Design charter** — scope, audience, non-goals ([DESIGN_CHARTER.md](DESIGN_CHARTER.md))
 - [ ] **v1 Definition of Done** — measurable SLA (max design size, round-trip parity, load/save time budgets)
-- [ ] **Internal vs exchange** — `.core` as canonical model; GDS/OAS/LEF as exchange (document boundaries)
+- [ ] **Internal vs exchange** — `.room` as canonical model; GDS/OAS/LEF as exchange (document boundaries)
 - [ ] **Public roadmap** — v0.x → v1.0 milestones on GitHub
 
 ---
@@ -49,7 +49,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 ## 4. Derived structures (fast access)
 
 - [x] **In-memory `LibIndex`** — top cells, ref counts, child refs, per-cell bbox, placements ([lib_index.h](../src/lib_index.h), test `lib_index`)
-- [x] **Persisted index** — `Lib.index` in `.core`; rebuild on load if entries empty (test `lib_index_persist`)
+- [x] **Persisted index** — `Lib.index` in `.room`; rebuild on load if entries empty (test `lib_index_persist`)
 - [x] **Per-cell bbox** — `recomputeAllBBoxes()` on save/load and importers; validated in tests
 - [ ] **Spatial index** — R-tree or tile grid for hit-test / DRC-friendly traversal
 - [ ] **Library statistics** — shape counts per layer, cell count, file size metrics in dumps
@@ -70,7 +70,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 - [x] **Layout-optimized storage (v2)** — layer groups, delta vertices, AREF/SREF-like rect repeats, polygon/path templates, zigzag varint packed streams ([COMPACT_ENCODING.md](COMPACT_ENCODING.md))
 - [~] **Benchmark suite** — `compact_geometry_size` + [COMPACT_ENCODING.md](COMPACT_ENCODING.md) (Debug, June 2026); CI table + memory peak TBD
 - [ ] **Streaming** — incremental read/write for large libraries (avoid full-RAM materialization)
-- [ ] **Optional file compression** — gzip/zstd wrapper on `.core` (varint streams done; whole-file gzip TBD)
+- [ ] **Optional file compression** — gzip/zstd wrapper on `.room` (varint streams done; whole-file gzip TBD)
 
 ---
 
@@ -96,7 +96,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 
 - [x] **Round-trip CI** — GDS + OAS (KLayout XOR) on Ubuntu
 - [ ] **Large-design tests** — PDK cells, stress files, timing budgets in CI summary
-- [ ] **Fuzzing** — `.core` and exchange file parsers
+- [ ] **Fuzzing** — `.room` and exchange file parsers
 - [ ] **Cross-tool golden files** — KLayout and other viewers
 
 ---
@@ -104,7 +104,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 ## 10. Documentation and governance
 
 - [x] **This roadmap**
-- [ ] **Architecture doc** — CORE vs LStream/OA; what we adopt and why
+- [ ] **Architecture doc** — ROOM vs LStream/OA; what we adopt and why
 - [ ] **Contribution / API stability policy**
 - [ ] **Reply to external reviewers** — production intent + prioritized gaps (see charter)
 

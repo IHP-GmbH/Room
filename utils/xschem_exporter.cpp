@@ -1,6 +1,6 @@
 /*!****************************************************************************************
  * \file xschem_exporter.cpp
- * \brief Export CORE schematic/symbol views back to native Xschem files.
+ * \brief Export ROOM schematic/symbol views back to native Xschem files.
  *****************************************************************************************/
 
 #include "xschem_exporter.h"
@@ -12,7 +12,7 @@
 #include <fstream>
 #include <sstream>
 
-namespace core {
+namespace room {
 namespace {
 
 const CellContent *findXschemView(const Cell &cell)
@@ -102,4 +102,4 @@ std::size_t XschemExporter::exportAll(const Database &db, const std::string &out
     return count;
 }
 
-} // namespace core
+} // namespace room

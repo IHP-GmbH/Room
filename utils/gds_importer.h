@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
- * \brief The GdsImporter class reads GDSII layout files into a CORE Database.
+ * \brief The GdsImporter class reads GDSII layout files into a ROOM Database.
  *****************************************************************************************/
 class GdsImporter {
 public:
@@ -32,4 +32,4 @@ private:
     mutable std::vector<std::string>                    m_errors;
 };
 
-} // namespace core
+} // namespace room

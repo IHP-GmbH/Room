@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <string>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Term class is a named connection point on a net at a layer and position.
@@ -24,4 +24,4 @@ private:
     Point                                               m_position;
 };
 
-} // namespace core
+} // namespace room

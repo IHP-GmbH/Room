@@ -35,7 +35,7 @@
       "command": "cmake",
       "args": [
         "--build", "build", "-j4",
-        "--target", "core", "core_utils"
+        "--target", "core", "room_utils"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "dependsOn": ["CMake: Configure Debug"],
@@ -50,14 +50,14 @@
       "args": [
         "--build", "build", "-j4",
         "--target",
-        "gds_core_roundtrip",
+        "gds_room_roundtrip",
         "lib_index",
         "view_payload_roundtrip",
         "lib_index_persist",
         "compact_geometry_size",
         "compact_repetition_unit",
         "oas_hierarchy",
-        "oas_core_roundtrip"
+        "oas_room_roundtrip"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "dependsOn": ["CMake: Configure Debug"],
@@ -180,9 +180,9 @@
       "presentation": { "reveal": "always", "panel": "dedicated", "focus": true }
     },
     {
-      "label": "Run Test: oas_core_roundtrip",
+      "label": "Run Test: oas_room_roundtrip",
       "type": "shell",
-      "command": "scripts\\run_oas_core_roundtrip_test.cmd",
+      "command": "scripts\\run_oas_room_roundtrip_test.cmd",
       "args": ["build"],
       "options": {
         "cwd": "${workspaceFolder}",

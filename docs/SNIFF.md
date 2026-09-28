@@ -1,6 +1,6 @@
-# Sniffing `.core` files
+# Sniffing `.room` files
 
-**Sniff** reads only the Cap'n Proto header of a `.core` file — no geometry payloads are decoded. LibMan, project browsers, and CI use this to pick the right tool and view without loading the full database.
+**Sniff** reads only the Cap'n Proto header of a `.room` file — no geometry payloads are decoded. LibMan, project browsers, and CI use this to pick the right tool and view without loading the full database.
 
 Full API reference: [`docs/html/filesummary.html`](html/filesummary.html).
 
@@ -9,7 +9,7 @@ Full API reference: [`docs/html/filesummary.html`](html/filesummary.html).
 ```cpp
 #include "file_summary.h"
 
-core::CoreFileInfo info = core::sniffCoreFile("cell.schematic.core");
+room::RoomFileInfo info = room::sniffRoomFile("cell.schematic.room");
 // info.version, info.generator, info.technology, info.libName
 // info.summary.view      → layout | schematic | symbol | abstract
 // info.summary.cellCount
@@ -18,11 +18,11 @@ core::CoreFileInfo info = core::sniffCoreFile("cell.schematic.core");
 
 | Type / function | Library | Purpose |
 |-----------------|---------|---------|
-| `core::FileSummary` | `CORE::core` | Denormalized view + cell inventory |
-| `core::CoreFileInfo` | `CORE::core` | Header fields + `FileSummary` |
-| `sniffCoreFile(path)` | `CORE::core` | Read metadata from disk |
-| `FileSummary::fromLib()` | `CORE::core` | Build summary when saving |
-| `Database::fileSummary()` | `CORE::core` | Summary attached after load/save |
+| `room::FileSummary` | `ROOM::room` | Denormalized view + cell inventory |
+| `room::RoomFileInfo` | `ROOM::room` | Header fields + `FileSummary` |
+| `sniffRoomFile(path)` | `ROOM::room` | Read metadata from disk |
+| `FileSummary::fromLib()` | `ROOM::room` | Build summary when saving |
+| `Database::fileSummary()` | `ROOM::room` | Summary attached after load/save |
 
 On save, `Database::saveToFile(path, fileView)` writes `Database.summary` (Cap'n Proto `FileSummary`) so sniff is O(header) even for large layout files.
 
@@ -31,22 +31,22 @@ On save, `Database::saveToFile(path, fileView)` writes `Database.summary` (Cap'n
 After build:
 
 ```bash
-cmake --build build --target core_file_sniff
-./build/core_file_sniff examples/xschem_to_core/data/test.sch build/tests/sniff_fixture.schematic.core
+cmake --build build --target room_file_sniff
+./build/room_file_sniff examples/xschem_to_room/data/test.sch build/tests/sniff_fixture.schematic.room
 ```
 
-The test imports an Xschem `.sch`, saves a `.core`, sniffs it, and checks `summary.view == Schematic`.
+The test imports an Xschem `.sch`, saves a `.room`, sniffs it, and checks `summary.view == Schematic`.
 
 ## When to use sniff vs full load
 
 | Task | Use |
 |------|-----|
-| Tool routing (KLayout vs Xschem) | `sniffCoreFile` |
-| Cell list in file browser | `sniffCoreFile` or `xschem_bridge::listCells` after full load |
+| Tool routing (KLayout vs Xschem) | `sniffRoomFile` |
+| Cell list in file browser | `sniffRoomFile` or `xschem_bridge::listCells` after full load |
 | Edit geometry | `Database::loadFromFile` |
 | Import from GDS/Xschem | Importer → `saveToFile` |
 
 ## Related
 
-- [CORE file naming](CORE_FILE_NAMING.md) — `cell.schematic.core` convention
-- [`core_paths.h`](../src/core_paths.h) — parse view from filename
+- [ROOM file naming](ROOM_FILE_NAMING.md) — `cell.schematic.room` convention
+- [`room_paths.h`](../src/room_paths.h) — parse view from filename

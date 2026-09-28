@@ -13,7 +13,7 @@
 #include <iomanip>
 #include <stdexcept>
 
-namespace core {
+namespace room {
 namespace {
 
 void indent(std::ostream &out, int level)
@@ -91,7 +91,7 @@ void dumpShape(std::ostream &out, const Shape &shape, int level, const std::vect
  *****************************************************************************************/
 void TextDumper::dump(const Database &db, std::ostream &out) const
 {
-    out << "=== CORE text dump ===\n";
+    out << "=== ROOM text dump ===\n";
     out << "version: " << db.version() << "\n";
     out << "generator: " << db.generator() << "\n";
     out << "technology: " << db.technology() << "\n";
@@ -175,4 +175,4 @@ void TextDumper::dumpToFile(const Database &db, const std::string &path) const
     dump(db, out);
 }
 
-} // namespace core
+} // namespace room

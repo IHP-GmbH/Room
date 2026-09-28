@@ -1,6 +1,6 @@
 #include "block.h"
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Computes the axis-aligned bounding box enclosing all shapes in a block.
@@ -40,4 +40,4 @@ void Block::recomputeBBox()
     m_bbox = computeBBox(*this);
 }
 
-} // namespace core
+} // namespace room

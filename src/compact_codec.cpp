@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace core {
+namespace room {
 namespace {
 
 schema::Orient toSchemaOrient(Orient o)
@@ -991,4 +991,4 @@ bool compactBlockHasGeometry(schema::CompactBlock::Reader reader)
     return false;
 }
 
-} // namespace core
+} // namespace room

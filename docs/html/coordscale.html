@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Coordinate scale (DBU) — CORE</title>
+  <title>Coordinate scale (DBU) — ROOM</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
   </header>
   <div class="layout">
     <aside class="sidebar">
-      <h3>Core</h3>
+      <h3>ROOM</h3>
       <ul>
         <li><a href="cellcontent.html">CellContent</a></li>
         <li><a href="coordscale.html" class="active">Coordinate scale</a></li>
@@ -47,7 +47,7 @@
 
       <p>
         All coordinates in <code>Point</code>, <code>Instance::transform()</code>, wire paths, and pin positions are stored as
-        <strong>signed integer DBU</strong> in CORE. Exporters divide by the appropriate scale; importers multiply.
+        <strong>signed integer DBU</strong> in ROOM. Exporters divide by the appropriate scale; importers multiply.
         Grid snap (<code>Grid=10,10</code> in Qucs, SNAP in Xschem) stays in editor metadata — it is not the same as DBU scale.
       </p>
 
@@ -77,7 +77,7 @@ effectiveDbuPerEditorUnit(content)  // uses stored value, or infers from SourceI
 
       <h2>Migration</h2>
       <p>
-        Older <code>.core</code> files may have <code>dbuPerEditorUnit = 0</code> (unset). Readers call
+        Older <code>.room</code> files may have <code>dbuPerEditorUnit = 0</code> (unset). Readers call
         <code>effectiveDbuPerEditorUnit()</code>: <code>qucs</code> → <code>1</code>, <code>xschem</code> → <code>1000</code>.
         Re-import from the native tool to persist the field explicitly. <a href="textdumper.html">TextDumper</a> prints both scales per view.
       </p>
@@ -92,9 +92,9 @@ effectiveDbuPerEditorUnit(content)  // uses stored value, or infers from SourceI
       </table>
       <p>Wire endpoint alignment uses <a href="pinretarget.html">pin_retarget</a> on top of these scales.</p>
 
-      <h2>Qucs ↔ CORE ↔ Xschem</h2>
+      <h2>Qucs ↔ ROOM ↔ Xschem</h2>
       <p>
-        A Qucs schematic opened in Xschem goes through CORE export (<a href="xschemexporter.html">XschemExporter</a> /
+        A Qucs schematic opened in Xschem goes through ROOM export (<a href="xschemexporter.html">XschemExporter</a> /
         <a href="xschembriage.html">xschem_bridge</a>). Qucs component types are mapped to Xschem symbols (e.g. <code>GND</code> &rarr; <code>gnd.sym</code>;
         PDK cells resolve via <a href="primitiveresolver.html">PrimitiveResolver</a>). Coordinates use the view's
         <code>dbuPerEditorUnit</code>, so Qucs DBU and Xschem editor units stay consistent without ad-hoc divisors.

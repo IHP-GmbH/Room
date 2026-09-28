@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
- * \brief The OasImporter class reads OASIS layout files into a CORE Database.
+ * \brief The OasImporter class reads OASIS layout files into a ROOM Database.
  *
  * Decodes OASIS natively via OasReader::importDatabase (no KLayout on the hot path).
  *****************************************************************************************/
@@ -34,4 +34,4 @@ private:
     mutable std::vector<std::string>                    m_errors;
 };
 
-} // namespace core
+} // namespace room

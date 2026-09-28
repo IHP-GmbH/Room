@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace core::qucs_codec {
+namespace room::qucs_codec {
 
 struct WireRecord {
     std::int64_t x1 = 0;
@@ -52,4 +52,4 @@ std::string scaleComponentLineCoordinates(const std::string &line, std::int64_t 
 
 std::string scaleWireLineCoordinates(const std::string &line, std::int64_t divisor, bool multiply);
 
-} // namespace core::qucs_codec
+} // namespace room::qucs_codec

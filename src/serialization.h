@@ -4,7 +4,7 @@
 
 #include <database.capnp.h>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Writes a Database into a Cap'n Proto Database builder.
@@ -21,4 +21,4 @@ void writeDatabase(schema::Database::Builder root, const Database &db, SaveOptio
  *****************************************************************************************/
 Database readDatabase(schema::Database::Reader root);
 
-} // namespace core
+} // namespace room

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Block class holds flat view topology: shapes, instances, nets, and a cached bbox.
@@ -37,4 +37,4 @@ private:
     Box                                                 m_bbox;
 };
 
-} // namespace core
+} // namespace room

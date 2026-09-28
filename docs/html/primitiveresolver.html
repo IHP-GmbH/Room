@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PrimitiveResolver Class | CORE Core | CORE</title>
+  <title>PrimitiveResolver Class | ROOM Core | ROOM</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,23 +27,23 @@
       <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Utilities</a> &raquo; C++ Classes &raquo; PrimitiveResolver</p>
 
       <h1 class="title">PrimitiveResolver Class</h1>
-      <p class="brief">Indexes attached <code>*.symbol.core</code> files (PDK, commonLib, design-library cells) so Qucs and Xschem exporters can resolve <code>Lib</code> / <code>devices/*.sym</code> references. <a class="more" href="#details">More…</a></p>
+      <p class="brief">Indexes attached <code>*.symbol.room</code> files (PDK, commonLib, design-library cells) so Qucs and Xschem exporters can resolve <code>Lib</code> / <code>devices/*.sym</code> references. <a class="more" href="#details">More…</a></p>
 
       <table class="props">
         <tr><th>Header:</th><td><code>#include "primitive_resolver.h"</code></td></tr>
-        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE CORE::core_utils)</code></td></tr>
+        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE ROOM::room_utils)</code></td></tr>
       </table>
 
       <h2 id="public-types">Public Types</h2>
       <table class="memlist">
-        <tr><td><a href="#resolved-primitive">struct ResolvedPrimitive</a></td><td>Lookup result: CORE path, cell name, tech library.</td></tr>
+        <tr><td><a href="#resolved-primitive">struct ResolvedPrimitive</a></td><td>Lookup result: ROOM path, cell name, tech library.</td></tr>
       </table>
 
       <h2 id="public-functions">Public Functions</h2>
       <table class="memlist">
         <tr><td><a href="#setTechLibrary">void setTechLibrary(const std::string &amp; techLibrary)</a></td><td>Semicolon-separated tech/design library names (e.g. <code>commonLib;ihp_sg13g2</code>).</td></tr>
         <tr><td><a href="#setQucsLibrary">void setQucsLibrary(const std::string &amp; qucsLibrary)</a></td><td>Qucs <code>&lt;Lib&gt;</code> library name for PDK cells.</td></tr>
-        <tr><td><a href="#addCorePath">void addCorePath(const std::string &amp; corePath)</a></td><td>Register one <code>*.symbol.core</code> file.</td></tr>
+        <tr><td><a href="#addCorePath">void addCorePath(const std::string &amp; roomPath)</a></td><td>Register one <code>*.symbol.room</code> file.</td></tr>
         <tr><td><a href="#loadFromEnvironment">void loadFromEnvironment()</a></td><td>Read paths and library names from process environment.</td></tr>
         <tr><td><a href="#resolveReference">ResolvedPrimitive resolveReference(const std::string &amp; ref) const</a></td><td>Resolve <code>res</code>, <code>sg13g2_pr/rppd</code>, <code>devices/lab_pin.sym</code>, …</td></tr>
         <tr><td><a href="#primitiveCorePathsFromEnvironment">static std::vector&lt;std::string&gt; primitiveCorePathsFromEnvironment()</a></td><td>Parse primitive path list without building the index.</td></tr>
@@ -83,7 +83,7 @@
 
       <h2 id="details">Detailed Description</h2>
       <p>
-        Each registered <code>&lt;cell&gt;.symbol.core</code> is indexed under multiple keys: bare <code>cell.sym</code>,
+        Each registered <code>&lt;cell&gt;.symbol.room</code> is indexed under multiple keys: bare <code>cell.sym</code>,
         <code>&lt;lib&gt;/cell.sym</code>, and (for <code>commonLib</code>) <code>devices/cell.sym</code> for Xschem compatibility.
         Alias tables map Qucs component types to Xschem device names (e.g. <code>res</code> &harr; <code>R</code>, <code>gnd</code> &harr; <code>GND</code>).
       </p>
@@ -100,7 +100,7 @@
         <table class="members">
           <tr><th>Member</th><th>Description</th></tr>
           <tr><td><code>bool found</code></td><td><code>true</code> when <code>ref</code> matched an indexed symbol core.</td></tr>
-          <tr><td><code>std::string corePath</code></td><td>Absolute path to the <code>*.symbol.core</code> file.</td></tr>
+          <tr><td><code>std::string roomPath</code></td><td>Absolute path to the <code>*.symbol.room</code> file.</td></tr>
           <tr><td><code>std::string cellName</code></td><td>Cell stem (e.g. <code>lab_pin</code>, <code>rppd</code>).</td></tr>
           <tr><td><code>std::string techLibrary</code></td><td>Library directory prefix when known.</td></tr>
           <tr><td><code>std::string logicalRef</code></td><td>Normalized lookup key.</td></tr>
@@ -108,15 +108,15 @@
       </div>
 
       <h2>Example</h2>
-      <pre class="example"><code>core::PrimitiveResolver resolver;
+      <pre class="example"><code>room::PrimitiveResolver resolver;
 resolver.loadFromEnvironment();
 // or manually:
 resolver.setTechLibrary("commonLib;sg13g2_pr");
-resolver.addCorePath("/data/commonLib/lab_pin/lab_pin.symbol.core");
+resolver.addCorePath("/data/commonLib/lab_pin/lab_pin.symbol.room");
 
-const core::ResolvedPrimitive hit = resolver.resolveReference("devices/lab_pin.sym");
+const room::ResolvedPrimitive hit = resolver.resolveReference("devices/lab_pin.sym");
 if (hit.found) {
-    // use hit.corePath in export/materialize
+    // use hit.roomPath in export/materialize
 }</code></pre>
     </main>
     <aside class="page-toc">

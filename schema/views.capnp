@@ -1,7 +1,7 @@
 @0xe5f60718293a4b5c;
 
 using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("core::schema");
+$Cxx.namespace("room::schema");
 
 using LayerSpec    = import "dm.capnp".LayerSpec;
 using Property     = import "common.capnp".Property;

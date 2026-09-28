@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace core {
+namespace room {
 
 /*! \brief Cell or instance orientation (GDS-style). */
 enum class Orient {
@@ -31,4 +31,4 @@ std::string viewTypeToString(ViewType type);
 std::string layerPurposeToString(LayerPurpose purpose);
 std::string sigTypeToString(SigType type);
 
-} // namespace core
+} // namespace room

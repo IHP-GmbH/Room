@@ -24,7 +24,7 @@
 #include <views.capnp.h>
 #include <index.capnp.h>
 
-namespace core {
+namespace room {
 namespace {
 
 schema::Orient toSchemaOrient(Orient o)
@@ -722,7 +722,7 @@ void writeDatabase(schema::Database::Builder root, const Database &db, SaveOptio
 
 /*!****************************************************************************************
  * \brief Deserializes a Database from the Cap'n Proto root message.
- * \param root     Database reader from a loaded .core file.
+ * \param root     Database reader from a loaded .room file.
  * \return         Reconstructed in-memory database with index refreshed if absent.
  *****************************************************************************************/
 Database readDatabase(schema::Database::Reader root)
@@ -782,4 +782,4 @@ Database readDatabase(schema::Database::Reader root)
     return db;
 }
 
-} // namespace core
+} // namespace room

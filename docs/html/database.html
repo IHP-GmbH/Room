@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Database Class | CORE Core | CORE</title>
+  <title>Database Class | ROOM Core | ROOM</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="logo" href="index.html"><svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><defs><linearGradient id="logo-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2c3e50"/><stop offset="100%" stop-color="#1a5276"/></linearGradient><linearGradient id="logo-g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#41a62a"/><stop offset="100%" stop-color="#58d68d"/></linearGradient><linearGradient id="logo-bean" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1887F"/><stop offset="100%" stop-color="#5D4037"/></linearGradient><linearGradient id="logo-cup" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#b0bec5"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="12" fill="url(#logo-bg)"/><path d="M22 8v10M32 4v12M42 10v8" stroke="#41a62a" stroke-width="1" stroke-dasharray="2 2" opacity="0.45" stroke-linecap="round"/><g transform="translate(22 11) rotate(32)"><ellipse rx="3.2" ry="4.8" fill="url(#logo-bean)"/><path d="M0 -4 Q0.7 0 0 4 Q-0.7 0 0 -4" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.2" y="-1.2" width="2.4" height="2.4" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(32 7) rotate(-8)"><ellipse rx="3.4" ry="5" fill="url(#logo-bean)"/><path d="M0 -4.2 Q0.75 0 0 4.2 Q-0.75 0 0 -4.2" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(42 13) rotate(48)"><ellipse rx="3" ry="4.5" fill="url(#logo-bean)"/><path d="M0 -3.8 Q0.65 0 0 3.8 Q-0.65 0 0 -3.8" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.1" y="-1.1" width="2.2" height="2.2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><g transform="translate(28 19) rotate(15)"><ellipse rx="2.8" ry="4.2" fill="url(#logo-bean)" opacity="0.95"/><path d="M0 -3.5 Q0.6 0 0 3.5" fill="none" stroke="#3e2723" stroke-width="0.45" opacity="0.75"/></g><path d="M45 30 C55 30 57 38 53 46 C49 50 43 48 43 42" fill="none" stroke="#90a4ae" stroke-width="2.2" stroke-linecap="round"/><path d="M17 50 L20 26 Q32 21 44 26 L47 50 Z" fill="url(#logo-cup)" stroke="#ecf0f1" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="32" cy="27" rx="11.5" ry="3.3" fill="#3e2723"/><ellipse cx="32" cy="26" rx="10" ry="2" fill="#5d4037" opacity="0.5"/><text x="32" y="43" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="8" font-weight="700" fill="#263238" letter-spacing="0.5">CORE</text><g transform="translate(35 25) rotate(-25)"><ellipse rx="2.6" ry="3.8" fill="url(#logo-bean)"/><rect x="-1" y="-1" width="2" height="2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><path d="M21 26 Q32 22 43 26" fill="none" stroke="#fff" stroke-width="1.1" opacity="0.3" stroke-linecap="round"/><path d="M45 32 C53 32 55 39 51 44" fill="none" stroke="#ecf0f1" stroke-width="1.5" stroke-linecap="round"/></svg>CORE</a>
+    <a class="logo" href="index.html"><svg class="logo-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="28" height="28" aria-hidden="true"><defs><linearGradient id="logo-bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2c3e50"/><stop offset="100%" stop-color="#1a5276"/></linearGradient><linearGradient id="logo-g" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#41a62a"/><stop offset="100%" stop-color="#58d68d"/></linearGradient><linearGradient id="logo-bean" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#A1887F"/><stop offset="100%" stop-color="#5D4037"/></linearGradient><linearGradient id="logo-cup" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#b0bec5"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="12" fill="url(#logo-bg)"/><path d="M22 8v10M32 4v12M42 10v8" stroke="#41a62a" stroke-width="1" stroke-dasharray="2 2" opacity="0.45" stroke-linecap="round"/><g transform="translate(22 11) rotate(32)"><ellipse rx="3.2" ry="4.8" fill="url(#logo-bean)"/><path d="M0 -4 Q0.7 0 0 4 Q-0.7 0 0 -4" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.2" y="-1.2" width="2.4" height="2.4" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(32 7) rotate(-8)"><ellipse rx="3.4" ry="5" fill="url(#logo-bean)"/><path d="M0 -4.2 Q0.75 0 0 4.2 Q-0.75 0 0 -4.2" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.3" y="-1.3" width="2.6" height="2.6" rx="0.35" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.45"/></g><g transform="translate(42 13) rotate(48)"><ellipse rx="3" ry="4.5" fill="url(#logo-bean)"/><path d="M0 -3.8 Q0.65 0 0 3.8 Q-0.65 0 0 -3.8" fill="none" stroke="#3e2723" stroke-width="0.5" opacity="0.8"/><rect x="-1.1" y="-1.1" width="2.2" height="2.2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><g transform="translate(28 19) rotate(15)"><ellipse rx="2.8" ry="4.2" fill="url(#logo-bean)" opacity="0.95"/><path d="M0 -3.5 Q0.6 0 0 3.5" fill="none" stroke="#3e2723" stroke-width="0.45" opacity="0.75"/></g><path d="M45 30 C55 30 57 38 53 46 C49 50 43 48 43 42" fill="none" stroke="#90a4ae" stroke-width="2.2" stroke-linecap="round"/><path d="M17 50 L20 26 Q32 21 44 26 L47 50 Z" fill="url(#logo-cup)" stroke="#ecf0f1" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="32" cy="27" rx="11.5" ry="3.3" fill="#3e2723"/><ellipse cx="32" cy="26" rx="10" ry="2" fill="#5d4037" opacity="0.5"/><text x="32" y="43" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="8" font-weight="700" fill="#263238" letter-spacing="0.5">ROOM</text><g transform="translate(35 25) rotate(-25)"><ellipse rx="2.6" ry="3.8" fill="url(#logo-bean)"/><rect x="-1" y="-1" width="2" height="2" rx="0.3" fill="#37474f" stroke="url(#logo-g)" stroke-width="0.4"/></g><path d="M21 26 Q32 22 43 26" fill="none" stroke="#fff" stroke-width="1.1" opacity="0.3" stroke-linecap="round"/><path d="M45 32 C53 32 55 39 51 44" fill="none" stroke="#ecf0f1" stroke-width="1.5" stroke-linecap="round"/></svg>ROOM</a>
     <nav><a href="index.html">Overview</a><a href="example.html">Example</a><a href="classes.html">All Classes</a></nav>
   </header>
   <div class="layout">
@@ -23,7 +23,7 @@
         <li><a href="types.html#layerspec">LayerSpec</a></li>
         <li><a href="types.html#enums">Enums</a></li>
       </ul>
-      <h3>Core</h3>
+      <h3>ROOM</h3>
       <ul>
         <li><a href="database.html" class="active">Database</a></li>
         <li><a href="lib.html">Lib</a></li><li><a href="cell.html">Cell</a></li>
@@ -39,18 +39,18 @@
       <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Core</a> &raquo; C++ Classes &raquo; Database</p>
 
       <h1 class="title">Database Class</h1>
-      <p class="brief">The Database class is the root object of a CORE design file. It holds file metadata and one <a href="lib.html">Lib</a>. <a class="more" href="#details">More…</a></p>
+      <p class="brief">The Database class is the root object of a ROOM design file. It holds file metadata and one <a href="lib.html">Lib</a>. <a class="more" href="#details">More…</a></p>
 
       <table class="props">
         <tr><th>Header:</th><td><code>#include "database.h"</code></td></tr>
-        <tr><th>CMake:</th><td><code>find_package(CORE REQUIRED)</code><br><code>target_link_libraries(mytarget PRIVATE CORE::core)</code></td></tr>
+        <tr><th>CMake:</th><td><code>find_package(ROOM REQUIRED)</code><br><code>target_link_libraries(mytarget PRIVATE ROOM::room)</code></td></tr>
       </table>
 
       <p class="members-index"><a href="classes.html">List of all members</a></p>
 
       <h2 id="public-types">Public Types</h2>
       <table class="memlist">
-        <tr><td><a href="#saveoptions">struct SaveOptions</a></td><td>Controls compact vs verbose geometry when writing <code>.core</code> files.</td></tr>
+        <tr><td><a href="#saveoptions">struct SaveOptions</a></td><td>Controls compact vs verbose geometry when writing <code>.room</code> files.</td></tr>
       </table>
 
       <h2 id="public-functions">Public Functions</h2>
@@ -66,12 +66,12 @@
         <tr><td><a href="#lib-1">const Lib &amp; lib() const</a></td><td>Returns the root cell library (const).</td></tr>
         <tr><td><a href="#fileView">ViewType fileView() const</a></td><td>Primary view kind for this file.</td></tr>
         <tr><td><a href="#fileSummary">const FileSummary &amp; fileSummary() const</a></td><td>Denormalized header for <a href="filesummary.html">sniff</a>.</td></tr>
-        <tr><td><a href="#saveToFile">void saveToFile(path, ViewType fileView, SaveOptions = {})</a></td><td>Serializes to <code>.core</code> with summary.</td></tr>
-        <tr><td><a href="#loadFromFile">static Database loadFromFile(const std::string &amp; path)</a></td><td>Reads a database from a <code>.core</code> file.</td></tr>
+        <tr><td><a href="#saveToFile">void saveToFile(path, ViewType fileView, SaveOptions = {})</a></td><td>Serializes to <code>.room</code> with summary.</td></tr>
+        <tr><td><a href="#loadFromFile">static Database loadFromFile(const std::string &amp; path)</a></td><td>Reads a database from a <code>.room</code> file.</td></tr>
       </table>
 
       <h2 id="details">Detailed Description</h2>
-      <p>A <code>core::Database</code> is the top-level container for layout and schematic topology. It stores version, generator, and technology metadata plus a single <a href="lib.html">Lib</a> of cells. Persistence uses Cap'n Proto; view-specific files use <code>&lt;cell&gt;.&lt;view&gt;.core</code> (see <a href="corepaths.html">CORE path helpers</a>). <code>saveToFile(path, fileView)</code> writes a <a href="filesummary.html">FileSummary</a> for fast sniffing without loading geometry.</p>
+      <p>A <code>room::Database</code> is the top-level container for layout and schematic topology. It stores version, generator, and technology metadata plus a single <a href="lib.html">Lib</a> of cells. Persistence uses Cap'n Proto; view-specific files use <code>&lt;cell&gt;.&lt;view&gt;.room</code> (see <a href="roompaths.html">ROOM path helpers</a>). <code>saveToFile(path, fileView)</code> writes a <a href="filesummary.html">FileSummary</a> for fast sniffing without loading geometry.</p>
 
       <h2>Member Type Documentation</h2>
 
@@ -93,7 +93,7 @@
 
       <div class="fn-block" id="version">
         <h3 class="fn-title">const std::string &amp; version() const</h3>
-        <p class="fn-desc">Returns the CORE file format version stored in this database.</p>
+        <p class="fn-desc">Returns the ROOM file format version stored in this database.</p>
         <p class="fn-returns"><strong>Returns:</strong> Format version string (default <code>"1.0"</code> for a newly constructed database).</p>
       </div>
 
@@ -117,7 +117,7 @@
         <p class="fn-desc">Records which program produced this database (stored in the file metadata).</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>value</code></td><td>Tool name (for example <code>"CORE GdsImporter"</code> or <code>"MyTool"</code>).</td></tr>
+          <tr><td><code>value</code></td><td>Tool name (for example <code>"ROOM GdsImporter"</code> or <code>"MyTool"</code>).</td></tr>
         </table>
       </div>
 
@@ -153,7 +153,7 @@
         <p class="fn-desc">Serializes this database to a binary Cap'n Proto file and writes <code>Database.summary</code> for sniff.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>path</code></td><td>Output path — prefer <code>coreFileName(cell, fileView)</code>.</td></tr>
+          <tr><td><code>path</code></td><td>Output path — prefer <code>roomFileName(cell, fileView)</code>.</td></tr>
           <tr><td><code>fileView</code></td><td>Primary view stored in <code>FileSummary</code>.</td></tr>
           <tr><td><code>options</code></td><td><a href="#saveoptions">SaveOptions</a> (default: compact geometry).</td></tr>
         </table>
@@ -165,7 +165,7 @@
         <p class="fn-desc">Reads a database from a binary Cap'n Proto file previously written by <code>saveToFile()</code>.</p>
         <table class="fn-params">
           <tr><th>Parameter</th><th>Description</th></tr>
-          <tr><td><code>path</code></td><td>Input file path of an existing <code>.core</code> file.</td></tr>
+          <tr><td><code>path</code></td><td>Input file path of an existing <code>.room</code> file.</td></tr>
         </table>
         <p class="fn-returns"><strong>Returns:</strong> A new <code>Database</code> populated from the file.</p>
         <p class="fn-throws"><strong>Throws:</strong> <code>std::runtime_error</code> if the file cannot be read or parsed.</p>
@@ -181,14 +181,14 @@
       </table>
 
       <h2 id="example">Example</h2>
-      <pre class="example"><code>core::Database db;
+      <pre class="example"><code>room::Database db;
 db.setGenerator("MyTool");
 db.setTechnology("sg13g2");
 db.lib().getOrCreateCell("TOP");
 
-db.saveToFile("inv.schematic.core", core::ViewType::Schematic);
+db.saveToFile("inv.schematic.room", room::ViewType::Schematic);
 
-core::Database loaded = core::Database::loadFromFile("inv.schematic.core");
+room::Database loaded = room::Database::loadFromFile("inv.schematic.room");
 std::cout << loaded.lib().cells().size() << " cells\n";</code></pre>
     </main>
     <aside class="page-toc">

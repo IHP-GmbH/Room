@@ -9,9 +9,9 @@
 #include "property.h"
 #include "layer_spec.h"
 
-namespace core {
+namespace room {
 
 // All types live in individual headers. This file remains a single
 // include point for code that uses `#include "types.h"`.
 
-} // namespace core
+} // namespace room

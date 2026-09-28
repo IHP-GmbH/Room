@@ -1,7 +1,7 @@
 ﻿repo = ENV["COMMONDB_ROOT"]
 repo = File.expand_path("..", __dir__) if repo.nil? || repo.empty?
 
-path = ENV["CORE_PATH"] || File.join(repo, "examples/gds_to_core/output/sample.core")
+path = ENV["CORE_PATH"] || File.join(repo, "examples/gds_to_room/output/sample.room")
 ly = RBA::Layout.new
 ly.read(path)
 

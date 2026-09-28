@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Describes the original tool format/version for a cell view (format-neutral metadata).
@@ -41,4 +41,4 @@ constexpr const char *kSourceCommentsKey = "core.source.comments";
 void appendSourceInfoProperties(const SourceInfo &info, std::vector<Property> &properties);
 SourceInfo extractSourceInfo(std::vector<Property> &properties);
 
-} // namespace core
+} // namespace room

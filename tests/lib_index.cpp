@@ -7,10 +7,10 @@
 
 namespace {
 
-bool layoutBboxesValid(const core::Database &db)
+bool layoutBboxesValid(const room::Database &db)
 {
     for (const auto &cell : db.lib().cells()) {
-        const core::CellContent *content = cell.findContent(core::ViewType::Layout);
+        const room::CellContent *content = cell.findContent(room::ViewType::Layout);
         if (content == nullptr || content->block().shapes().empty()) {
             continue;
         }
@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
 {
     const std::string gdsPath = (argc > 1) ? argv[1] : "testdata/sample.gds";
 
-    core::GdsImporter importer;
-    core::Database db = importer.importFile(gdsPath);
+    room::GdsImporter importer;
+    room::Database db = importer.importFile(gdsPath);
     if (!importer.errors().empty()) {
         for (const auto &msg : importer.errors()) {
             std::cerr << "error: " << msg << '\n';
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    const core::LibIndex index = core::LibIndex::build(db.lib());
+    const room::LibIndex index = room::LibIndex::build(db.lib());
     std::cout << "cells: " << db.lib().cells().size() << '\n';
     std::cout << "top cells: " << index.topCells.size() << '\n';
     std::cout << "placements: " << index.placementCount << '\n';

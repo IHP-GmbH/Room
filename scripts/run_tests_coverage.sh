@@ -36,12 +36,12 @@ echo "Cleaning old coverage data in \"$BUILD_DIR\"..."
 find "$BUILD_DIR" -type f \( -name "*.gcda" -o -name "*.gcov" \) -delete 2>/dev/null || true
 
 export LD_LIBRARY_PATH="${ROOT_DIR}/third_party/capnp-install/lib:${LD_LIBRARY_PATH:-}"
-export CORE_SOURCE_DIR="$ROOT_DIR"
+export ROOM_SOURCE_DIR="$ROOT_DIR"
 
 chmod +x "$ROOT_DIR"/scripts/run_sample_gds_roundtrip_test.sh \
     "$ROOT_DIR"/scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh \
     "$ROOT_DIR"/scripts/run_oas_hierarchy_test.sh \
-    "$ROOT_DIR"/scripts/run_oas_core_roundtrip_test.sh 2>/dev/null || true
+    "$ROOT_DIR"/scripts/run_oas_room_roundtrip_test.sh 2>/dev/null || true
 
 mkdir -p "$BUILD_DIR/tests"
 

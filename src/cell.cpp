@@ -1,6 +1,6 @@
 #include "cell.h"
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Constructs a cell with the given name.
@@ -53,4 +53,4 @@ CellContent &Cell::getOrCreateContent(ViewType type, double dbuPerMicron)
     return m_contents.back();
 }
 
-} // namespace core
+} // namespace room

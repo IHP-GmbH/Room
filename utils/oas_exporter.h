@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
- * \brief The OasExporter class writes a CORE Database to an OASIS layout file.
+ * \brief The OasExporter class writes a ROOM Database to an OASIS layout file.
  *
  * Exports strict-mode OASIS via OasWriter (KLayout-compatible START + native geometry).
  *****************************************************************************************/
@@ -24,4 +24,4 @@ private:
     mutable std::vector<std::string>                    m_errors;
 };
 
-} // namespace core
+} // namespace room

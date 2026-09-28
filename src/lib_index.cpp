@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-namespace core {
+namespace room {
 namespace {
 
 void addChildRef(std::unordered_map<std::string, std::vector<std::string>> &childRefs,
@@ -71,4 +71,4 @@ LibIndex LibIndex::build(const Lib &lib, ViewType view)
     return index;
 }
 
-} // namespace core
+} // namespace room

@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 bool looksLikeQucsEndTimeExpr(const std::string &s);
 std::vector<std::string> tokenizePulseBody(const std::string &val);
@@ -21,4 +21,4 @@ std::optional<double> parseSpiceTimeValue(const std::string &text);
 // Returns nullopt when required fields are missing (no academy-specific defaults).
 std::optional<std::string> buildPulseSpiceValue(const std::vector<Property> &props);
 
-} // namespace core
+} // namespace room

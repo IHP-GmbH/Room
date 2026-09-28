@@ -102,21 +102,21 @@ bool writeFixtureGds(const std::string &path)
     return true;
 }
 
-std::vector<core::Property> gdsProperties(const std::vector<core::Property> &props)
+std::vector<room::Property> gdsProperties(const std::vector<room::Property> &props)
 {
-    std::vector<core::Property> out;
-    for (const core::Property &prop : props) {
-        if (core::gds_prop::isGdsProperty(prop)) {
+    std::vector<room::Property> out;
+    for (const room::Property &prop : props) {
+        if (room::gds_prop::isGdsProperty(prop)) {
             out.push_back(prop);
         }
     }
     return out;
 }
 
-bool sameGdsProperties(const std::vector<core::Property> &a, const std::vector<core::Property> &b)
+bool sameGdsProperties(const std::vector<room::Property> &a, const std::vector<room::Property> &b)
 {
-    const std::vector<core::Property> ga = gdsProperties(a);
-    const std::vector<core::Property> gb = gdsProperties(b);
+    const std::vector<room::Property> ga = gdsProperties(a);
+    const std::vector<room::Property> gb = gdsProperties(b);
     if (ga.size() != gb.size()) {
         return false;
     }
@@ -128,7 +128,7 @@ bool sameGdsProperties(const std::vector<core::Property> &a, const std::vector<c
     return true;
 }
 
-const core::Cell *firstCell(const core::Database &db)
+const room::Cell *firstCell(const room::Database &db)
 {
     if (db.lib().cells().empty()) {
         return nullptr;
@@ -142,15 +142,15 @@ int main(int argc, char *argv[])
 {
     const std::string inPath = (argc > 1) ? argv[1] : "build/tests/gds_props_fixture.gds";
     const std::string outPath = (argc > 2) ? argv[2] : "build/tests/gds_props_roundtrip.gds";
-    const std::string corePath = (argc > 3) ? argv[3] : "build/tests/gds_props_roundtrip.core";
+    const std::string roomPath = (argc > 3) ? argv[3] : "build/tests/gds_props_roundtrip.room";
 
     if (!writeFixtureGds(inPath)) {
         std::cerr << "error: cannot write fixture GDS\n";
         return 1;
     }
 
-    core::GdsImporter importer;
-    core::Database db = importer.importFile(inPath);
+    room::GdsImporter importer;
+    room::Database db = importer.importFile(inPath);
     if (!importer.errors().empty()) {
         for (const auto &msg : importer.errors()) {
             std::cerr << "error: " << msg << '\n';
@@ -158,50 +158,50 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    const core::Cell *cell = firstCell(db);
+    const room::Cell *cell = firstCell(db);
     if (cell == nullptr) {
         std::cerr << "error: no cells imported\n";
         return 3;
     }
 
-    const std::vector<core::Property> expectedCellProps = {
-        core::gds_prop::make(128, "s:cell_meta"),
+    const std::vector<room::Property> expectedCellProps = {
+        room::gds_prop::make(128, "s:cell_meta"),
     };
     if (!sameGdsProperties(cell->properties(), expectedCellProps)) {
         std::cerr << "error: cell GDS properties mismatch after import\n";
         return 4;
     }
 
-    const core::CellContent *layout = cell->findContent(core::ViewType::Layout);
+    const room::CellContent *layout = cell->findContent(room::ViewType::Layout);
     if (layout == nullptr || layout->block().shapes().empty()) {
         std::cerr << "error: layout shape missing\n";
         return 5;
     }
 
-    const std::vector<core::Property> expectedShapeProps = {
-        core::gds_prop::make(129, "s:net_A"),
-        core::gds_prop::make(130, "i2:42"),
+    const std::vector<room::Property> expectedShapeProps = {
+        room::gds_prop::make(129, "s:net_A"),
+        room::gds_prop::make(130, "i2:42"),
     };
     if (!sameGdsProperties(layout->block().shapes().front().properties(), expectedShapeProps)) {
         std::cerr << "error: shape GDS properties mismatch after import\n";
         return 6;
     }
 
-    db.saveToFile(corePath, core::ViewType::Layout);
-    const core::Database reloaded = core::Database::loadFromFile(corePath);
-    const core::Cell *reloadedCell = firstCell(reloaded);
-    const core::CellContent *reloadedLayout = reloadedCell ? reloadedCell->findContent(core::ViewType::Layout) : nullptr;
+    db.saveToFile(roomPath, room::ViewType::Layout);
+    const room::Database reloaded = room::Database::loadFromFile(roomPath);
+    const room::Cell *reloadedCell = firstCell(reloaded);
+    const room::CellContent *reloadedLayout = reloadedCell ? reloadedCell->findContent(room::ViewType::Layout) : nullptr;
     if (reloadedCell == nullptr || reloadedLayout == nullptr || reloadedLayout->block().shapes().empty()) {
         std::cerr << "error: reload failed\n";
         return 7;
     }
     if (!sameGdsProperties(reloadedCell->properties(), expectedCellProps) ||
         !sameGdsProperties(reloadedLayout->block().shapes().front().properties(), expectedShapeProps)) {
-        std::cerr << "error: GDS properties lost in .core round-trip\n";
+        std::cerr << "error: GDS properties lost in .room round-trip\n";
         return 8;
     }
 
-    core::GdsExporter exporter;
+    room::GdsExporter exporter;
     exporter.exportFile(reloaded, outPath);
     if (!exporter.errors().empty()) {
         for (const auto &msg : exporter.errors()) {
@@ -210,8 +210,8 @@ int main(int argc, char *argv[])
         return 9;
     }
 
-    core::GdsImporter importer2;
-    const core::Database roundtrip = importer2.importFile(outPath);
+    room::GdsImporter importer2;
+    const room::Database roundtrip = importer2.importFile(outPath);
     if (!importer2.errors().empty()) {
         for (const auto &msg : importer2.errors()) {
             std::cerr << "error: " << msg << '\n';
@@ -219,8 +219,8 @@ int main(int argc, char *argv[])
         return 10;
     }
 
-    const core::Cell *rtCell = firstCell(roundtrip);
-    const core::CellContent *rtLayout = rtCell ? rtCell->findContent(core::ViewType::Layout) : nullptr;
+    const room::Cell *rtCell = firstCell(roundtrip);
+    const room::CellContent *rtLayout = rtCell ? rtCell->findContent(room::ViewType::Layout) : nullptr;
     if (rtCell == nullptr || rtLayout == nullptr || rtLayout->block().shapes().empty()) {
         std::cerr << "error: GDS export round-trip produced empty layout\n";
         return 11;

@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD="${1:-$ROOT/build}"
-INPUT_GDS="${2:-$ROOT/examples/gds_to_core/data/sg13g2_stdcell.gds}"
+INPUT_GDS="${2:-$ROOT/examples/gds_to_room/data/sg13g2_stdcell.gds}"
 WORK_DIR="$BUILD/tests/oas"
 MINIMAL_OAS="$WORK_DIR/minimal.oas"
 CONVERTED_OAS="$WORK_DIR/sg13g2_stdcell.oas"

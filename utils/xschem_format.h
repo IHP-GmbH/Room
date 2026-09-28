@@ -10,7 +10,7 @@
 
 
 
-namespace core::xschem {
+namespace room::xschem {
 
 
 
@@ -34,5 +34,5 @@ void xschemFromOrient(Orient orient, int &rotate, int &mirror);
 
 
 
-} // namespace core::xschem
+} // namespace room::xschem
 

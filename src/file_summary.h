@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <string>
 
-namespace core {
+namespace room {
 
 class Lib;
 
@@ -24,8 +24,8 @@ struct FileSummary {
 void writeFileSummary(schema::FileSummary::Builder builder, const FileSummary &summary);
 FileSummary readFileSummary(schema::FileSummary::Reader reader);
 
-/*! \brief Metadata read from a .core file without decoding geometry payloads. */
-struct CoreFileInfo {
+/*! \brief Metadata read from a .room file without decoding geometry payloads. */
+struct RoomFileInfo {
     std::string                                         version;
     std::string                                         generator;
     std::string                                         technology;
@@ -33,6 +33,6 @@ struct CoreFileInfo {
     FileSummary                                         summary;
 };
 
-CoreFileInfo sniffCoreFile(const std::string &path);
+RoomFileInfo sniffRoomFile(const std::string &path);
 
-} // namespace core
+} // namespace room

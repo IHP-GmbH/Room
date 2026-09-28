@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace core {
+namespace room {
 namespace {
 
 constexpr char kMagic[] = "%SEMI-OASIS\r\n";
@@ -469,4 +469,4 @@ bool assembleStrictFromPreserved(const std::vector<std::uint8_t> &header,
     return static_cast<bool>(file);
 }
 
-} // namespace core
+} // namespace room

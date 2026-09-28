@@ -4,7 +4,7 @@
 #include "instance.h"
 #include "primitive_resolver.h"
 
-namespace core {
+namespace room {
 
 bool isAnonymousNetLabel(const std::string &label);
 
@@ -14,4 +14,4 @@ void propagateNetNames(Block &block, const PrimitiveResolver *resolver, double d
 /*! Store analogLib-canonical qucs.type / core.primitive; editors map to tool-native symbols on read. */
 void canonicalizeBlockPrimitives(Block &block, const PrimitiveResolver *resolver);
 
-} // namespace core
+} // namespace room

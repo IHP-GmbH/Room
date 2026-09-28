@@ -17,7 +17,7 @@
 
 #include <zlib.h>
 
-namespace core {
+namespace room {
 namespace {
 
 void appendUInt(std::vector<std::uint8_t> &buf, std::uint64_t value)
@@ -639,4 +639,4 @@ void OasWriter::exportDatabase(const Database &db)
     std::remove(siblingPath(templatePath, ".cellnames").c_str());
 }
 
-} // namespace core
+} // namespace room

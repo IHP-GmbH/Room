@@ -1,6 +1,6 @@
 #include "enums.h"
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Converts a ViewType to a stable lowercase string.
@@ -54,4 +54,4 @@ std::string sigTypeToString(SigType type)
     return "unknown";
 }
 
-} // namespace core
+} // namespace room

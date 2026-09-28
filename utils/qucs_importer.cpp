@@ -1,6 +1,6 @@
 /*!****************************************************************************************
  * \file qucs_importer.cpp
- * \brief Qucs .sch schematic parser into CORE schematic views.
+ * \brief Qucs .sch schematic parser into ROOM schematic views.
  *****************************************************************************************/
 
 #include "qucs_importer.h"
@@ -22,7 +22,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace core {
+namespace room {
 namespace {
 
 std::string stemFromPath(const std::string &path)
@@ -683,12 +683,12 @@ Database QucsImporter::importText(const std::string &text, const std::string &ce
         : cellName;
 
     Database db;
-    db.setGenerator("CORE QucsImporter");
+    db.setGenerator("ROOM QucsImporter");
     db.lib() = Lib(m_options.libName);
 
     Cell &cell = db.lib().getOrCreateCell(resolvedCellName);
     const bool symbolOnly = sections.count("Components") == 0 && sections.count("Symbol") > 0;
-    // Dual-tool symbols: store geometry in Xschem DBU scale (1000) so CORE→.sym materialization
+    // Dual-tool symbols: store geometry in Xschem DBU scale (1000) so ROOM→.sym materialization
     // matches devices/*.sym. Qucs still prefers opaque section.Symbol properties when present.
     const double dbuPerEditor =
         symbolOnly ? kXschemDbuPerEditorUnit : kQucsDbuPerEditorUnit;
@@ -842,4 +842,4 @@ void QucsImporter::importWireLines(Block &block, const std::vector<std::string> 
     }
 }
 
-} // namespace core
+} // namespace room

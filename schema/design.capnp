@@ -1,7 +1,7 @@
 @0xc3d4e5f60718293a;
 
 using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("core::schema");
+$Cxx.namespace("room::schema");
 
 using Point     = import "common.capnp".Point;
 using Box       = import "common.capnp".Box;

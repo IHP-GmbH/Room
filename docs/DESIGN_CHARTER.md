@@ -1,16 +1,16 @@
-# CORE design charter
+# ROOM design charter
 
 ## Mission
 
-**CORE** (**C**ommon **O**pen **R**epository for **E**DA) is an open-source IC design database intended to reach **commercial production quality**: reliable round-trips, predictable performance, clear extension points, and a stable C++ API for layout and schematic data inside the IHP EDA flow and beyond.
+**ROOM** (**R**eusable **O**pen **O**bject **M**odel) is an open-source IC design database intended to reach **commercial production quality**: reliable round-trips, predictable performance, clear extension points, and a stable C++ API for layout and schematic data inside the IHP EDA flow and beyond.
 
-## What CORE is
+## What ROOM is
 
-- A **format-neutral in-memory model** serialized to portable binary `.core` files (Cap'n Proto).
-- A **C++17 library** (`core::`) for libraries, cells, views, layers, shapes, instances, and nets.
+- A **format-neutral in-memory model** serialized to portable binary `.room` files (Cap'n Proto).
+- A **C++17 library** (`room::`) for libraries, cells, views, layers, shapes, instances, and nets.
 - An **integration hub** for importers/exporters (GDS, OAS, Qucs today; more exchange formats over time).
 
-## What CORE is not (today)
+## What ROOM is not (today)
 
 - A drop-in replacement for OASIS/GDS as a compressed layout archive (bridge via KLayout where native codecs are incomplete).
 - A full OpenAccess-compatible API or file format.
@@ -20,9 +20,9 @@
 
 | Scenario | Description |
 |----------|-------------|
-| **IHP internal flow** | Import PDK/layout → edit in CORE → export to exchange formats; schematic path via Qucs. |
-| **Tool integration** | Third-party tools link `libcore` and read/write `.core` without owning the schema. |
-| **Long-term archive** | Extensible `.core` with per-view payloads, derived indices, and compact layout encoding (v1 target). |
+| **IHP internal flow** | Import PDK/layout → edit in ROOM → export to exchange formats; schematic path via Qucs. |
+| **Tool integration** | Third-party tools link `libroom` and read/write `.room` without owning the schema. |
+| **Long-term archive** | Extensible `.room` with per-view payloads, derived indices, and compact layout encoding (v1 target). |
 
 ## Design principles
 
@@ -35,8 +35,8 @@
 ## Non-goals (v0.x)
 
 - GUI or editor implementation.
-- Full DRC/LVS engine inside CORE.
-- Bit-identical `.core` files across platforms (logical equivalence is required; canonical byte order is a later concern).
+- Full DRC/LVS engine inside ROOM.
+- Bit-identical `.room` files across platforms (logical equivalence is required; canonical byte order is a later concern).
 
 ## v1 Definition of Done (draft)
 
@@ -57,7 +57,7 @@ Exact numeric budgets (file size, seconds, cell counts) to be set when reference
 
 ## Comparison with LStream (positioning)
 
-LStream targets an **extensible layout archive** alternative to GDS/OAS. CORE shares that long-term direction but started with a **minimal unified model** to validate API and IHP integration. Per-view payloads, compact geometry, per-view layer encapsulation, and native OAS strict import/export (preserved round-trip) are in place; remaining v1 gaps (skip-friendly opaque round-trip, streaming) are tracked in [PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md).
+LStream targets an **extensible layout archive** alternative to GDS/OAS. ROOM shares that long-term direction but started with a **minimal unified model** to validate API and IHP integration. Per-view payloads, compact geometry, per-view layer encapsulation, and native OAS strict import/export (preserved round-trip) are in place; remaining v1 gaps (skip-friendly opaque round-trip, streaming) are tracked in [PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md).
 
 ## Governance
 

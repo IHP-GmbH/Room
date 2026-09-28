@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace core {
+namespace room {
 
 constexpr const char kStrictHeaderProp[] = "core.oas.strictHeader";
 constexpr const char kStrictTailProp[] = "core.oas.strictTail";
@@ -39,4 +39,4 @@ bool assembleStrictFromPreserved(const std::vector<std::uint8_t> &header,
 std::string base64Encode(const std::vector<std::uint8_t> &data);
 bool base64Decode(const std::string &encoded, std::vector<std::uint8_t> &out);
 
-} // namespace core
+} // namespace room

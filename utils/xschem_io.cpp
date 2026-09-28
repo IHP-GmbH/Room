@@ -1,6 +1,6 @@
 /*!****************************************************************************************
  * \file xschem_io.cpp
- * \brief Shared Xschem record parser and CORE Block mapping (format-neutral model).
+ * \brief Shared Xschem record parser and ROOM Block mapping (format-neutral model).
  *****************************************************************************************/
 
 #include "xschem_io.h"
@@ -28,7 +28,7 @@
 #include <sstream>
 #include <unordered_map>
 
-namespace core::xschem {
+namespace room::xschem {
 namespace {
 
 double g_dbuPerEditorUnit = kXschemDbuPerEditorUnit;
@@ -46,7 +46,7 @@ std::string trim(const std::string &value)
     return value.substr(begin, end - begin);
 }
 
-// Qucs .sch often stores "\\n" as two chars in CORE; Xschem/ngspice then see mos_ttn.
+// Qucs .sch often stores "\\n" as two chars in ROOM; Xschem/ngspice then see mos_ttn.
 std::string unescapeCStyle(const std::string &text)
 {
     std::string out;
@@ -328,7 +328,7 @@ void annotatePrimitiveReference(Instance &inst);
 std::string modelNameFromPrimitiveRef(const std::string &ref)
 {
     std::string stem = cellStem(ref);
-    for (const char *suffix : {".symbol.core", ".schematic.core", ".symbol", ".schematic"}) {
+    for (const char *suffix : {".symbol.room", ".schematic.room", ".symbol", ".schematic"}) {
         const std::size_t len = std::strlen(suffix);
         if (stem.size() > len && stem.compare(stem.size() - len, len, suffix) == 0) {
             stem.resize(stem.size() - len);
@@ -381,7 +381,7 @@ Instance instanceForQucsExport(const Instance &src)
     if (const std::string *qt = findProperty(src.properties(), "qucs.type"); qt && !qt->empty()) {
         logicalType = *qt;
     }
-    // LibComp stores the real model in param.1 (library component name). After a Qucs CORE
+    // LibComp stores the real model in param.1 (library component name). After a Qucs ROOM
     // save, R/C/Vdc/GND/PDK devices often appear as cellName "Lib" — resolve before mapping.
     std::string resolvedModel = resolveLibCompModel(src, logicalType);
 
@@ -410,7 +410,7 @@ Instance instanceForQucsExport(const Instance &src)
     }
     bool remappedToNativePdk = false;
     if (symbol == "qucs_blackbox.sym" && !isPlaceholderLibModel(resolvedModel) && resolvedModel.front() != '.') {
-        // PDK / analogLib / hierarchy cell: let Xschem resolve via CORE_PRIMITIVE index or sibling *.sym.
+        // PDK / analogLib / hierarchy cell: let Xschem resolve via ROOM_PRIMITIVE index or sibling *.sym.
         symbol = resolvedModel + ".sym";
         remappedToNativePdk = true;
     }
@@ -425,8 +425,8 @@ Instance instanceForQucsExport(const Instance &src)
             : 1;
         xf.orient = orientFromQucsSourcePlacement(mirror, rotateField);
     } else if (remappedToNativePdk && qucsLibNeedsEwToNsCompensate(resolvedModel)) {
-        // Qucs IHP LibComp artwork is east–west; native Xschem/CORE PDK symbols are north–south.
-        // Keep CORE rotate props for Qucs round-trip; only adjust the Xschem placement orient.
+        // Qucs IHP LibComp artwork is east–west; native Xschem/ROOM PDK symbols are north–south.
+        // Keep ROOM rotate props for Qucs round-trip; only adjust the Xschem placement orient.
         const int mirror = findProperty(src.properties(), "mirror")
             ? std::stoi(*findProperty(src.properties(), "mirror"))
             : 0;
@@ -860,13 +860,13 @@ std::optional<std::string> analogLibControllerRef(const Instance &inst)
         logical = cellStem(inst.cellName());
     }
     if (logical == "INCLSCR" || logical == "SpiceLib") {
-        return "analogLib/INCLSCR.symbol.core";
+        return "analogLib/INCLSCR.symbol.room";
     }
     if (logical == ".TR" || logical == "TR") {
-        return "analogLib/TR.symbol.core";
+        return "analogLib/TR.symbol.room";
     }
     if (logical == "launcher" || cellStem(inst.cellName()) == "launcher") {
-        return "analogLib/launcher.symbol.core";
+        return "analogLib/launcher.symbol.room";
     }
     return std::nullopt;
 }
@@ -902,9 +902,9 @@ void normalizeAnalogLibController(Instance &inst)
         inst = std::move(normalized);
     }
     if (!findProperty(inst.properties(), "qucs.type")) {
-        if (*controllerRef == "analogLib/INCLSCR.symbol.core") {
+        if (*controllerRef == "analogLib/INCLSCR.symbol.room") {
             addProperty(inst.properties(), "qucs.type", "INCLSCR");
-        } else if (*controllerRef == "analogLib/TR.symbol.core") {
+        } else if (*controllerRef == "analogLib/TR.symbol.room") {
             addProperty(inst.properties(), "qucs.type", ".TR");
         } else {
             addProperty(inst.properties(), "qucs.type", "launcher");
@@ -1260,7 +1260,7 @@ void setWireLabProperty(std::vector<Property> &props, const std::string &lab)
     addProperty(props, "lab", lab);
 }
 
-// Qucs→CORE wires often lack lab=; without it xschem assigns net1/net2 and does not short
+// Qucs→ROOM wires often lack lab=; without it xschem assigns net1/net2 and does not short
 // separate gnd.sym pins to global GND — inverter floats and Vout stays 0.
 void applyGndLabelsToWireProps(const Block &block, double dbuPerEditorUnit,
                                const std::vector<Shape::PathData> &wirePaths,
@@ -2370,7 +2370,7 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
         }
     }
 
-    // Qucs dual-tool TB uses .TR (no launcher). Restore launcher for Xschem when derivable from CORE.
+    // Qucs dual-tool TB uses .TR (no launcher). Restore launcher for Xschem when derivable from ROOM.
     if (fromQucs && needWaveLauncher && !hasLauncher && !waveRawFile.empty()) {
         const Box bbox = block.bbox();
         double launchX = dbuToEditorUnits(bbox.urx, g_dbuPerEditorUnit) + 100.0;
@@ -2396,4 +2396,4 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
     }
 }
 
-} // namespace core::xschem
+} // namespace room::xschem

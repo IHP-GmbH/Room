@@ -19,6 +19,6 @@ gcovr_verbose.txt
 # Example outputs
 examples/**/output/
 output/
-*.core
-integrations/klayout/mcore/db_plugin/local.pri
+*.room
+integrations/klayout/mroom/db_plugin/local.pri
 scripts/*.log

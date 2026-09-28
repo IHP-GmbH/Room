@@ -4,7 +4,7 @@
 
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Shape class is a tagged union of rect, polygon, path, and text geometry.
@@ -69,4 +69,4 @@ private:
     std::vector<Property>                               m_properties;
 };
 
-} // namespace core
+} // namespace room

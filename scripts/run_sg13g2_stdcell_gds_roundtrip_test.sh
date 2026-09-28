@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD="${1:-$ROOT/build}"
-INPUT_GDS="${2:-$ROOT/examples/gds_to_core/data/sg13g2_stdcell.gds}"
+INPUT_GDS="${2:-$ROOT/examples/gds_to_room/data/sg13g2_stdcell.gds}"
 WORK_DIR="$BUILD/tests/sg13g2_stdcell"
 ROUND_GDS="$WORK_DIR/roundtrip.gds"
 
@@ -14,13 +14,13 @@ if [[ ! -f "$INPUT_GDS" ]]; then
   exit 1
 fi
 
-ROUNDTRIP="$BUILD/gds_core_roundtrip"
-if [[ -x "$BUILD/gds_core_roundtrip.exe" ]]; then
-  ROUNDTRIP="$BUILD/gds_core_roundtrip.exe"
+ROUNDTRIP="$BUILD/gds_room_roundtrip"
+if [[ -x "$BUILD/gds_room_roundtrip.exe" ]]; then
+  ROUNDTRIP="$BUILD/gds_room_roundtrip.exe"
 fi
 
 if [[ ! -x "$ROUNDTRIP" ]]; then
-  echo "Missing $ROUNDTRIP (cmake --build build --target gds_core_roundtrip)" >&2
+  echo "Missing $ROUNDTRIP (cmake --build build --target gds_room_roundtrip)" >&2
   exit 1
 fi
 
@@ -57,7 +57,7 @@ if [[ -z "$KLAYOUT" ]]; then
   exit 1
 fi
 
-echo "=== sg13g2_stdcell.gds: GDS -> CORE -> GDS ==="
+echo "=== sg13g2_stdcell.gds: GDS -> ROOM -> GDS ==="
 "$ROUNDTRIP" "$INPUT_GDS" "$ROUND_GDS"
 
 echo

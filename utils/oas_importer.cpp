@@ -1,6 +1,6 @@
 /*!****************************************************************************************
  * \file oas_importer.cpp
- * \brief Native OASIS import into a CORE Database.
+ * \brief Native OASIS import into a ROOM Database.
  *****************************************************************************************/
 
 #include "oas_importer.h"
@@ -14,7 +14,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace core {
+namespace room {
 namespace {
 
 bool fileExists(const std::string &path)
@@ -113,4 +113,4 @@ Database OasImporter::importFile(const std::string &oasPath) const
     return db;
 }
 
-} // namespace core
+} // namespace room

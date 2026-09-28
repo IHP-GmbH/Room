@@ -6,13 +6,13 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*! Xschem-only schematic decoration (title blocks, wire labels, …): skip in Qucs, no <Lib>. */
 bool isQucsSchematicDecoration(const std::string &cellName);
 
 /*!****************************************************************************************
- * \brief The QucsExporter class writes a schematic cell from a CORE Database to a .sch file.
+ * \brief The QucsExporter class writes a schematic cell from a ROOM Database to a .sch file.
  *****************************************************************************************/
 class QucsExporter {
 public:
@@ -61,4 +61,4 @@ private:
     mutable std::vector<std::string>                    m_errors;
 };
 
-} // namespace core
+} // namespace room

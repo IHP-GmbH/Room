@@ -4,7 +4,7 @@
 
 #include <unordered_set>
 
-namespace core {
+namespace room {
 namespace {
 
 std::uint32_t shapeLayerId(const Shape &shape)
@@ -132,4 +132,4 @@ void mergeLayerPurpose(LayerSpec &layer, LayerPurpose purpose)
     }
 }
 
-} // namespace core
+} // namespace room

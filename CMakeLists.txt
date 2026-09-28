@@ -1,38 +1,38 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(CORE LANGUAGES CXX)
+project(ROOM LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CORE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
-set(_CORE_TOP_LEVEL "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+set(ROOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+set(_ROOM_TOP_LEVEL "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
 
-include("${CORE_ROOT}/cmake/Coverage.cmake")
+include("${ROOM_ROOT}/cmake/Coverage.cmake")
 
-option(CORE_BOOTSTRAP_CAPNP "Build Cap'n Proto automatically when capnp-install is missing" ON)
-option(CORE_BUILD_EXAMPLES "Build CORE example command-line tools" ON)
-option(CORE_BUILD_XSCHEM_TCL "Build Tcl extension (coretcl.so) for in-process Xschem integration" OFF)
+option(ROOM_BOOTSTRAP_CAPNP "Build Cap'n Proto automatically when capnp-install is missing" ON)
+option(ROOM_BUILD_EXAMPLES "Build ROOM example command-line tools" ON)
+option(ROOM_BUILD_XSCHEM_TCL "Build Tcl extension (roomtcl.so) for in-process Xschem integration" OFF)
 
-if(CORE_BUILD_XSCHEM_TCL)
+if(ROOM_BUILD_XSCHEM_TCL)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
 if(NOT DEFINED CAPNP_ROOT)
-    set(CAPNP_ROOT "${CORE_ROOT}/third_party/capnp-install" CACHE PATH "Cap'n Proto prefix (bin, include, lib)")
+    set(CAPNP_ROOT "${ROOM_ROOT}/third_party/capnp-install" CACHE PATH "Cap'n Proto prefix (bin, include, lib)")
 endif()
 set(CAPNP_BIN "${CAPNP_ROOT}/bin")
 set(CAPNP_INCLUDE "${CAPNP_ROOT}/include")
 set(CAPNP_LIB "${CAPNP_ROOT}/lib")
 
-include("${CORE_ROOT}/cmake/BootstrapCapnp.cmake")
-core_bootstrap_capnp("${CORE_ROOT}" "${CAPNP_ROOT}" "${CAPNP_INCLUDE}")
+include("${ROOM_ROOT}/cmake/BootstrapCapnp.cmake")
+room_bootstrap_capnp("${ROOM_ROOT}" "${CAPNP_ROOT}" "${CAPNP_INCLUDE}")
 
 if(NOT EXISTS "${CAPNP_INCLUDE}/capnp/message.h")
     message(FATAL_ERROR
         "Cap'n Proto not found in ${CAPNP_ROOT}.\n"
-        "  Enable CORE_BOOTSTRAP_CAPNP=ON (default), or run:\n"
+        "  Enable ROOM_BOOTSTRAP_CAPNP=ON (default), or run:\n"
         "  Windows: scripts/mkcapnp.cmd\n"
         "  Linux:   ./scripts/mkcapnp.sh\n"
         "See third_party/README.md.")
@@ -43,7 +43,7 @@ find_program(CAPNPC_CXX_EXECUTABLE capnpc-c++ PATHS "${CAPNP_BIN}" NO_DEFAULT_PA
 find_library(CAPNP_LIBRARY capnp PATHS "${CAPNP_LIB}" NO_DEFAULT_PATH REQUIRED)
 find_library(KJ_LIBRARY kj PATHS "${CAPNP_LIB}" NO_DEFAULT_PATH REQUIRED)
 
-set(SCHEMA_DIR "${CORE_ROOT}/schema")
+set(SCHEMA_DIR "${ROOM_ROOT}/schema")
 set(GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${SCHEMA_DIR}/*.capnp")
@@ -67,11 +67,11 @@ add_custom_command(
             common.capnp dm.capnp design.capnp database.capnp views.capnp index.capnp compact.capnp
     DEPENDS ${SCHEMA_FILES}
     WORKING_DIRECTORY ${SCHEMA_DIR}
-    COMMENT "Generating Cap'n Proto sources for CORE"
+    COMMENT "Generating Cap'n Proto sources for ROOM"
     VERBATIM
 )
 
-set(CORE_SOURCES
+set(ROOM_SOURCES
     src/box.cpp
     src/enums.cpp
     src/shape.cpp
@@ -87,27 +87,27 @@ set(CORE_SOURCES
     src/lib_index.cpp
     src/database.cpp
     src/file_summary.cpp
-    src/core_paths.cpp
+    src/room_paths.cpp
     src/serialization.cpp
     src/compact_codec.cpp
     src/varint_codec.cpp
     ${GENERATED_SOURCES}
 )
 
-add_library(core STATIC ${CORE_SOURCES})
-set_target_properties(core PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+add_library(room STATIC ${ROOM_SOURCES})
+set_target_properties(room PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 
-target_include_directories(core PUBLIC
-    "$<BUILD_INTERFACE:${CORE_ROOT}/src>"
+target_include_directories(room PUBLIC
+    "$<BUILD_INTERFACE:${ROOM_ROOT}/src>"
     "$<BUILD_INTERFACE:${GEN_DIR}>"
     "$<BUILD_INTERFACE:${CAPNP_INCLUDE}>"
-    "$<INSTALL_INTERFACE:include/CORE/src>"
-    "$<INSTALL_INTERFACE:include/CORE/generated>"
+    "$<INSTALL_INTERFACE:include/ROOM/src>"
+    "$<INSTALL_INTERFACE:include/ROOM/generated>"
 )
 
-target_link_libraries(core PUBLIC ${CAPNP_LIBRARY} ${KJ_LIBRARY})
+target_link_libraries(room PUBLIC ${CAPNP_LIBRARY} ${KJ_LIBRARY})
 
-add_library(core_utils STATIC
+add_library(room_utils STATIC
     utils/gds_importer.cpp
     utils/gds_exporter.cpp
     utils/qucs_importer.cpp
@@ -125,46 +125,46 @@ add_library(core_utils STATIC
     utils/xschem_bridge.cpp
     utils/text_dump.cpp
 )
-set_target_properties(core_utils PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+set_target_properties(room_utils PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 
-target_include_directories(core_utils PUBLIC
-    "$<BUILD_INTERFACE:${CORE_ROOT}/utils>"
-    "$<INSTALL_INTERFACE:include/CORE/utils>"
+target_include_directories(room_utils PUBLIC
+    "$<BUILD_INTERFACE:${ROOM_ROOT}/utils>"
+    "$<INSTALL_INTERFACE:include/ROOM/utils>"
 )
 
-target_link_libraries(core_utils PUBLIC core)
+target_link_libraries(room_utils PUBLIC room)
 
-if(NOT TARGET CORE::core)
-    add_library(CORE::core ALIAS core)
+if(NOT TARGET ROOM::room)
+    add_library(ROOM::room ALIAS room)
 endif()
-if(NOT TARGET CORE::core_utils)
-    add_library(CORE::core_utils ALIAS core_utils)
+if(NOT TARGET ROOM::room_utils)
+    add_library(ROOM::room_utils ALIAS room_utils)
 endif()
 
-if(CORE_BUILD_EXAMPLES)
-    add_executable(gds_to_core examples/gds_to_core/main.cpp)
-    target_link_libraries(gds_to_core PRIVATE core_utils)
+if(ROOM_BUILD_EXAMPLES)
+    add_executable(gds_to_room examples/gds_to_room/main.cpp)
+    target_link_libraries(gds_to_room PRIVATE room_utils)
 
-    add_executable(core_to_gds examples/core_to_gds/main.cpp)
-    target_link_libraries(core_to_gds PRIVATE core_utils)
+    add_executable(room_to_gds examples/room_to_gds/main.cpp)
+    target_link_libraries(room_to_gds PRIVATE room_utils)
 
-    add_executable(qucs_to_core examples/qucs_to_core/main.cpp)
-    target_link_libraries(qucs_to_core PRIVATE core_utils)
+    add_executable(qucs_to_room examples/qucs_to_room/main.cpp)
+    target_link_libraries(qucs_to_room PRIVATE room_utils)
 
-    add_executable(xschem_to_core examples/xschem_to_core/main.cpp)
-    target_link_libraries(xschem_to_core PRIVATE core_utils)
+    add_executable(xschem_to_room examples/xschem_to_room/main.cpp)
+    target_link_libraries(xschem_to_room PRIVATE room_utils)
 
-    add_executable(core_to_xschem examples/core_to_xschem/main.cpp)
-    target_link_libraries(core_to_xschem PRIVATE core_utils)
+    add_executable(room_to_xschem examples/room_to_xschem/main.cpp)
+    target_link_libraries(room_to_xschem PRIVATE room_utils)
 
-    add_executable(core_to_qucs examples/core_to_qucs/main.cpp)
-    target_link_libraries(core_to_qucs PRIVATE core_utils)
+    add_executable(room_to_qucs examples/room_to_qucs/main.cpp)
+    target_link_libraries(room_to_qucs PRIVATE room_utils)
 
     add_executable(make_sample_gds tools/make_sample_gds.cpp)
 
     find_package(ZLIB QUIET)
     if(ZLIB_FOUND)
-        add_library(core_oas STATIC
+        add_library(room_oas STATIC
             utils/oas_reader.cpp
             utils/oas_writer.cpp
             utils/oas_geometry.cpp
@@ -173,50 +173,50 @@ if(CORE_BUILD_EXAMPLES)
             utils/oas_importer.cpp
             utils/oas_exporter.cpp
         )
-        target_include_directories(core_oas PUBLIC
-            "$<BUILD_INTERFACE:${CORE_ROOT}/utils>"
+        target_include_directories(room_oas PUBLIC
+            "$<BUILD_INTERFACE:${ROOM_ROOT}/utils>"
         )
-        target_link_libraries(core_oas PUBLIC core_utils ZLIB::ZLIB)
-        target_compile_definitions(core_oas PRIVATE OAS_TRACE=0)
+        target_link_libraries(room_oas PUBLIC room_utils ZLIB::ZLIB)
+        target_compile_definitions(room_oas PRIVATE OAS_TRACE=0)
 
-        add_executable(oas_to_core examples/oas_to_core/main.cpp)
-        target_link_libraries(oas_to_core PRIVATE core_oas)
+        add_executable(oas_to_room examples/oas_to_room/main.cpp)
+        target_link_libraries(oas_to_room PRIVATE room_oas)
     endif()
 endif()
 
-add_executable(make_empty_core_views tools/make_empty_core_views.cpp)
-target_link_libraries(make_empty_core_views PRIVATE core)
+add_executable(make_empty_room_views tools/make_empty_room_views.cpp)
+target_link_libraries(make_empty_room_views PRIVATE room)
 
-if(_CORE_TOP_LEVEL)
-    install(TARGETS core core_utils EXPORT CORETargets
+if(_ROOM_TOP_LEVEL)
+    install(TARGETS room room_utils EXPORT ROOMTargets
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib
             RUNTIME DESTINATION bin)
 
-    if(CORE_BUILD_EXAMPLES)
-        install(TARGETS gds_to_core core_to_gds qucs_to_core core_to_qucs xschem_to_core core_to_xschem make_sample_gds
+    if(ROOM_BUILD_EXAMPLES)
+        install(TARGETS gds_to_room room_to_gds qucs_to_room room_to_qucs xschem_to_room room_to_xschem make_sample_gds
                 RUNTIME DESTINATION bin)
-        if(TARGET oas_to_core)
-            install(TARGETS oas_to_core RUNTIME DESTINATION bin)
+        if(TARGET oas_to_room)
+            install(TARGETS oas_to_room RUNTIME DESTINATION bin)
         endif()
     endif()
 
-    install(DIRECTORY src/ DESTINATION include/CORE/src FILES_MATCHING PATTERN "*.h")
-    install(DIRECTORY utils/ DESTINATION include/CORE/utils FILES_MATCHING PATTERN "*.h")
-    install(DIRECTORY "${GEN_DIR}/" DESTINATION include/CORE/generated
+    install(DIRECTORY src/ DESTINATION include/ROOM/src FILES_MATCHING PATTERN "*.h")
+    install(DIRECTORY utils/ DESTINATION include/ROOM/utils FILES_MATCHING PATTERN "*.h")
+    install(DIRECTORY "${GEN_DIR}/" DESTINATION include/ROOM/generated
             FILES_MATCHING PATTERN "*.h")
 
-    install(EXPORT CORETargets
-            FILE CORETargets.cmake
-            NAMESPACE CORE::
-            DESTINATION lib/cmake/CORE)
+    install(EXPORT ROOMTargets
+            FILE ROOMTargets.cmake
+            NAMESPACE ROOM::
+            DESTINATION lib/cmake/ROOM)
 
-    install(FILES cmake/COREConfig.cmake
-            DESTINATION lib/cmake/CORE)
+    install(FILES cmake/ROOMConfig.cmake
+            DESTINATION lib/cmake/ROOM)
 endif()
 
-include("${CORE_ROOT}/cmake/Tests.cmake")
+include("${ROOM_ROOT}/cmake/Tests.cmake")
 
-if(CORE_BUILD_XSCHEM_TCL)
+if(ROOM_BUILD_XSCHEM_TCL)
     add_subdirectory(integrations/xschem_tcl)
 endif()

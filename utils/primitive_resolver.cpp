@@ -1,12 +1,12 @@
 #include "primitive_resolver.h"
 
-#include "core_paths.h"
+#include "room_paths.h"
 
 #include <cstdlib>
 #include <fstream>
 #include <unordered_set>
 
-namespace core {
+namespace room {
 namespace {
 
 std::string toLower(std::string value)
@@ -54,9 +54,9 @@ std::string joinPath(const std::string &left, const std::string &right)
 std::string logicalPrimitiveRef(const std::string &techLibrary, const std::string &cellName)
 {
     if (techLibrary.empty()) {
-        return coreFileName(cellName, ViewType::Symbol);
+        return roomFileName(cellName, ViewType::Symbol);
     }
-    return techLibrary + "/" + coreFileName(cellName, ViewType::Symbol);
+    return techLibrary + "/" + roomFileName(cellName, ViewType::Symbol);
 }
 
 void splitTechAndStem(const std::string &ref, std::string &techLibrary, std::string &stem)
@@ -116,13 +116,13 @@ std::string remapCommonLibToAnalogLib(const std::string &ref)
 
     // Xschem gnd.sym artwork was commonLib/gnd; canonical passives live in analogLib/GND.
     if (cell == "gnd") {
-        return "analogLib/GND.symbol.core";
+        return "analogLib/GND.symbol.room";
     }
 
     const std::size_t dot = stem.find('.');
     const std::string suffix = dot == std::string::npos ? std::string{} : stem.substr(dot);
-    if (suffix == ".symbol.core" || suffix == ".sym" || suffix.empty()) {
-        return "analogLib/" + cell + (suffix.empty() ? ".symbol.core" : suffix);
+    if (suffix == ".symbol.room" || suffix == ".sym" || suffix.empty()) {
+        return "analogLib/" + cell + (suffix.empty() ? ".symbol.room" : suffix);
     }
     return "analogLib/" + stem;
 }
@@ -130,13 +130,13 @@ std::string remapCommonLibToAnalogLib(const std::string &ref)
 std::string remapLegacyPrimitiveRef(const std::string &ref)
 {
     static const std::unordered_map<std::string, std::string> kLegacy = {
-        {"commonLib/launcher.symbol.core", "analogLib/launcher.symbol.core"},
+        {"commonLib/launcher.symbol.room", "analogLib/launcher.symbol.room"},
         {"commonLib/launcher.sym", "analogLib/launcher.sym"},
         {"commonLib/launcher", "analogLib/launcher"},
-        {"commonLib/vdd.symbol.core", "analogLib/vdd.symbol.core"},
+        {"commonLib/vdd.symbol.room", "analogLib/vdd.symbol.room"},
         {"commonLib/vdd.sym", "analogLib/vdd.sym"},
         {"commonLib/vdd", "analogLib/vdd"},
-        {"commonLib/gnd.symbol.core", "analogLib/GND.symbol.core"},
+        {"commonLib/gnd.symbol.room", "analogLib/GND.symbol.room"},
         {"commonLib/gnd.sym", "analogLib/GND.sym"},
         {"commonLib/gnd", "analogLib/GND"},
         {"gnd.sym", "analogLib/GND.sym"},
@@ -234,23 +234,23 @@ std::vector<std::string> PrimitiveResolver::primitiveCorePathsFromEnvironment()
     return paths;
 }
 
-void PrimitiveResolver::addCorePath(const std::string &corePath)
+void PrimitiveResolver::addCorePath(const std::string &roomPath)
 {
-    if (corePath.empty()) {
+    if (roomPath.empty()) {
         return;
     }
-    corePaths_.push_back(corePath);
+    roomPaths_.push_back(roomPath);
 
-    const ParsedCorePath parsed = parseCoreFilePath(corePath);
+    const ParsedRoomPath parsed = parseRoomFilePath(roomPath);
     if (!parsed.valid || parsed.view != ViewType::Symbol) {
         return;
     }
 
-    // Prefer library name from path: .../<techLib>/<cell>/<cell>.symbol.core
+    // Prefer library name from path: .../<techLib>/<cell>/<cell>.symbol.room
     // Do not use LIBMAN_TECH_LIBRARY when it is a multi-attach list ("a;b") — that used to
     // register keys like "sg13g2_pr;analogLib/cell.sym" which never match "sg13g2_pr/cell.sym".
     std::string techLibrary;
-    const std::string cellDir = dirnameOf(corePath);
+    const std::string cellDir = dirnameOf(roomPath);
     const std::string libDir = fileNameOnly(dirnameOf(cellDir));
     if (!libDir.empty() && libDir != "." && libDir != "..") {
         techLibrary = libDir;
@@ -266,7 +266,7 @@ void PrimitiveResolver::addCorePath(const std::string &corePath)
     }
 
     Entry entry;
-    entry.corePath = corePath;
+    entry.roomPath = roomPath;
     entry.cellName = parsed.cellName;
     entry.techLibrary = techLibrary;
     entry.logicalRef = logicalPrimitiveRef(techLibrary, parsed.cellName);
@@ -279,7 +279,7 @@ void PrimitiveResolver::registerEntry(const Entry &entry)
     index_[symName] = entry;
     index_[entry.cellName] = entry;
     index_[entry.logicalRef] = entry;
-    index_[fileNameOnly(entry.corePath)] = entry;
+    index_[fileNameOnly(entry.roomPath)] = entry;
     if (!entry.techLibrary.empty()) {
         index_[entry.techLibrary + "/" + symName] = entry;
         index_[entry.techLibrary + "/" + entry.cellName] = entry;
@@ -297,7 +297,7 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
     const auto it = index_.find(lookup);
     if (it != index_.end()) {
         resolved.found = true;
-        resolved.corePath = it->second.corePath;
+        resolved.roomPath = it->second.roomPath;
         resolved.cellName = it->second.cellName;
         resolved.techLibrary = it->second.techLibrary;
         resolved.logicalRef = it->second.logicalRef;
@@ -314,7 +314,7 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
         const std::string key = techLibrary.empty() ? cellName + ".sym" : techLibrary + "/" + cellName + ".sym";
         if (const auto hit = index_.find(key); hit != index_.end()) {
             resolved.found = true;
-            resolved.corePath = hit->second.corePath;
+            resolved.roomPath = hit->second.roomPath;
             resolved.cellName = hit->second.cellName;
             resolved.techLibrary = hit->second.techLibrary;
             resolved.logicalRef = hit->second.logicalRef;
@@ -325,7 +325,7 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
         if (!techLibrary.empty()) {
             if (const auto hit = index_.find(cellName + ".sym"); hit != index_.end()) {
                 resolved.found = true;
-                resolved.corePath = hit->second.corePath;
+                resolved.roomPath = hit->second.roomPath;
                 resolved.cellName = hit->second.cellName;
                 resolved.techLibrary = hit->second.techLibrary.empty() ? techLibrary : hit->second.techLibrary;
                 resolved.logicalRef = hit->second.logicalRef;
@@ -333,7 +333,7 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
             }
             if (const auto hit = index_.find(cellName); hit != index_.end()) {
                 resolved.found = true;
-                resolved.corePath = hit->second.corePath;
+                resolved.roomPath = hit->second.roomPath;
                 resolved.cellName = hit->second.cellName;
                 resolved.techLibrary = hit->second.techLibrary.empty() ? techLibrary : hit->second.techLibrary;
                 resolved.logicalRef = hit->second.logicalRef;
@@ -349,44 +349,44 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
             logicalPrimitiveRef(techLibrary.empty() ? singleTech : techLibrary, cellName);
         if (const auto hit = index_.find(expectedLogical); hit != index_.end()) {
             resolved.found = true;
-            resolved.corePath = hit->second.corePath;
+            resolved.roomPath = hit->second.roomPath;
             resolved.cellName = hit->second.cellName;
             resolved.techLibrary = hit->second.techLibrary;
             resolved.logicalRef = hit->second.logicalRef;
             return resolved;
         }
 
-        for (const std::string &corePath : corePaths_) {
-            const ParsedCorePath parsed = parseCoreFilePath(corePath);
+        for (const std::string &roomPath : roomPaths_) {
+            const ParsedRoomPath parsed = parseRoomFilePath(roomPath);
             if (!parsed.valid || parsed.view != ViewType::Symbol || parsed.cellName != cellName) {
                 continue;
             }
             if (!techLibrary.empty()) {
-                const std::string parent = fileNameOnly(dirnameOf(corePath));
-                const std::string libDir = fileNameOnly(dirnameOf(dirnameOf(corePath)));
+                const std::string parent = fileNameOnly(dirnameOf(roomPath));
+                const std::string libDir = fileNameOnly(dirnameOf(dirnameOf(roomPath)));
                 if (parent != techLibrary && libDir != techLibrary) {
                     continue;
                 }
             }
             resolved.found = true;
-            resolved.corePath = corePath;
+            resolved.roomPath = roomPath;
             resolved.cellName = parsed.cellName;
             resolved.techLibrary = techLibrary.empty() ? singleTech : techLibrary;
             if (resolved.techLibrary.empty()) {
-                resolved.techLibrary = fileNameOnly(dirnameOf(dirnameOf(corePath)));
+                resolved.techLibrary = fileNameOnly(dirnameOf(dirnameOf(roomPath)));
             }
             resolved.logicalRef = logicalPrimitiveRef(resolved.techLibrary, parsed.cellName);
             return resolved;
         }
     }
 
-    if (endsWith(lowerStem, ".core")) {
-        const ParsedCorePath parsed = parseCoreFilePath(stem);
+    if (endsWith(lowerStem, ".room")) {
+        const ParsedRoomPath parsed = parseRoomFilePath(stem);
         if (parsed.valid && parsed.view == ViewType::Symbol) {
-            for (const std::string &corePath : corePaths_) {
-                if (fileNameOnly(corePath) == stem || corePath == lookup || corePath == ref) {
+            for (const std::string &roomPath : roomPaths_) {
+                if (fileNameOnly(roomPath) == stem || roomPath == lookup || roomPath == ref) {
                     resolved.found = true;
-                    resolved.corePath = corePath;
+                    resolved.roomPath = roomPath;
                     resolved.cellName = parsed.cellName;
                     resolved.techLibrary = techLibrary.empty() ? techLibrary_ : techLibrary;
                     resolved.logicalRef = logicalPrimitiveRef(resolved.techLibrary, parsed.cellName);
@@ -399,4 +399,4 @@ ResolvedPrimitive PrimitiveResolver::resolveReference(const std::string &ref) co
     return resolved;
 }
 
-} // namespace core
+} // namespace room

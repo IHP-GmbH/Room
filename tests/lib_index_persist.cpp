@@ -13,12 +13,12 @@
 
 namespace {
 
-bool boxesEqual(const core::Box &a, const core::Box &b)
+bool boxesEqual(const room::Box &a, const room::Box &b)
 {
     return a.llx == b.llx && a.lly == b.lly && a.urx == b.urx && a.ury == b.ury;
 }
 
-bool indexMatches(const core::LibIndex &a, const core::LibIndex &b)
+bool indexMatches(const room::LibIndex &a, const room::LibIndex &b)
 {
     if (a.topCells != b.topCells) {
         return false;
@@ -69,10 +69,10 @@ void ensureDirectory(const std::string &dirPath)
 #endif
 }
 
-bool layoutBboxesValid(const core::Database &db)
+bool layoutBboxesValid(const room::Database &db)
 {
     for (const auto &cell : db.lib().cells()) {
-        const core::CellContent *content = cell.findContent(core::ViewType::Layout);
+        const room::CellContent *content = cell.findContent(room::ViewType::Layout);
         if (content == nullptr || content->block().shapes().empty()) {
             continue;
         }
@@ -88,10 +88,10 @@ bool layoutBboxesValid(const core::Database &db)
 int main(int argc, char *argv[])
 {
     const std::string gdsPath = (argc > 1) ? argv[1] : "testdata/sample.gds";
-    const std::string corePath = (argc > 2) ? argv[2] : "build/tests/lib_index_persist.core";
+    const std::string roomPath = (argc > 2) ? argv[2] : "build/tests/lib_index_persist.room";
 
-    core::GdsImporter importer;
-    core::Database original = importer.importFile(gdsPath);
+    room::GdsImporter importer;
+    room::Database original = importer.importFile(gdsPath);
     if (!importer.errors().empty()) {
         for (const auto &msg : importer.errors()) {
             std::cerr << "error: " << msg << '\n';
@@ -104,24 +104,24 @@ int main(int argc, char *argv[])
         return 2;
     }
 
-    const core::LibIndex expectedIndex = core::LibIndex::build(original.lib());
-    const std::size_t slash = corePath.find_last_of("/\\");
+    const room::LibIndex expectedIndex = room::LibIndex::build(original.lib());
+    const std::size_t slash = roomPath.find_last_of("/\\");
     if (slash != std::string::npos) {
-        ensureDirectory(corePath.substr(0, slash));
+        ensureDirectory(roomPath.substr(0, slash));
     }
-    original.saveToFile(corePath, core::ViewType::Layout);
+    original.saveToFile(roomPath, room::ViewType::Layout);
 
-    const core::Database reloaded = core::Database::loadFromFile(corePath);
+    const room::Database reloaded = room::Database::loadFromFile(roomPath);
     if (!reloaded.lib().hasIndex()) {
         std::cerr << "error: expected persisted LibIndex after load\n";
         return 3;
     }
     if (!layoutBboxesValid(reloaded)) {
-        std::cerr << "error: bbox missing after .core reload\n";
+        std::cerr << "error: bbox missing after .room reload\n";
         return 4;
     }
 
-    const core::LibIndex rebuilt = core::LibIndex::build(reloaded.lib());
+    const room::LibIndex rebuilt = room::LibIndex::build(reloaded.lib());
     if (!indexMatches(reloaded.lib().index(), expectedIndex)) {
         std::cerr << "error: persisted index does not match pre-save index\n";
         return 5;

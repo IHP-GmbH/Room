@@ -2,14 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug gds_to_core",
+      "name": "Debug gds_to_room",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/gds_to_core.exe",
+      "program": "${workspaceFolder}/build/gds_to_room.exe",
       "args": [
-        "${workspaceFolder}/examples/gds_to_core/data/sg13g2_stdcell.gds",
-        "${workspaceFolder}/examples/gds_to_core/output/layout.core",
-        "${workspaceFolder}/examples/gds_to_core/output/layout.txt"
+        "${workspaceFolder}/examples/gds_to_room/data/sg13g2_stdcell.gds",
+        "${workspaceFolder}/examples/gds_to_room/output/layout.room",
+        "${workspaceFolder}/examples/gds_to_room/output/layout.txt"
       ],
       "cwd": "${workspaceFolder}",
       "preLaunchTask": "Build: All Targets",

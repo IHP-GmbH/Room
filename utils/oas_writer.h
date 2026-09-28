@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 class Database;
 
@@ -21,4 +21,4 @@ private:
     std::vector<std::string>                            m_errors;
 };
 
-} // namespace core
+} // namespace room

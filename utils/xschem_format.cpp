@@ -2,7 +2,7 @@
 
 #include <cctype>
 
-namespace core::xschem {
+namespace room::xschem {
 
 ViewType viewTypeForExtension(const std::string &extension)
 {
@@ -74,4 +74,4 @@ void xschemFromOrient(Orient orient, int &rotate, int &mirror)
     }
 }
 
-} // namespace core::xschem
+} // namespace room::xschem

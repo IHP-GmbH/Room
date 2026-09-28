@@ -86,33 +86,33 @@ void ensureDirectory(const std::string &dirPath)
 
 
 
-const core::CellContent *findView(const core::Cell &cell)
+const room::CellContent *findView(const room::Cell &cell)
 
 {
 
-    if (const core::CellContent *view = cell.findContent(core::ViewType::Schematic)) {
+    if (const room::CellContent *view = cell.findContent(room::ViewType::Schematic)) {
 
         return view;
 
     }
 
-    return cell.findContent(core::ViewType::Symbol);
+    return cell.findContent(room::ViewType::Symbol);
 
 }
 
 
 
-std::vector<std::string> collectInstanceNames(const core::Block &block)
+std::vector<std::string> collectInstanceNames(const room::Block &block)
 
 {
 
     std::vector<std::string> names;
 
-    for (const core::Instance &inst : block.instances()) {
+    for (const room::Instance &inst : block.instances()) {
 
         const std::string *name = nullptr;
 
-        for (const core::Property &prop : inst.properties()) {
+        for (const room::Property &prop : inst.properties()) {
 
             if (prop.name == "name") {
 
@@ -136,13 +136,13 @@ std::vector<std::string> collectInstanceNames(const core::Block &block)
 
 
 
-std::vector<std::string> collectNetLabels(const core::Block &block)
+std::vector<std::string> collectNetLabels(const room::Block &block)
 
 {
 
     std::vector<std::string> labels;
 
-    for (const core::Net &net : block.nets()) {
+    for (const room::Net &net : block.nets()) {
 
         labels.push_back(net.name());
 
@@ -164,17 +164,17 @@ int main(int argc, char *argv[])
 
 {
 
-    const std::string schPath = (argc > 1) ? argv[1] : "examples/xschem_to_core/data/test.sch";
+    const std::string schPath = (argc > 1) ? argv[1] : "examples/xschem_to_room/data/test.sch";
 
-    const std::string corePath = (argc > 2) ? argv[2] : "build/tests/xschem_api_roundtrip.core";
+    const std::string roomPath = (argc > 2) ? argv[2] : "build/tests/xschem_api_roundtrip.room";
 
     const std::string exportPath = (argc > 3) ? argv[3] : "build/tests/xschem_api_roundtrip.out.sch";
 
 
 
-    core::XschemImporter importer;
+    room::XschemImporter importer;
 
-    core::Database original = importer.importFile(schPath);
+    room::Database original = importer.importFile(schPath);
 
     if (!importer.errors().empty()) {
 
@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 
 
 
-    const core::CellContent *view = findView(original.lib().cells().front());
+    const room::CellContent *view = findView(original.lib().cells().front());
 
     if (view == nullptr || view->block().instances().empty() || view->block().nets().empty()) {
 
@@ -212,11 +212,11 @@ int main(int argc, char *argv[])
 
 
 
-    const std::size_t slash = corePath.find_last_of("/\\");
+    const std::size_t slash = roomPath.find_last_of("/\\");
 
     if (slash != std::string::npos) {
 
-        ensureDirectory(corePath.substr(0, slash));
+        ensureDirectory(roomPath.substr(0, slash));
 
     }
 
@@ -230,19 +230,19 @@ int main(int argc, char *argv[])
 
 
 
-    original.saveToFile(corePath, core::ViewType::Schematic);
+    original.saveToFile(roomPath, room::ViewType::Schematic);
 
-    const core::Database reloaded = core::Database::loadFromFile(corePath);
+    const room::Database reloaded = room::Database::loadFromFile(roomPath);
 
-    const core::Cell *cell = reloaded.lib().findCell(original.lib().cells().front().name());
+    const room::Cell *cell = reloaded.lib().findCell(original.lib().cells().front().name());
 
-    const core::CellContent *reloadedView = cell != nullptr ? findView(*cell) : nullptr;
+    const room::CellContent *reloadedView = cell != nullptr ? findView(*cell) : nullptr;
 
     if (reloadedView == nullptr || reloadedView->block().instances().size() != view->block().instances().size() ||
 
         reloadedView->block().nets().size() != view->block().nets().size()) {
 
-        std::cerr << "error: CORE reload changed schematic topology\n";
+        std::cerr << "error: ROOM reload changed schematic topology\n";
 
         return 4;
 
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
 
 
 
-    core::XschemExporter exporter;
+    room::XschemExporter exporter;
 
     exporter.exportCell(reloaded, cell->name(), exportPath);
 
@@ -268,9 +268,9 @@ int main(int argc, char *argv[])
 
 
 
-    core::XschemImporter roundTripImporter;
+    room::XschemImporter roundTripImporter;
 
-    core::Database roundTrip = roundTripImporter.importFile(exportPath);
+    room::Database roundTrip = roundTripImporter.importFile(exportPath);
 
     if (!roundTripImporter.errors().empty() || roundTrip.lib().cells().empty()) {
 
@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
 
 
 
-    const core::CellContent *roundTripView = findView(roundTrip.lib().cells().front());
+    const room::CellContent *roundTripView = findView(roundTrip.lib().cells().front());
 
     if (roundTripView == nullptr) {
 
@@ -328,7 +328,7 @@ int main(int argc, char *argv[])
 
               << view->block().nets().size() << " nets)\n";
 
-    std::remove(corePath.c_str());
+    std::remove(roomPath.c_str());
 
     std::remove(exportPath.c_str());
 

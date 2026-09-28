@@ -1,6 +1,6 @@
 /*!****************************************************************************************
  * \file xschem_importer.cpp
- * \brief Import Xschem schematics/symbols into CORE Block/Instance/Net/Shape model.
+ * \brief Import Xschem schematics/symbols into ROOM Block/Instance/Net/Shape model.
  *****************************************************************************************/
 
 #include "xschem_importer.h"
@@ -13,7 +13,7 @@
 
 #include <cctype>
 
-namespace core {
+namespace room {
 namespace {
 
 std::string stemFromPath(const std::string &path)
@@ -142,10 +142,10 @@ Database XschemImporter::importTextInto(Database db, const std::vector<std::stri
         }
     }
 
-    db.setGenerator("CORE XschemImporter");
+    db.setGenerator("ROOM XschemImporter");
     db.setTechnology("xschem");
     db.lib().recomputeAllBBoxes(viewType);
     return db;
 }
 
-} // namespace core
+} // namespace room

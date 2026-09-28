@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The CellContent class holds one view of a cell: type, DBU scale, properties, and topology.
@@ -62,4 +62,4 @@ private:
     std::vector<std::uint8_t>                           m_opaqueData;
 };
 
-} // namespace core
+} // namespace room

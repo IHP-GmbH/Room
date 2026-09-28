@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>pin_retarget | CORE Core | CORE</title>
+  <title>pin_retarget | ROOM Core | ROOM</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,12 +22,12 @@
     <main class="content">
       <p class="doc-path"><a href="index.html">CORE</a> &raquo; <a href="classes.html">Utilities</a> &raquo; pin_retarget</p>
 
-      <h1 class="title">core::pin_retarget</h1>
-      <p class="brief">Aligns Qucs <code>&lt;Lib&gt;</code> pin centers with CORE/Xschem symbol pin centers during cross-tool schematic export. <a class="more" href="#details">More…</a></p>
+      <h1 class="title">room::pin_retarget</h1>
+      <p class="brief">Aligns Qucs <code>&lt;Lib&gt;</code> pin centers with ROOM/Xschem symbol pin centers during cross-tool schematic export. <a class="more" href="#details">More…</a></p>
 
       <table class="props">
         <tr><th>Header:</th><td><code>#include "pin_retarget.h"</code></td></tr>
-        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE CORE::core_utils)</code></td></tr>
+        <tr><th>CMake:</th><td><code>target_link_libraries(mytarget PRIVATE ROOM::room_utils)</code></td></tr>
       </table>
 
       <h2 id="public-functions">Public Functions</h2>
@@ -37,12 +37,12 @@
         <tr><td><code>appendQucsToXschemPinRetargets(inst, dbuPerEditorUnit, out)</code></td><td>Build Qucs &rarr; Xschem pin map for one instance.</td></tr>
         <tr><td><code>appendXschemToQucsPinRetargets(inst, dbuPerEditorUnit, out)</code></td><td>Build Xschem &rarr; Qucs pin map.</td></tr>
         <tr><td><code>retargetPoint(pt, retargets, dbuPerEditorUnit)</code></td><td>Snap a wire endpoint to the nearest mapped pin center.</td></tr>
-        <tr><td><code>retargetWirePolylinesQucsToCore(polylines, pinRetargets, dbuPerEditorUnit)</code></td><td>Retarget Qucs wire polylines onto CORE pin centers and lift T-junction buses.</td></tr>
+        <tr><td><code>retargetWirePolylinesQucsToCore(polylines, pinRetargets, dbuPerEditorUnit)</code></td><td>Retarget Qucs wire polylines onto ROOM pin centers and lift T-junction buses.</td></tr>
       </table>
 
       <h2 id="details">Detailed Description</h2>
       <p>
-        Qucs and Xschem draw the same CORE topology with different native symbol geometries.
+        Qucs and Xschem draw the same ROOM topology with different native symbol geometries.
         When <a href="qucsexporter.html">QucsExporter</a> or <a href="xschembriage.html">xschem_bridge</a> emits wires,
         pin retargeting keeps wire endpoints on the visible pin centers of attached
         <a href="primitiveresolver.html">primitive symbols</a> instead of stale LibComp anchor points.

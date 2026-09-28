@@ -1,6 +1,6 @@
 #include "shape.h"
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Constructs a rectangle shape.
@@ -69,4 +69,4 @@ const Shape::ArcData *Shape::arc() const
     return m_type == Type::Arc ? &m_arc : nullptr;
 }
 
-} // namespace core
+} // namespace room

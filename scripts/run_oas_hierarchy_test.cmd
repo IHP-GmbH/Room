@@ -3,7 +3,7 @@ setlocal EnableExtensions
 
 set "ROOT=%~dp0.."
 set "BUILD=%ROOT%\build"
-set "INPUT_GDS=%ROOT%\examples\gds_to_core\data\sg13g2_stdcell.gds"
+set "INPUT_GDS=%ROOT%\examples\gds_to_room\data\sg13g2_stdcell.gds"
 set "WORK_DIR=%BUILD%\tests\oas"
 set "MINIMAL_OAS=%WORK_DIR%\minimal.oas"
 set "CONVERTED_OAS=%WORK_DIR%\sg13g2_stdcell.oas"

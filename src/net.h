@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Net class represents a connectivity net with a signal type and terminal list.
@@ -29,4 +29,4 @@ private:
     std::vector<Term>                                   m_terms;
 };
 
-} // namespace core
+} // namespace room

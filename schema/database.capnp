@@ -1,7 +1,7 @@
 @0xd4e5f60718293a4b;
 
 using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("core::schema");
+$Cxx.namespace("room::schema");
 
 using Property  = import "common.capnp".Property;
 using ViewType  = import "dm.capnp".ViewType;

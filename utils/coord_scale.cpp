@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace core {
+namespace room {
 
 double effectiveDbuPerEditorUnit(const CellContent &content)
 {
@@ -131,7 +131,7 @@ void orientToQucsSourcePlacement(Orient orient, int &mirror, int &rotate)
 
 Orient orientFromQucsLibToNativePdk(int mirror, int rotateField)
 {
-    // Native Xschem/CORE PDK symbols are typically drawn N–S (rot0 vertical), while some Qucs
+    // Native Xschem/ROOM PDK symbols are typically drawn N–S (rot0 vertical), while some Qucs
     // IHP LibComp artwork is E–W (rotate0 horizontal). +1 aligns vertical placements
     // (Qucs rotate=3 → xschem rot 0). Only call when Qucs artwork is E–W and Xschem is N–S.
     const int visualRotate = (rotateField + 1) & 3;
@@ -141,7 +141,7 @@ Orient orientFromQucsLibToNativePdk(int mirror, int rotateField)
 bool qucsLibNeedsEwToNsCompensate(const std::string &model)
 {
     // Qucs IHP nonlinear LibComp cells whose default ports are east–west, while the matching
-    // Xschem/CORE symbol is north–south. Cells already N–S in Qucs (isolbox, MOS, HBT, …)
+    // Xschem/ROOM symbol is north–south. Cells already N–S in Qucs (isolbox, MOS, HBT, …)
     // must NOT get the +1 shift.
     static const char *kExact[] = {
         "dantenna", "dpantenna", "svaricap", "nmoscl_2", "nmoscl_4",
@@ -156,4 +156,4 @@ bool qucsLibNeedsEwToNsCompensate(const std::string &model)
     return false;
 }
 
-} // namespace core
+} // namespace room

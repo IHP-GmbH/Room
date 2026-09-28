@@ -2,7 +2,7 @@ option(CORE_ENABLE_COVERAGE "Enable GCC/MinGW coverage instrumentation" OFF)
 
 if(CORE_ENABLE_COVERAGE)
     if(MINGW OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        message(STATUS "CORE code coverage enabled")
+        message(STATUS "ROOM code coverage enabled")
         add_compile_options(-O0 -g --coverage -fprofile-abs-path)
         add_link_options(--coverage)
         add_compile_definitions(COVERAGE_BUILD)
@@ -12,7 +12,7 @@ if(CORE_ENABLE_COVERAGE)
 endif()
 
 function(core_add_coverage_report)
-    if(NOT CORE_ENABLE_COVERAGE)
+    if(NOT ROOM_ENABLE_COVERAGE)
         return()
     endif()
 

@@ -24,15 +24,15 @@ if [[ ! -f "$INPUT_GDS" ]]; then
   exit 1
 fi
 
-ROUNDTRIP="$BUILD/gds_core_roundtrip"
-if [[ -x "$BUILD/gds_core_roundtrip.exe" ]]; then
-  ROUNDTRIP="$BUILD/gds_core_roundtrip.exe"
+ROUNDTRIP="$BUILD/gds_room_roundtrip"
+if [[ -x "$BUILD/gds_room_roundtrip.exe" ]]; then
+  ROUNDTRIP="$BUILD/gds_room_roundtrip.exe"
 fi
 
 if [[ ! -x "$ROUNDTRIP" ]]; then
-  echo "Missing $ROUNDTRIP (cmake --build build --target gds_core_roundtrip)" >&2
+  echo "Missing $ROUNDTRIP (cmake --build build --target gds_room_roundtrip)" >&2
   exit 1
 fi
 
-echo "=== sample.gds: GDS -> CORE -> GDS ==="
+echo "=== sample.gds: GDS -> ROOM -> GDS ==="
 "$ROUNDTRIP" "$INPUT_GDS" "$ROUND_GDS"

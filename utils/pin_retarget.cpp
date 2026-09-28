@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
-namespace core {
+namespace room {
 namespace {
 
 const std::string *findProp(const std::vector<Property> &props, const std::string &name)
@@ -140,9 +140,9 @@ Point qucsLibPinWorldEditor(const Instance &inst, Point localQucs, double dbuPer
         }
     }
     const std::int64_t cx =
-        static_cast<std::int64_t>(std::llround(core::dbuToEditorUnits(inst.transform().x, dbuPerEditorUnit) / divisor));
+        static_cast<std::int64_t>(std::llround(room::dbuToEditorUnits(inst.transform().x, dbuPerEditorUnit) / divisor));
     const std::int64_t cy =
-        static_cast<std::int64_t>(std::llround(core::dbuToEditorUnits(inst.transform().y, dbuPerEditorUnit) / divisor));
+        static_cast<std::int64_t>(std::llround(room::dbuToEditorUnits(inst.transform().y, dbuPerEditorUnit) / divisor));
     return Point{cx + placed.x, cy + placed.y};
 }
 
@@ -157,7 +157,7 @@ void appendMappedPins(const Transform &xfFrom, const Transform &xfTo, double dbu
                       const Point *from, const Point *to, std::size_t n,
                       std::vector<std::pair<Point, Point>> &out)
 {
-    // Some Xschem-origin CORE files store editor-unit coordinates while advertising dbu=1000.
+    // Some Xschem-origin ROOM files store editor-unit coordinates while advertising dbu=1000.
     // If the instance origin looks like editor space, keep pin tables unscaled.
     double scale = (dbuPerEditorUnit > 0.0) ? dbuPerEditorUnit : 1.0;
     if (scale > 1.0 && std::llabs(xfFrom.x) < 100000 && std::llabs(xfFrom.y) < 100000) {
@@ -223,7 +223,7 @@ void appendQucsToXschemPinRetargets(const Instance &inst, double dbuPerEditorUni
                                     std::vector<std::pair<Point, Point>> &out)
 {
     const std::string model = pinRetargetModelName(inst);
-    // Qucs-origin: wires sit on LibComp pins; CORE transform matches Qucs placement.
+    // Qucs-origin: wires sit on LibComp pins; ROOM transform matches Qucs placement.
     const Transform &xf = inst.transform();
 
     if (isIhpFetModel(model)) {
@@ -254,7 +254,7 @@ void appendXschemToQucsPinRetargets(const Instance &inst, double dbuPerEditorUni
                                     std::vector<std::pair<Point, Point>> &out)
 {
     const std::string model = pinRetargetModelName(inst);
-    // Keep from/to in the CORE transform frame (where Xschem wires attach). Stale Qucs
+    // Keep from/to in the ROOM transform frame (where Xschem wires attach). Stale Qucs
     // mirror/rotate props must not skew the destination — export derives placement from orient.
     const Transform &xf = inst.transform();
 
@@ -458,7 +458,7 @@ void retargetWirePolylinesQucsToCore(std::vector<std::vector<Point>> &polylines,
     }
     const std::int64_t tol = matchTol(dbuPerEditorUnit, pinRetargets);
 
-    // Lift T-junction buses onto the CORE pin axis before snapping endpoints.
+    // Lift T-junction buses onto the ROOM pin axis before snapping endpoints.
     for (const auto &pair : pinRetargets) {
         const Point &oldPt = pair.first;
         const Point &newPt = pair.second;
@@ -508,7 +508,7 @@ void retargetWirePolylinesQucsToCore(std::vector<std::vector<Point>> &polylines,
                     }
                 }
             }
-            // Pin sits on a horizontal: raise that whole run to CORE pin Y.
+            // Pin sits on a horizontal: raise that whole run to ROOM pin Y.
             for (auto &poly : polylines) {
                 if (poly.size() < 2) {
                     continue;
@@ -594,4 +594,4 @@ void retargetWirePolylinesQucsToCore(std::vector<std::vector<Point>> &polylines,
     }
 }
 
-} // namespace core
+} // namespace room

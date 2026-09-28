@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Cell class represents a named design cell with one or more view-specific bodies.
@@ -45,4 +45,4 @@ private:
     PCellInfo                                           m_pCell;
 };
 
-} // namespace core
+} // namespace room

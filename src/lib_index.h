@@ -8,14 +8,14 @@
 #include <unordered_map>
 #include <vector>
 
-namespace core {
+namespace room {
 
 class Lib;
 
 /*!****************************************************************************************
  * \brief Derived library index: hierarchy, bounding boxes, and placement statistics.
  *
- * Built from cell instances in a chosen view. Persisted in .core and rebuilt on save when
+ * Built from cell instances in a chosen view. Persisted in .room and rebuilt on save when
  * refreshIndex() is called.
  *****************************************************************************************/
 struct LibIndex {
@@ -28,4 +28,4 @@ struct LibIndex {
     static LibIndex build(const Lib &lib, ViewType view = ViewType::Layout);
 };
 
-} // namespace core
+} // namespace room

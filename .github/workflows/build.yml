@@ -49,7 +49,7 @@ jobs:
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
-          name: core-build-ubuntu
+          name: room-build-ubuntu
           path: build/
           retention-days: 1
 
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       LD_LIBRARY_PATH: ${{ github.workspace }}/third_party/capnp-install/lib
-      CORE_SOURCE_DIR: ${{ github.workspace }}
+      ROOM_SOURCE_DIR: ${{ github.workspace }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
           chmod +x scripts/run_sample_gds_roundtrip_test.sh \
             scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh \
             scripts/run_oas_hierarchy_test.sh \
-            scripts/run_oas_core_roundtrip_test.sh \
+            scripts/run_oas_room_roundtrip_test.sh \
             scripts/render_ci_test_summary.sh
           ls third_party/capnp-install/lib/libcapnp*.so >/dev/null || \
             (echo "Cap'n Proto libs missing; restore build cache or rebuild capnp." >&2; exit 1)
@@ -89,12 +89,12 @@ jobs:
       - name: Download build
         uses: actions/download-artifact@v4
         with:
-          name: core-build-ubuntu
+          name: room-build-ubuntu
           path: build
 
       - name: Prepare binaries
         run: |
-          chmod +x build/gds_core_roundtrip build/make_sample_gds build/oas_hierarchy build/oas_core_roundtrip 2>/dev/null || true
+          chmod +x build/gds_room_roundtrip build/make_sample_gds build/oas_hierarchy build/oas_room_roundtrip 2>/dev/null || true
           mkdir -p build/logs
 
       - name: "sample GDS round-trip"
@@ -106,8 +106,8 @@ jobs:
       - name: "OAS hierarchy"
         run: ./scripts/run_oas_hierarchy_test.sh build 2>&1 | tee build/logs/oas_hierarchy.log
 
-      - name: "OAS CORE round-trip"
-        run: ./scripts/run_oas_core_roundtrip_test.sh build 2>&1 | tee build/logs/oas_core_roundtrip.log
+      - name: "OAS ROOM round-trip"
+        run: ./scripts/run_oas_room_roundtrip_test.sh build 2>&1 | tee build/logs/oas_room_roundtrip.log
 
       - name: Summary
         if: always()
@@ -120,7 +120,7 @@ jobs:
     env:
       CAPNP_SKIP_CHECK: 1
       LD_LIBRARY_PATH: ${{ github.workspace }}/third_party/capnp-install/lib
-      CORE_SOURCE_DIR: ${{ github.workspace }}
+      ROOM_SOURCE_DIR: ${{ github.workspace }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -157,7 +157,7 @@ jobs:
             scripts/run_sample_gds_roundtrip_test.sh \
             scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh \
             scripts/run_oas_hierarchy_test.sh \
-            scripts/run_oas_core_roundtrip_test.sh
+            scripts/run_oas_room_roundtrip_test.sh
 
       - name: Run tests and generate coverage
         run: ./scripts/run_tests_coverage.sh
@@ -165,7 +165,7 @@ jobs:
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: core-coverage-html
+          name: room-coverage-html
           path: |
             coverage.html
             coverage.*.html

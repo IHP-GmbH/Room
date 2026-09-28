@@ -16,7 +16,7 @@
 
 #include <zlib.h>
 
-namespace core {
+namespace room {
 namespace {
 
 #ifndef Q_UNUSED
@@ -2182,4 +2182,4 @@ bool OasReader::importDatabase(Database &db, const std::string &libName, double 
     return true;
 }
 
-} // namespace core
+} // namespace room

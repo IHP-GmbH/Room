@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace core {
+namespace room {
 namespace {
 
 std::uint64_t zigzagEncode(std::int64_t value)
@@ -68,4 +68,4 @@ std::vector<std::int64_t> decodeVarint64(const std::uint8_t *data, std::size_t s
     return out;
 }
 
-} // namespace core
+} // namespace room

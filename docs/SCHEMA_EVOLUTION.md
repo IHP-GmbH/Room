@@ -1,4 +1,4 @@
-# CORE schema evolution policy
+# ROOM schema evolution policy
 
 Cap'n Proto schemas live under `schema/`. This document defines how they change on the path to production v1.
 
@@ -12,7 +12,7 @@ Cap'n Proto schemas live under `schema/`. This document defines how they change 
 
 | Artifact | Field | Meaning |
 |----------|-------|---------|
-| `Database.version` | text | CORE format version (e.g. `0.2`, `1.0`) — set by serializer |
+| `Database.version` | text | ROOM format version (e.g. `0.2`, `1.0`) — set by serializer |
 | Cap'n Proto file IDs | `@0x…` | Fixed per schema file; never reuse IDs |
 
 **Major** (e.g. 0.x → 1.0): breaking C++ API or incompatible default interpretation.  

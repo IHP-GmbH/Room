@@ -4,7 +4,7 @@
 
 #include <compact.capnp.h>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Encodes a Block into compact layer-grouped Cap'n Proto form.
@@ -27,4 +27,4 @@ Block readCompactBlock(schema::CompactBlock::Reader reader);
  *****************************************************************************************/
 bool compactBlockHasGeometry(schema::CompactBlock::Reader reader);
 
-} // namespace core
+} // namespace room

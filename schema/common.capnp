@@ -1,7 +1,7 @@
 @0xa1b2c3d4e5f60718;
 
 using Cxx = import "/capnp/c++.capnp";
-$Cxx.namespace("core::schema");
+$Cxx.namespace("room::schema");
 
 # Basic 2D geometry types used across layout, schematic and symbol views.
 

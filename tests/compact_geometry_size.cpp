@@ -17,34 +17,34 @@
 
 namespace {
 
-std::size_t shapeCount(const core::Database &db)
+std::size_t shapeCount(const room::Database &db)
 {
     std::size_t count = 0;
-    for (const core::Cell &cell : db.lib().cells()) {
-        for (const core::CellContent &content : cell.contents()) {
+    for (const room::Cell &cell : db.lib().cells()) {
+        for (const room::CellContent &content : cell.contents()) {
             count += content.block().shapes().size();
         }
     }
     return count;
 }
 
-std::size_t instanceCount(const core::Database &db)
+std::size_t instanceCount(const room::Database &db)
 {
     std::size_t count = 0;
-    for (const core::Cell &cell : db.lib().cells()) {
-        for (const core::CellContent &content : cell.contents()) {
+    for (const room::Cell &cell : db.lib().cells()) {
+        for (const room::CellContent &content : cell.contents()) {
             count += content.block().instances().size();
         }
     }
     return count;
 }
 
-std::size_t shapePropertyCount(const core::Database &db)
+std::size_t shapePropertyCount(const room::Database &db)
 {
     std::size_t count = 0;
-    for (const core::Cell &cell : db.lib().cells()) {
-        for (const core::CellContent &content : cell.contents()) {
-            for (const core::Shape &shape : content.block().shapes()) {
+    for (const room::Cell &cell : db.lib().cells()) {
+        for (const room::CellContent &content : cell.contents()) {
+            for (const room::Shape &shape : content.block().shapes()) {
                 count += shape.properties().size();
             }
         }
@@ -52,12 +52,12 @@ std::size_t shapePropertyCount(const core::Database &db)
     return count;
 }
 
-void tagFirstShapes(core::Database &db, std::size_t maxShapes)
+void tagFirstShapes(room::Database &db, std::size_t maxShapes)
 {
     std::size_t tagged = 0;
-    for (core::Cell &cell : db.lib().cells()) {
-        for (core::CellContent &content : cell.contents()) {
-            for (core::Shape &shape : content.block().shapes()) {
+    for (room::Cell &cell : db.lib().cells()) {
+        for (room::CellContent &content : cell.contents()) {
+            for (room::Shape &shape : content.block().shapes()) {
                 shape.properties().push_back({"test.tag", std::to_string(tagged)});
                 shape.properties().push_back({"test.layer", "metal1"});
                 if (++tagged >= maxShapes) {
@@ -115,16 +115,16 @@ void ensureDirectory(const std::string &dirPath)
 int main(int argc, char *argv[])
 {
     const std::string gdsPath = (argc > 1) ? argv[1] : "testdata/sample.gds";
-    const std::string verbosePath = (argc > 2) ? argv[2] : "build/tests/compact_compare_verbose.core";
-    const std::string compactPath = (argc > 3) ? argv[3] : "build/tests/compact_compare_compact.core";
+    const std::string verbosePath = (argc > 2) ? argv[2] : "build/tests/compact_compare_verbose.room";
+    const std::string compactPath = (argc > 3) ? argv[3] : "build/tests/compact_compare_compact.room";
 
     const std::size_t slash = verbosePath.find_last_of("/\\");
     if (slash != std::string::npos) {
         ensureDirectory(verbosePath.substr(0, slash));
     }
 
-    core::GdsImporter importer;
-    core::Database db = importer.importFile(gdsPath);
+    room::GdsImporter importer;
+    room::Database db = importer.importFile(gdsPath);
     if (!importer.errors().empty()) {
         for (const auto &msg : importer.errors()) {
             std::cerr << "error: " << msg << '\n';
@@ -138,22 +138,22 @@ int main(int argc, char *argv[])
     const std::size_t instancesBefore = instanceCount(db);
     const std::size_t propertiesBefore = shapePropertyCount(db);
 
-    core::SaveOptions verbose;
+    room::SaveOptions verbose;
     verbose.compactGeometry = false;
     const Clock::time_point tSaveVerbose0 = Clock::now();
-    db.saveToFile(verbosePath, core::ViewType::Layout, verbose);
+    db.saveToFile(verbosePath, room::ViewType::Layout, verbose);
     const Clock::time_point tSaveVerbose1 = Clock::now();
 
     const Clock::time_point tSaveCompact0 = Clock::now();
-    db.saveToFile(compactPath, core::ViewType::Layout);
+    db.saveToFile(compactPath, room::ViewType::Layout);
     const Clock::time_point tSaveCompact1 = Clock::now();
 
     const Clock::time_point tLoadVerbose0 = Clock::now();
-    const core::Database verboseReloaded = core::Database::loadFromFile(verbosePath);
+    const room::Database verboseReloaded = room::Database::loadFromFile(verbosePath);
     const Clock::time_point tLoadVerbose1 = Clock::now();
 
     const Clock::time_point tLoadCompact0 = Clock::now();
-    const core::Database reloaded = core::Database::loadFromFile(compactPath);
+    const room::Database reloaded = room::Database::loadFromFile(compactPath);
     const Clock::time_point tLoadCompact1 = Clock::now();
 
     const std::uintmax_t gdsSize = fileSizeBytes(gdsPath);
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
     }
 
     if (shapesBefore > 0 && compactSize >= verboseSize) {
-        std::cerr << "error: expected compact .core to be smaller than verbose encoding\n";
+        std::cerr << "error: expected compact .room to be smaller than verbose encoding\n";
         return 4;
     }
 

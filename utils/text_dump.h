@@ -5,7 +5,7 @@
 #include <ostream>
 #include <string>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The TextDumper class writes a human-readable text summary of a Database.
@@ -16,4 +16,4 @@ public:
     void dumpToFile(const Database &db, const std::string &path) const;
 };
 
-} // namespace core
+} // namespace room

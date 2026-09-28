@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Parametric cell metadata: master cell name and typed parameters.
@@ -25,4 +25,4 @@ private:
     std::vector<Property>                               m_parameters;
 };
 
-} // namespace core
+} // namespace room

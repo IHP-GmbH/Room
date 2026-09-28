@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
- * \brief Exports schematic/symbol cells from a CORE Database to native Xschem files.
+ * \brief Exports schematic/symbol cells from a ROOM Database to native Xschem files.
  *****************************************************************************************/
 class XschemExporter {
 public:
@@ -28,4 +28,4 @@ private:
     mutable std::vector<std::string>                    m_errors;
 };
 
-} // namespace core
+} // namespace room

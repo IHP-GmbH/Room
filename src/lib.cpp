@@ -1,10 +1,10 @@
 #include "lib.h"
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Constructs a library with the given name.
- * \param name     Library name stored in the .core file.
+ * \param name     Library name stored in the .room file.
  *****************************************************************************************/
 Lib::Lib(std::string name) : m_name(std::move(name)) {}
 
@@ -85,4 +85,4 @@ void Lib::setIndex(LibIndex index)
     m_hasIndex = true;
 }
 
-} // namespace core
+} // namespace room

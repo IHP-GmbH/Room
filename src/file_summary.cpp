@@ -14,7 +14,7 @@
 #include <set>
 #include <stdexcept>
 
-namespace core {
+namespace room {
 namespace {
 
 schema::ViewType toSchemaViewType(ViewType v)
@@ -97,7 +97,7 @@ void writeFileSummary(schema::FileSummary::Builder builder, const FileSummary &s
     builder.setPrimaryCell(summary.primaryCell);
 }
 
-CoreFileInfo sniffCoreFile(const std::string &path)
+RoomFileInfo sniffRoomFile(const std::string &path)
 {
     std::ifstream in(path, std::ios::binary);
     if (!in) {
@@ -108,7 +108,7 @@ CoreFileInfo sniffCoreFile(const std::string &path)
     capnp::InputStreamMessageReader reader(kjIn, {64 * 1024 * 1024});
     const auto root = reader.getRoot<schema::Database>();
 
-    CoreFileInfo info;
+    RoomFileInfo info;
     info.version = root.getVersion().cStr();
     info.generator = root.getGenerator().cStr();
     info.technology = root.getTechnology().cStr();
@@ -122,4 +122,4 @@ CoreFileInfo sniffCoreFile(const std::string &path)
     return info;
 }
 
-} // namespace core
+} // namespace room

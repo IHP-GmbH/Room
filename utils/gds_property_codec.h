@@ -6,7 +6,7 @@
 #include <optional>
 #include <string>
 
-namespace core {
+namespace room {
 namespace gds_prop {
 
 constexpr const char kPrefix[] = "gds.prop.";
@@ -36,4 +36,4 @@ inline std::optional<std::int16_t> attrOf(const Property &prop)
 }
 
 } // namespace gds_prop
-} // namespace core
+} // namespace room

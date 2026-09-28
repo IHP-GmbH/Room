@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
- * \brief Imports Xschem .sch/.sym files into a CORE Database via the schematic/symbol API.
+ * \brief Imports Xschem .sch/.sym files into a ROOM Database via the schematic/symbol API.
  *****************************************************************************************/
 class XschemImporter {
 public:
@@ -42,4 +42,4 @@ private:
     mutable std::vector<std::string>                    m_errors;
 };
 
-} // namespace core
+} // namespace room

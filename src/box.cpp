@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Constructs a box from lower-left and upper-right corners.
@@ -67,4 +67,4 @@ bool Box::empty() const
     return !m_valid;
 }
 
-} // namespace core
+} // namespace room

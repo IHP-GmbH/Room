@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Property class is a string key/value pair attached to cells, shapes, or instances.
@@ -16,4 +16,4 @@ public:
     Property(std::string n, std::string v) : name(std::move(n)), value(std::move(v)) {}
 };
 
-} // namespace core
+} // namespace room

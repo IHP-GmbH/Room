@@ -1,6 +1,6 @@
 /*!****************************************************************************************
  * \file qucs_exporter.cpp
- * \brief Qucs .sch exporter from CORE schematic views.
+ * \brief Qucs .sch exporter from ROOM schematic views.
  *****************************************************************************************/
 
 #include "qucs_exporter.h"
@@ -27,7 +27,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace core {
+namespace room {
 namespace {
 
 std::string sanitizeSingleLineProperty(std::string text)
@@ -87,7 +87,7 @@ void ensureDataSetProperties(std::vector<std::string> &propertyLines, const std:
 std::vector<std::string> normalizeDiagramLines(const std::vector<std::string> &lines)
 {
     // Ngspice datasets store probes as "tran.v(node)" / "ac.v(node)".
-    // Dual-tool CORE graphs historically used bare "ngspice/v(node)"; rewrite on export
+    // Dual-tool ROOM graphs historically used bare "ngspice/v(node)"; rewrite on export
     // so Qucs Graph::loadDatFile can resolve them against .dat.ngspice.
     auto rewriteProbe = [](std::string &line, const char *bare, const char *withSim) {
         for (;;) {
@@ -245,7 +245,7 @@ std::string qucsComponentType(const std::string &cellName)
     return type;
 }
 
-// Prefer explicit qucs.type on the instance (analogLib controllers in CORE).
+// Prefer explicit qucs.type on the instance (analogLib controllers in ROOM).
 std::string qucsComponentTypeForInstance(const Instance &inst)
 {
     if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && !qt->empty()) {
@@ -294,7 +294,7 @@ std::vector<std::string> collectParamValues(const std::vector<Property> &props)
     return values;
 }
 
-// When CORE came from Xschem (value=…) rather than Qucs (param.N), synthesize Qucs props.
+// When ROOM came from Xschem (value=…) rather than Qucs (param.N), synthesize Qucs props.
 namespace {
 
 std::vector<std::pair<std::string, std::string>> synthesizePulseParamsFromSpice(const std::vector<std::string> &toks)
@@ -344,7 +344,7 @@ std::vector<std::pair<std::string, std::string>> synthesizePulseParamsFromStored
     if (existing.size() >= 7 && per.empty()) {
         per = existing[6];
     }
-    // Legacy CORE round-trip stored SPICE PER in Qucs param.3 (T2) instead of end time.
+    // Legacy ROOM round-trip stored SPICE PER in Qucs param.3 (T2) instead of end time.
     if (per.empty() && !looksLikeQucsEndTimeExpr(perOrEnd)) {
         per = perOrEnd;
     }
@@ -503,7 +503,7 @@ std::optional<std::string> formatLibPrimitiveLine(const Instance &inst, double d
                                    ? static_cast<std::int64_t>(std::llround(dbuToEditorUnits(
                                          std::stoll(*findProperty(inst.properties(), "textY")), dbuPerEditorUnit)))
                                    : 0;
-    // Prefer CORE transform over possibly stale Qucs mirror/rotate props so LibComp pins
+    // Prefer ROOM transform over possibly stale Qucs mirror/rotate props so LibComp pins
     // align with retargeted wire endpoints (Xschem-origin schematics).
     const int mirror = orientToQucsMirror(inst.transform().orient);
     const int rotate = orientToQucsRotate(inst.transform().orient);
@@ -554,7 +554,7 @@ std::optional<std::string> formatLibPrimitiveLine(const Instance &inst, double d
 std::optional<std::string> maybeFormatPrimitiveLine(const Instance &inst, double dbuPerEditorUnit,
                                                     const PrimitiveResolver &resolver, const std::string &qucsLibrary)
 {
-    // Xschem stores analogLib controllers (INCLSCR, .TR, …) as code_shown.sym in CORE; keep Qucs-native export.
+    // Xschem stores analogLib controllers (INCLSCR, .TR, …) as code_shown.sym in ROOM; keep Qucs-native export.
     if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && !qt->empty()) {
         std::string logical = *qt;
         if (logical == "TR") {
@@ -572,7 +572,7 @@ std::optional<std::string> maybeFormatPrimitiveLine(const Instance &inst, double
 
     const ResolvedPrimitive resolved = resolver.resolveReference(ref);
     if (!resolved.found) {
-        // Xschem PDK devices (sg13_lv_nmos, …) netlist via Qucs .lib even without *.symbol.core index.
+        // Xschem PDK devices (sg13_lv_nmos, …) netlist via Qucs .lib even without *.symbol.room index.
         const std::string model = pinRetargetModelName(inst);
         if (!qucsLibrary.empty() && model.rfind("sg13_", 0) == 0) {
             ResolvedPrimitive synthetic;
@@ -750,7 +750,7 @@ bool isGroundNetLabel(const std::string &label)
 }
 
 // Qucs maps only lowercase "gnd" to SPICE node 0 (see Ground::giveNodeNames and
-// vPulse::spice_netlist). CORE/Xschem often labels ground wires "GND".
+// vPulse::spice_netlist). ROOM/Xschem often labels ground wires "GND".
 std::string qucsWireLabel(const std::string &label)
 {
     if (isGroundNetLabel(label)) {
@@ -1266,7 +1266,7 @@ void QucsExporter::exportCell(const Database &db, const std::string &cellName, s
     }
 
     CellContent working = *content;
-    core::xschem::syncDualToolGraphProperties(working.block(), working, core::xschem::GraphSyncDirection::DeriveMissing);
+    room::xschem::syncDualToolGraphProperties(working.block(), working, room::xschem::GraphSyncDirection::DeriveMissing);
 
     PrimitiveResolver resolver;
     resolver.setTechLibrary(m_options.techLibrary);
@@ -1511,11 +1511,11 @@ std::vector<std::string> QucsExporter::exportBlockWiresAsLines(const Block &bloc
         if (sourceFormat == "qucs") {
             appendQucsToXschemPinRetargets(inst, dbuPerEditorUnit, pinRetargets);
         } else if (!corePrimitiveLibsConfigured()) {
-            // No CORE primitive symbols in Qucs → LibComp uses legacy .lib pin artwork.
+            // No ROOM primitive symbols in Qucs → LibComp uses legacy .lib pin artwork.
             appendXschemToQucsPinRetargets(inst, dbuPerEditorUnit, pinRetargets);
         }
     }
     return formatWiresFromBlock(block, layers, dbuPerEditorUnit, pinRetargets);
 }
 
-} // namespace core
+} // namespace room

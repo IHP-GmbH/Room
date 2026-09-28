@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-namespace core {
+namespace room {
 namespace {
 
 void addProperty(std::vector<Property> &props, const std::string &name, const std::string &value)
@@ -56,4 +56,4 @@ SourceInfo extractSourceInfo(std::vector<Property> &properties)
     return info;
 }
 
-} // namespace core
+} // namespace room

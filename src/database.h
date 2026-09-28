@@ -5,17 +5,17 @@
 
 #include <string>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
- * \brief Options controlling how a Database is serialized to a .core file.
+ * \brief Options controlling how a Database is serialized to a .room file.
  *****************************************************************************************/
 struct SaveOptions {
     bool compactGeometry = true; /*!< When true, geometry is written to payload.compact. */
 };
 
 /*!****************************************************************************************
- * \brief The Database class is the root container for a CORE design stored in a .core file.
+ * \brief The Database class is the root container for a ROOM design stored in a .room file.
  *
  * A Database holds format metadata (version, generator, technology) and a single Lib with
  * cells, layers, and optional derived index. Use saveToFile() and loadFromFile() for I/O.
@@ -55,4 +55,4 @@ private:
     Lib                                                 m_lib{"default"};
 };
 
-} // namespace core
+} // namespace room

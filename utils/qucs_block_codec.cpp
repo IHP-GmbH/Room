@@ -8,7 +8,7 @@
 #include <cctype>
 #include <cmath>
 
-namespace core::qucs_codec {
+namespace room::qucs_codec {
 namespace {
 
 std::int64_t absCoord(std::int64_t value)
@@ -204,4 +204,4 @@ std::string scaleWireLineCoordinates(const std::string &line, std::int64_t divis
     return rebuildLine(tokens);
 }
 
-} // namespace core::qucs_codec
+} // namespace room::qucs_codec

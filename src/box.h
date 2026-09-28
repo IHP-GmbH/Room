@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Box class is an axis-aligned bounding box in integer database units.
@@ -25,4 +25,4 @@ private:
     bool m_valid = false;
 };
 
-} // namespace core
+} // namespace room

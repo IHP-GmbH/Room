@@ -3,12 +3,12 @@
 #include "cell.h"
 #include "layer_utils.h"
 
-namespace core {
+namespace room {
 
 OasImportContext::OasImportContext(Database &db, std::string libName, double defaultDbuPerMicron)
     : m_db(db), m_dbuPerMicron(defaultDbuPerMicron)
 {
-    m_db.setGenerator("CORE OasImporter");
+    m_db.setGenerator("ROOM OasImporter");
     m_db.lib() = Lib(std::move(libName));
 }
 
@@ -187,4 +187,4 @@ void OasImportContext::finalize()
     m_db.lib().refreshIndex(ViewType::Layout);
 }
 
-} // namespace core
+} // namespace room

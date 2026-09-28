@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief Mutable import context for building a Database while parsing OASIS geometry records.
@@ -57,4 +57,4 @@ private:
     std::vector<std::string>                            m_warnings;
 };
 
-} // namespace core
+} // namespace room

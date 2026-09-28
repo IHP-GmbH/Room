@@ -1,13 +1,13 @@
 /*!****************************************************************************************
  * \file oas_exporter.cpp
- * \brief Native OASIS export from a CORE Database.
+ * \brief Native OASIS export from a ROOM Database.
  *****************************************************************************************/
 
 #include "oas_exporter.h"
 
 #include "oas_writer.h"
 
-namespace core {
+namespace room {
 
 void OasExporter::exportFile(const Database &db, const std::string &oasPath) const
 {
@@ -19,4 +19,4 @@ void OasExporter::exportFile(const Database &db, const std::string &oasPath) con
     m_errors.insert(m_errors.end(), writer.errors().begin(), writer.errors().end());
 }
 
-} // namespace core
+} // namespace room

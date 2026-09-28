@@ -19,7 +19,7 @@
 
 
 
-namespace core::xschem {
+namespace room::xschem {
 
 
 
@@ -32,7 +32,7 @@ void importRecords(const std::vector<std::string> &records, Cell &cell, CellCont
 
 void exportRecords(std::ostream &out, const Cell &cell, const CellContent &content);
 
-// Normalize instances written by Qucs CORE save so Xschem can resolve symbols.
+// Normalize instances written by Qucs ROOM save so Xschem can resolve symbols.
 void annotateInstanceForStorage(Instance &inst);
 void annotateBlockForStorage(Block &block);
 
@@ -58,5 +58,5 @@ void copyAllSectionLinesIfMissing(std::vector<Property> &dest, const std::vector
                                   const std::string &name);
 void removeInvalidGraphProperties(std::vector<Property> &props);
 
-} // namespace core::xschem
+} // namespace room::xschem
 

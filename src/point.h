@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace core {
+namespace room {
 
 /*!****************************************************************************************
  * \brief The Point class is a 2D integer coordinate in database units.
@@ -16,4 +16,4 @@ public:
     Point(std::int64_t x_, std::int64_t y_) : x(x_), y(y_) {}
 };
 
-} // namespace core
+} // namespace room
