@@ -1,6 +1,6 @@
 find_package(TCL REQUIRED)
 
-add_library(roomtcl MODULE core_tcl.cpp)
+add_library(roomtcl MODULE room_tcl.cpp)
 set_target_properties(roomtcl PROPERTIES PREFIX "" OUTPUT_NAME "roomtcl")
 
 target_include_directories(roomtcl PRIVATE
