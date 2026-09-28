@@ -2,10 +2,7 @@
   <img src="docs/room-logo.png" alt="ROOM logo" width="280">
 </p>
 
-<h1 align="center">ROOM</h1>
-
 <p align="center">
-  <strong>Reusable Open Object Model</strong><br>
   Open-source IC layout and schematic database<br>
   Binary <code>.room</code> files · Cap'n Proto · C++17
 </p>
@@ -84,7 +81,7 @@ cmake --build build -j$(nproc)
 Open the folder in VS Code (CMake Tools extension recommended):
 
 1. **CMake: Configure Debug** — configures ROOM and bootstraps Cap'n Proto if needed  
-2. **Build: Static Libraries (.a)** — `core`, `room_utils`  
+2. **Build: Static Libraries (.a)** — `room`, `room_utils`  
 3. **Build: All Targets** — adds `gds_to_room`, `qucs_to_room`, `make_sample_gds`  
 4. **Example: GDS to ROOM** / **Example: Qucs to ROOM** — run demos after a full build  
 
@@ -114,19 +111,19 @@ pip install gcovr
 ./scripts/run_tests_coverage.sh
 ```
 
-The script configures `build-coverage/` with `-DCORE_ENABLE_COVERAGE=ON`, runs all CTest suites, and writes `coverage.html` in the repo root (Windows opens it in the browser). After tests, you can also regenerate the report from an existing coverage build:
+The script configures `build-coverage/` with `-DROOM_ENABLE_COVERAGE=ON`, runs all CTest suites, and writes `coverage.html` in the repo root (Windows opens it in the browser). After tests, you can also regenerate the report from an existing coverage build:
 
 ```bash
 cmake --build build-coverage --target coverage-report
 ```
 
-CI runs `./scripts/run_tests_coverage.sh` in the **Coverage (Ubuntu)** job (after **Tests** pass) and uploads `coverage.html` (+ detail pages) as the `core-coverage-html` artifact. Windows has no coverage job yet (gcovr targets GCC/MinGW only).
+CI runs `./scripts/run_tests_coverage.sh` in the **Coverage (Ubuntu)** job (after **Tests** pass) and uploads `coverage.html` (+ detail pages) as the `room-coverage-html` artifact. Windows has no coverage job yet (gcovr targets GCC/MinGW only).
 
 ## Build outputs
 
 | Target | Type | Description |
 |--------|------|-------------|
-| `core` | static library | Database API + Cap'n Proto serialization |
+| `room` | static library | Database API + Cap'n Proto serialization |
 | `room_utils` | static library | GDS / Qucs importers, text dump |
 | `gds_to_room` | executable | GDSII → `.room` |
 | `qucs_to_room` | executable | Qucs `.sch` → `.room` (round-trip export) |

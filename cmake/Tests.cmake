@@ -314,5 +314,5 @@ if(ROOM_BUILD_TESTS)
         USES_TERMINAL
     )
 
-    core_add_coverage_report()
+    room_add_coverage_report()
 endif()

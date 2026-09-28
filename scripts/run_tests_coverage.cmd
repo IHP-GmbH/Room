@@ -10,7 +10,7 @@ echo Configuring coverage build in "%BUILD_DIR%"...
 cmake -S "%ROOT_DIR%" -B "%BUILD_DIR%" ^
     -G "MinGW Makefiles" ^
     -DCMAKE_BUILD_TYPE=Debug ^
-    -DCORE_ENABLE_COVERAGE=ON ^
+    -DROOM_ENABLE_COVERAGE=ON ^
     -DCMAKE_C_COMPILER=C:/Qt/Tools/mingw810_64/bin/gcc.exe ^
     -DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingw810_64/bin/g++.exe ^
     -DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/mingw810_64/bin/mingw32-make.exe

@@ -28,7 +28,7 @@ gcovr_common() {
 echo "Configuring coverage build in \"$BUILD_DIR\"..."
 cmake -S "$ROOT_DIR" -B "$BUILD_DIR" \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DCORE_ENABLE_COVERAGE=ON
+    -DROOM_ENABLE_COVERAGE=ON
 
 cmake --build "$BUILD_DIR" -j"$(nproc)"
 

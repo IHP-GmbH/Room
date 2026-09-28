@@ -35,7 +35,7 @@
       "command": "cmake",
       "args": [
         "--build", "build", "-j4",
-        "--target", "core", "room_utils"
+        "--target", "room", "room_utils"
       ],
       "options": { "cwd": "${workspaceFolder}" },
       "dependsOn": ["CMake: Configure Debug"],
