@@ -53,7 +53,7 @@
     </aside>
 
     <main class="content">
-      <div class="breadcrumb"><a href="index.html">CORE</a> &raquo; Example</div>
+      <div class="breadcrumb"><a href="index.html">ROOM</a> &raquo; Example</div>
       <h1>Example: GDS → ROOM → text dump</h1>
       <p class="subtitle">The <code>gds_to_room</code> program — layout import workflow</p>
       <p>Schematic import from Qucs: <a href="example_qucs.html">Qucs example</a>.</p>
@@ -70,12 +70,12 @@
 
       <h2>2. Build (command line)</h2>
       <pre class="example"><code>cmake -S . -B build -G "MinGW Makefiles"
-cmake --build build --target core room_utils</code></pre>
+cmake --build build --target room room_utils</code></pre>
       <p>On first <code>cmake</code> configure, Cap'n Proto is built into <code>third_party/capnp-install/</code> automatically. Sample layout GDS can come from the <strong>IHP Open Source PDK</strong> (sg13g2) or <code>make_sample_gds</code>.</p>
 
       <h2>3. Link from another project</h2>
       <pre class="example"><code># after: VS Code task "Install: Libraries + Headers"
-list(APPEND CMAKE_PREFIX_PATH "C:/path/to/CORE/install")
+list(APPEND CMAKE_PREFIX_PATH "C:/path/to/Room/install")
 find_package(ROOM REQUIRED)
 
 add_executable(my_app main.cpp)
@@ -133,7 +133,7 @@ Database  →  Lib  →  Cell  →  CellContent(layout).payload.layout.block
 
       <h2>8. GDS → ROOM mapping</h2>
       <table class="members">
-        <tr><th>GDS record</th><th>CORE</th></tr>
+        <tr><th>GDS record</th><th>ROOM</th></tr>
         <tr><td>STRNAME</td><td><a href="cell.html">Cell</a></td></tr>
         <tr><td>LAYER + DATATYPE</td><td><a href="types.html#layerspec">LayerSpec</a> in <a href="lib.html">Lib::layers()</a></td></tr>
         <tr><td>BOUNDARY / BOX</td><td><a href="shape.html">Shape::Polygon</a></td></tr>

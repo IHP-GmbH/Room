@@ -199,7 +199,7 @@ ROOM ships a **KLayout streamer plugin** (`mroom`) that opens and saves `.room` 
 
 ## Documentation
 
-HTML API reference: [`docs/html/index.html`](docs/html/index.html) (open locally in a browser after cloning).
+Published HTML API: **[ihp-gmbh.github.io/Room](https://ihp-gmbh.github.io/Room/)** (also [`docs/html/index.html`](docs/html/index.html) locally after clone).
 
 Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md) · [COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) · [SNIFF.md](docs/SNIFF.md) · [ROOM_FILE_NAMING.md](docs/ROOM_FILE_NAMING.md) · [KLayout plugin](integrations/klayout/README.md)
 
