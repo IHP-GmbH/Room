@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ctypes
 import os
+import shutil
 import sys
 from ctypes import (
     POINTER,
@@ -102,6 +103,42 @@ def _candidate_dll_paths() -> list[Path]:
     return paths
 
 
+def _prepare_windows_dll_search(native_dir: Path) -> None:
+    """Add directories so MinGW-built room_c can resolve libstdc++/libgcc/zlib."""
+    dirs: list[Path] = [native_dir]
+    env = os.environ.get("MINGW_BIN")
+    if env:
+        dirs.append(Path(env))
+    dirs.extend(
+        [
+            Path(r"C:\msys64\mingw64\bin"),
+            Path(r"C:\msys64\ucrt64\bin"),
+            Path(r"C:\msys64\clang64\bin"),
+        ]
+    )
+    gpp = shutil.which("g++")
+    if gpp:
+        dirs.append(Path(gpp).resolve().parent)
+
+    seen: set[str] = set()
+    path_prefix: list[str] = []
+    for folder in dirs:
+        if not folder.is_dir():
+            continue
+        key = str(folder.resolve()).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        try:
+            os.add_dll_directory(str(folder))
+        except (OSError, AttributeError):
+            pass
+        path_prefix.append(str(folder))
+
+    if path_prefix:
+        os.environ["PATH"] = os.pathsep.join(path_prefix + [os.environ.get("PATH", "")])
+
+
 def _load_library() -> ctypes.CDLL:
     last_error: Exception | None = None
     for path in _candidate_dll_paths():
@@ -109,11 +146,7 @@ def _load_library() -> ctypes.CDLL:
             continue
         try:
             if sys.platform == "win32":
-                # Ensure dependent MinGW DLLs (libstdc++, libgcc, capnp) resolve.
-                os.add_dll_directory(str(path.parent))
-                mingw = os.environ.get("MINGW_BIN")
-                if mingw and Path(mingw).is_dir():
-                    os.add_dll_directory(mingw)
+                _prepare_windows_dll_search(path.parent)
             return ctypes.CDLL(str(path))
         except OSError as exc:
             last_error = exc
@@ -124,6 +157,8 @@ def _load_library() -> ctypes.CDLL:
         "Could not load room_c shared library. Build with -DROOM_BUILD_PYTHON=ON "
         f"and set ROOM_C_DLL if needed.\nTried:\n  {searched}"
         + (f"\nLast error: {last_error}" if last_error else "")
+        + "\nOn Windows, ensure MinGW64 runtime is available "
+        r"(e.g. C:\msys64\mingw64\bin on PATH, or set MINGW_BIN)."
     )
 
 
