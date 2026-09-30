@@ -1,4 +1,4 @@
-from pathlib import Path
+﻿from pathlib import Path
 
 ROOT = Path(r"C:\Users\anton\Documents\CommonDB\docs\html")
 
@@ -417,6 +417,9 @@ with room.from_xschem("examples/xschem_to_room/data/test.sch") as db:
 }
 
 for name, (title, active, body, toc) in pages.items():
+    if name == "python_lib.html":
+        print("skip", name, "(hand-maintained)")
+        continue
     (ROOT / name).write_text(page(title, active, body, toc), encoding="utf-8")
     print("wrote", name)
 
