@@ -54,25 +54,163 @@
         <li><a href="python_oas.html">OASIS import/export</a></li>
       </ul>
     </aside>
-    
+
+    <div class="content-with-toc">
     <main class="content">
       <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Lib</p>
+
       <h1 class="title">Lib</h1>
-      <p class="brief">No separate <code>Lib</code> class in Python. Library fields live on <a href="python_database.html"><code>Database</code></a> (same data as C++ <a href="lib.html"><code>room::Lib</code></a>).</p>
-      <table class="members">
-        <tr><th>C++</th><th>Python</th></tr>
-        <tr><td><code>db.lib().name()</code></td><td><code>db.lib_name</code></td></tr>
-        <tr><td><code>db.lib().cells()</code></td><td><code>db.cells</code> / <code>db.cell_names()</code></td></tr>
-        <tr><td><code>db.lib().layers()</code></td><td><code>db.layers</code> / <code>db.add_layer(...)</code></td></tr>
-        <tr><td><code>findCell / getOrCreateCell</code></td><td><code>db.find_cell</code> / <code>db.get_or_create_cell</code></td></tr>
+      <p class="brief">
+        Named library of cells inside a <a href="python_database.html">Database</a>.
+        In Python there is no separate <code>Lib</code> type &mdash; the same data is accessed on
+        <code>Database</code> (C++: <a href="lib.html"><code>room::Lib</code></a>).
+        <a class="more" href="#details">More&hellip;</a>
+      </p>
+
+      <table class="props">
+        <tr><th>Import:</th><td><code>import room</code></td></tr>
+        <tr><th>Access:</th><td>via <code>db = room.open(...)</code> &mdash; library API is on <code>db</code></td></tr>
+        <tr><th>C++:</th><td><a href="lib.html"><code>room::Lib</code></a> (<code>db.lib()</code>)</td></tr>
       </table>
-      <pre class="example"><code>db.lib_name = "stdcells"
+
+      <h2 id="public-api">Public API (on Database)</h2>
+      <table class="memlist">
+        <tr><td><a href="#lib_name"><code>lib_name</code></a></td><td>Library name (str, read/write).</td></tr>
+        <tr><td><a href="#cells"><code>cells</code></a></td><td>All cells as <code>list[Cell]</code>.</td></tr>
+        <tr><td><a href="#cell_names"><code>cell_names()</code></a></td><td>List of cell name strings.</td></tr>
+        <tr><td><a href="#layers"><code>layers</code></a></td><td>Shared layer table as <code>list[Layer]</code>.</td></tr>
+        <tr><td><a href="#add_layer"><code>add_layer(layer_num, data_type=0, name="", purpose=...)</code></a></td><td>Append a layer; returns its index.</td></tr>
+        <tr><td><a href="#find_cell"><code>find_cell(name)</code></a></td><td>Lookup cell by name, or <code>None</code>.</td></tr>
+        <tr><td><a href="#get_or_create_cell"><code>get_or_create_cell(name)</code></a></td><td>Return existing cell or create an empty one.</td></tr>
+      </table>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>
+        A ROOM file contains exactly one library (default name <code>"default"</code>).
+        The library holds the cell inventory and a shared layer table.
+        Shape <code>layer_id</code> values index into that table (not raw GDS layer numbers).
+      </p>
+      <p>
+        In C++ you write <code>db.lib().cells()</code>. In Python the same operations are methods
+        and properties of <a href="python_database.html"><code>Database</code></a>:
+      </p>
+      <table class="members">
+        <tr><th>C++ (<code>db.lib()</code>)</th><th>Python (<code>db</code>)</th></tr>
+        <tr><td><code>name()</code></td><td><code>lib_name</code></td></tr>
+        <tr><td><code>cells()</code></td><td><code>cells</code> / <code>cell_names()</code></td></tr>
+        <tr><td><code>layers()</code></td><td><code>layers</code> / <code>add_layer(...)</code></td></tr>
+        <tr><td><code>findCell(name)</code></td><td><code>find_cell(name)</code></td></tr>
+        <tr><td><code>getOrCreateCell(name)</code></td><td><code>get_or_create_cell(name)</code></td></tr>
+        <tr><td><code>properties()</code> / <code>refreshIndex()</code></td><td><em>not yet exposed in Python</em></td></tr>
+      </table>
+
+      <h2>Member documentation</h2>
+
+      <div class="fn-block" id="lib_name">
+        <h3 class="fn-title">lib_name: str</h3>
+        <p class="fn-desc">
+          Name of the library stored in the <code>.room</code> file (C++ <code>Lib::name()</code>).
+          Readable and writable. Default for a new database is <code>"default"</code>.
+        </p>
+      </div>
+
+      <div class="fn-block" id="cells">
+        <h3 class="fn-title">cells &rarr; list[Cell]</h3>
+        <p class="fn-desc">
+          All cells in this library (C++ <code>Lib::cells()</code>).
+          Each element is a <a href="python_cell.html#cell">Cell</a> handle into the same database.
+        </p>
+        <p class="fn-returns"><strong>Returns:</strong> list of <code>Cell</code> objects (may be empty).</p>
+      </div>
+
+      <div class="fn-block" id="cell_names">
+        <h3 class="fn-title">cell_names() &rarr; list[str]</h3>
+        <p class="fn-desc">
+          Convenience helper: returns only the cell names, without constructing full cell views.
+          Equivalent to <code>[c.name for c in db.cells]</code>.
+        </p>
+        <p class="fn-returns"><strong>Returns:</strong> list of cell name strings.</p>
+      </div>
+
+      <div class="fn-block" id="layers">
+        <h3 class="fn-title">layers &rarr; list[Layer]</h3>
+        <p class="fn-desc">
+          Shared layer catalog for the library (C++ <code>Lib::layers()</code> / <code>LayerSpec</code>).
+          Each <a href="python_types.html#layer">Layer</a> has <code>layer_num</code>, <code>data_type</code>, <code>name</code>, and <code>purpose</code>.
+          Shape <code>layer_id</code> values refer to indices in this list.
+        </p>
+      </div>
+
+      <div class="fn-block" id="add_layer">
+        <h3 class="fn-title">add_layer(layer_num, data_type=0, name="", purpose=LayerPurpose.DRAWING) &rarr; int</h3>
+        <p class="fn-desc">Appends a layer to the library table and returns its index (usable as <code>layer_id</code> in <code>add_rect</code>).</p>
+        <table class="fn-params">
+          <tr><th>Parameter</th><th>Description</th></tr>
+          <tr><td><code>layer_num</code></td><td>GDS layer number.</td></tr>
+          <tr><td><code>data_type</code></td><td>GDS datatype (default 0).</td></tr>
+          <tr><td><code>name</code></td><td>Optional human-readable name (e.g. <code>"Metal1"</code>).</td></tr>
+          <tr><td><code>purpose</code></td><td><code>LayerPurpose</code> enum (default <code>DRAWING</code>).</td></tr>
+        </table>
+        <p class="fn-returns"><strong>Returns:</strong> zero-based index of the new layer.</p>
+      </div>
+
+      <div class="fn-block" id="find_cell">
+        <h3 class="fn-title">find_cell(name: str) &rarr; Cell | None</h3>
+        <p class="fn-desc">
+          Exact-name lookup (C++ <code>Lib::findCell</code>).
+          Returns <code>None</code> if no cell with that name exists.
+        </p>
+        <table class="fn-params">
+          <tr><th>Parameter</th><th>Description</th></tr>
+          <tr><td><code>name</code></td><td>Cell name to find.</td></tr>
+        </table>
+      </div>
+
+      <div class="fn-block" id="get_or_create_cell">
+        <h3 class="fn-title">get_or_create_cell(name: str) &rarr; Cell</h3>
+        <p class="fn-desc">
+          Returns the existing cell with this name, or appends a new empty cell (C++ <code>Lib::getOrCreateCell</code>).
+        </p>
+        <table class="fn-params">
+          <tr><th>Parameter</th><th>Description</th></tr>
+          <tr><td><code>name</code></td><td>Cell name. Created cells start with no view contents until <code>ensure_content</code>.</td></tr>
+        </table>
+        <p class="fn-returns"><strong>Returns:</strong> <a href="python_cell.html#cell">Cell</a> handle.</p>
+      </div>
+
+      <h2>Example</h2>
+      <pre class="example"><code>import room
+from room import LayerPurpose
+
+db = room.create()
+db.lib_name = "stdcells"
+idx = db.add_layer(1, 0, "Metal1", LayerPurpose.DRAWING)
+
+cell = db.get_or_create_cell("INVX1")
+layout = cell.ensure_content("layout")
+layout.add_rect(idx, 0, 0, 100, 200)
+
+print(db.cell_names())          # ['INVX1']
+print(db.find_cell("INVX1").name)
 for layer in db.layers:
-    print(layer.layer_num, layer.data_type, layer.name)
-cell = db.get_or_create_cell("INVX1")</code></pre>
+    print(layer.layer_num, layer.data_type, layer.name)</code></pre>
     </main>
 
-    
+    <aside class="page-toc">
+      <h3>On this page</h3>
+      <ul>
+        <li><a href="#public-api">Public API</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#lib_name">lib_name</a></li>
+        <li><a href="#cells">cells</a></li>
+        <li><a href="#cell_names">cell_names</a></li>
+        <li><a href="#layers">layers</a></li>
+        <li><a href="#add_layer">add_layer</a></li>
+        <li><a href="#find_cell">find_cell</a></li>
+        <li><a href="#get_or_create_cell">get_or_create_cell</a></li>
+      </ul>
+    </aside>
+    </div>
   </div>
 </body>
 </html>
