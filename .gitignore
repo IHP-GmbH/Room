@@ -1,6 +1,20 @@
 /build/
 /build-coverage/
+/build-python/
 /install/
+
+# Built native lib staged into the Python package for pip
+/python/room/*.dll
+/python/room/*.so
+/python/room/*.dylib
+/python/room/libroom_c.*
+/python/room/room_c.*
+/python/*.egg-info/
+/python/dist/
+/python/build/
+**/__pycache__/
+**/.pytest_cache/
+*.pyc
 
 # Coverage (gcov / gcovr)
 coverage.html

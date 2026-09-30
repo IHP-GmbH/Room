@@ -21,6 +21,7 @@ public:
     explicit Lib(std::string name);
 
     const std::string &                                 name() const { return m_name; }
+    void                                                setName(std::string name) { m_name = std::move(name); }
 
     std::vector<Property> &                             properties() { return m_properties; }
     const std::vector<Property> &                       properties() const { return m_properties; }

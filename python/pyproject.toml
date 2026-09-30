@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ihp-room"
+version = "0.1.0"
+description = "Python bindings and CLI for the ROOM IC design database (.room)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Apache-2.0" }
+authors = [{ name = "IHP GmbH" }]
+keywords = ["room", "eda", "gds", "ic", "layout"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.scripts]
+room = "room.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/IHP-GmbH/Room"
+Documentation = "https://ihp-gmbh.github.io/Room/"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["room*"]
+
+[tool.setuptools.package-data]
+room = ["*.dll", "*.so", "*.dylib", "libroom_c.*", "room_c.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

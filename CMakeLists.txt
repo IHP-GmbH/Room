@@ -141,6 +141,30 @@ if(NOT TARGET ROOM::room_utils)
     add_library(ROOM::room_utils ALIAS room_utils)
 endif()
 
+# OAS support is independent of example tools (needed by Python bindings).
+find_package(ZLIB QUIET)
+if(ZLIB_FOUND)
+    add_library(room_oas STATIC
+        utils/oas_reader.cpp
+        utils/oas_writer.cpp
+        utils/oas_geometry.cpp
+        utils/oas_strict.cpp
+        utils/klayout_util.cpp
+        utils/oas_importer.cpp
+        utils/oas_exporter.cpp
+    )
+    set_target_properties(room_oas PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
+    target_include_directories(room_oas PUBLIC
+        "$<BUILD_INTERFACE:${ROOM_ROOT}/utils>"
+        "$<INSTALL_INTERFACE:include/ROOM/utils>"
+    )
+    target_link_libraries(room_oas PUBLIC room_utils ZLIB::ZLIB)
+    target_compile_definitions(room_oas PRIVATE OAS_TRACE=0)
+    if(NOT TARGET ROOM::room_oas)
+        add_library(ROOM::room_oas ALIAS room_oas)
+    endif()
+endif()
+
 if(ROOM_BUILD_EXAMPLES)
     add_executable(gds_to_room examples/gds_to_room/main.cpp)
     target_link_libraries(gds_to_room PRIVATE room_utils)
@@ -162,23 +186,7 @@ if(ROOM_BUILD_EXAMPLES)
 
     add_executable(make_sample_gds tools/make_sample_gds.cpp)
 
-    find_package(ZLIB QUIET)
-    if(ZLIB_FOUND)
-        add_library(room_oas STATIC
-            utils/oas_reader.cpp
-            utils/oas_writer.cpp
-            utils/oas_geometry.cpp
-            utils/oas_strict.cpp
-            utils/klayout_util.cpp
-            utils/oas_importer.cpp
-            utils/oas_exporter.cpp
-        )
-        target_include_directories(room_oas PUBLIC
-            "$<BUILD_INTERFACE:${ROOM_ROOT}/utils>"
-        )
-        target_link_libraries(room_oas PUBLIC room_utils ZLIB::ZLIB)
-        target_compile_definitions(room_oas PRIVATE OAS_TRACE=0)
-
+    if(TARGET room_oas)
         add_executable(oas_to_room examples/oas_to_room/main.cpp)
         target_link_libraries(oas_to_room PRIVATE room_oas)
     endif()
@@ -192,6 +200,12 @@ if(_ROOM_TOP_LEVEL)
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib
             RUNTIME DESTINATION bin)
+    if(TARGET room_oas)
+        install(TARGETS room_oas EXPORT ROOMTargets
+                ARCHIVE DESTINATION lib
+                LIBRARY DESTINATION lib
+                RUNTIME DESTINATION bin)
+    endif()
 
     if(ROOM_BUILD_EXAMPLES)
         install(TARGETS gds_to_room room_to_gds qucs_to_room room_to_qucs xschem_to_room room_to_xschem make_sample_gds
@@ -219,4 +233,9 @@ include("${ROOM_ROOT}/cmake/Tests.cmake")
 
 if(ROOM_BUILD_XSCHEM_TCL)
     add_subdirectory(integrations/xschem_tcl)
+endif()
+
+option(ROOM_BUILD_PYTHON "Build ROOM Python bindings (room_c + ctypes package)" ON)
+if(ROOM_BUILD_PYTHON)
+    add_subdirectory(python)
 endif()

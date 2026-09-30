@@ -4,11 +4,13 @@
 
 <p align="center">
   Open-source IC layout and schematic database<br>
-  Binary <code>.room</code> files · Cap'n Proto · C++17
+  Binary <code>.room</code> files · Cap'n Proto · C++17 · Python
 </p>
 
 <p align="center">
-  <a href="https://ihp-gmbh.github.io/Room/"><strong>API documentation</strong></a>
+  <a href="https://ihp-gmbh.github.io/Room/"><strong>C++ API docs</strong></a>
+  ·
+  <a href="https://ihp-gmbh.github.io/Room/python.html"><strong>Python API docs</strong></a>
 </p>
 
 ---
@@ -91,6 +93,60 @@ Open the folder in VS Code (CMake Tools extension recommended):
 
 Default build task: **Build: Static Libraries (.a)** (`Ctrl+Shift+B` may need to be bound to that task).
 
+## Python bindings
+
+ROOM ships a **ctypes** package (`import room`) plus CLI (`room` / `python -m room`) on top of a small C API shared library (`room_c`).
+
+Full reference: **[Python API docs](https://ihp-gmbh.github.io/Room/python.html)** (same site as the C++ docs).
+
+### pip install (from this repo)
+
+```bat
+pip install ./python
+room info path\to\design.room
+```
+
+Editable:
+
+```bat
+pip install -e ./python[test]
+python -m pytest python\tests -q
+```
+
+On Windows use **64-bit MinGW** (`C:\msys64\mingw64`) on `PATH` so the first install can build `room_c`. PyPI wheels are not published yet.
+
+### Manual CMake build
+
+```bat
+scripts\run_python_tests.cmd
+```
+
+Or:
+
+```bat
+cmake -S . -B build-python -G "MinGW Makefiles" ^
+  -DCMAKE_BUILD_TYPE=Release ^
+  -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe ^
+  -DCMAKE_MAKE_PROGRAM=C:/msys64/mingw64/bin/mingw32-make.exe ^
+  -DROOM_BUILD_PYTHON=ON -DROOM_BUILD_EXAMPLES=OFF -DROOM_BUILD_TESTS=OFF
+cmake --build build-python --target room_c -j
+```
+
+```python
+import room
+
+db = room.open("design.room")
+print(db.cell_names())
+
+with room.create() as db:
+    cell = db.get_or_create_cell("INVX1")
+    layout = cell.ensure_content("layout")
+    layout.add_rect(0, 0, 0, 100, 200)
+    db.save("out.room")
+```
+
+See [python/README.md](python/README.md). Disable with `-DROOM_BUILD_PYTHON=OFF`.
+
 ## Tests and code coverage
 
 Tests are built when `ROOM_BUILD_TESTS=ON` (default). Run them with CTest:
@@ -129,6 +185,7 @@ CI runs `./scripts/run_tests_coverage.sh` in the **Coverage (Ubuntu)** job (afte
 |--------|------|-------------|
 | `room` | static library | Database API + Cap'n Proto serialization |
 | `room_utils` | static library | GDS / Qucs importers, text dump |
+| `room_c` | shared library | C API for Python (`import room` / `python -m room`) |
 | `gds_to_room` | executable | GDSII → `.room` |
 | `qucs_to_room` | executable | Qucs `.sch` → `.room` (round-trip export) |
 | `xschem_to_room` | executable | Xschem `.sch`/`.sym` → `.room` |
