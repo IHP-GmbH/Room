@@ -27,7 +27,7 @@ room::isRoomFilePath(path);                           // any *.room
 room::roomFileGlob(room::ViewType::Schematic);        // "*.schematic.room"
 ```
 
-HTML reference: [`docs/html/roompaths.html`](html/roompaths.html).
+HTML reference: [ROOM path helpers](https://ihp-gmbh.github.io/Room/roompaths.html).
 
 ## On-disk vs filename
 

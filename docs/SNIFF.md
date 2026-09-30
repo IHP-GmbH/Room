@@ -2,7 +2,7 @@
 
 **Sniff** reads only the Cap'n Proto header of a `.room` file — no geometry payloads are decoded. LibMan, project browsers, and CI use this to pick the right tool and view without loading the full database.
 
-Full API reference: [`docs/html/filesummary.html`](html/filesummary.html).
+Full API reference: [File summary / sniff](https://ihp-gmbh.github.io/Room/filesummary.html).
 
 ## API
 

@@ -7,6 +7,10 @@
   Binary <code>.room</code> files · Cap'n Proto · C++17
 </p>
 
+<p align="center">
+  <a href="https://ihp-gmbh.github.io/Room/"><strong>API documentation</strong></a>
+</p>
+
 ---
 
 **ROOM** — **R**eusable **O**pen **O**bject **M**odel — is an open-source IC design database and C++ API (`room::`) aimed at **production quality**: libraries, cells, layers, shapes, instances, and nets with portable `.room` serialization. Layout and schematic data share one model; the view kind (`layout`, `schematic`, `symbol`, `abstract`) lives in `CellContent`.
@@ -36,7 +40,7 @@ Database
                      └── opaque         (skip-friendly unknown views)
 ```
 
-**C++ API:** `CellContent::block()` is the in-memory accessor for topology; `CellContent::layers()` holds the per-view layer table (`LayerSpec` + `LayerPurpose`). Layout coordinates use `dbuPerMicron`; schematic/symbol coordinates use `dbuPerEditorUnit` (see [docs/html/coordscale.html](docs/html/coordscale.html)). `Cell::aliases()` and `Cell::pCell()` cover PDK cell identity. On save, compact encoding is the default (`SaveOptions::compactGeometry`); load auto-detects `compact` vs `block`. See [docs/COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) and [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
+**C++ API:** `CellContent::block()` is the in-memory accessor for topology; `CellContent::layers()` holds the per-view layer table (`LayerSpec` + `LayerPurpose`). Layout coordinates use `dbuPerMicron`; schematic/symbol coordinates use `dbuPerEditorUnit` (see [Coordinate scale](https://ihp-gmbh.github.io/Room/coordscale.html)). `Cell::aliases()` and `Cell::pCell()` cover PDK cell identity. On save, compact encoding is the default (`SaveOptions::compactGeometry`); load auto-detects `compact` vs `block`. See [docs/COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) and [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
 
 ## Requirements
 
@@ -175,7 +179,7 @@ build\xschem_to_room.exe examples\xschem_to_room\data\test.sch examples\xschem_t
 room::RoomFileInfo info = room::sniffRoomFile("cell.schematic.room");
 ```
 
-See [docs/SNIFF.md](docs/SNIFF.md) and [docs/ROOM_FILE_NAMING.md](docs/ROOM_FILE_NAMING.md). HTML API: [filesummary.html](docs/html/filesummary.html).
+See [docs/SNIFF.md](docs/SNIFF.md) and [docs/ROOM_FILE_NAMING.md](docs/ROOM_FILE_NAMING.md). HTML API: [File summary / sniff](https://ihp-gmbh.github.io/Room/filesummary.html).
 
 ### Minimal GDS
 
@@ -199,7 +203,7 @@ ROOM ships a **KLayout streamer plugin** (`mroom`) that opens and saves `.room` 
 
 ## Documentation
 
-Published HTML API: **[ihp-gmbh.github.io/Room](https://ihp-gmbh.github.io/Room/)** (also [`docs/html/index.html`](docs/html/index.html) locally after clone).
+**[HTML API reference](https://ihp-gmbh.github.io/Room/)** · sources in [`docs/html/`](docs/html/) (also usable offline after clone).
 
 Design docs: [PRODUCTION_ROADMAP.md](docs/PRODUCTION_ROADMAP.md) · [DESIGN_CHARTER.md](docs/DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md) · [COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) · [SNIFF.md](docs/SNIFF.md) · [ROOM_FILE_NAMING.md](docs/ROOM_FILE_NAMING.md) · [KLayout plugin](integrations/klayout/README.md)
 
