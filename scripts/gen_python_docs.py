@@ -417,7 +417,13 @@ with room.from_xschem("examples/xschem_to_room/data/test.sch") as db:
 }
 
 for name, (title, active, body, toc) in pages.items():
-    if name == "python_lib.html":
+    if name in {
+        "python_lib.html",
+        "python_cell.html",
+        "python_block.html",
+        "python_shape.html",
+        "python_database.html",
+    }:
         print("skip", name, "(hand-maintained)")
         continue
     (ROOT / name).write_text(page(title, active, body, toc), encoding="utf-8")

@@ -54,53 +54,167 @@
         <li><a href="python_oas.html">OASIS import/export</a></li>
       </ul>
     </aside>
+
     <div class="content-with-toc">
     <main class="content">
       <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Database</p>
+
       <h1 class="title">Database Class</h1>
-      <p class="brief">Root object of a ROOM design. Python counterpart of C++ <a href="database.html"><code>room::Database</code></a>.</p>
+      <p class="brief">
+        Root object of a ROOM design. Python counterpart of C++
+        <a href="database.html"><code>room::Database</code></a>.
+        Also hosts the library API (see <a href="python_lib.html">Lib</a>).
+        <a class="more" href="#details">More&hellip;</a>
+      </p>
+
       <table class="props">
         <tr><th>Import:</th><td><code>import room</code></td></tr>
         <tr><th>Factories:</th><td><code>room.open</code>, <code>room.create</code>, <code>room.from_gds</code>, &hellip;</td></tr>
+        <tr><th>C++:</th><td><a href="database.html"><code>room::Database</code></a></td></tr>
       </table>
+
+      <p class="note">
+        <strong>Notation:</strong> names with <code>()</code> are methods (call them).
+        Names without <code>()</code> are attributes / properties (read or assign, do not call).
+        Example: <code>cell.name()</code> vs <code>db.lib_name = "stdcells"</code>.
+      </p>
+
       <h2 id="factories">Factories</h2>
       <table class="memlist">
-        <tr><td><code>Database.create()</code> / <code>room.create()</code></td><td>Empty database.</td></tr>
-        <tr><td><code>Database.open(path)</code> / <code>room.open(path)</code></td><td>Load <code>.room</code>.</td></tr>
+        <tr><td><a href="#create"><code>Database.create()</code> / <code>room.create()</code></a></td><td>Empty in-memory database.</td></tr>
+        <tr><td><a href="#open"><code>Database.open(path)</code> / <code>room.open(path)</code></a></td><td>Load <code>.room</code>.</td></tr>
         <tr><td><code>from_gds / from_qucs / from_xschem / from_oas</code></td><td>Import foreign formats.</td></tr>
       </table>
-      <h2 id="props">Properties</h2>
+
+      <h2 id="attributes">Attributes (no parentheses)</h2>
       <table class="memlist">
-        <tr><td><code>version</code>, <code>generator</code>, <code>technology</code></td><td>File metadata (str).</td></tr>
-        <tr><td><code>lib_name</code></td><td>Library name (see <a href="python_lib.html">Lib</a>).</td></tr>
-        <tr><td><code>file_view</code></td><td><code>ViewType</code>.</td></tr>
-        <tr><td><code>cells</code></td><td><code>list[Cell]</code>.</td></tr>
-        <tr><td><code>layers</code></td><td><code>list[Layer]</code>.</td></tr>
-        <tr><td><code>summary_cell_count</code>, <code>summary_primary_cell</code></td><td>Header summary.</td></tr>
+        <tr><td><a href="#version"><code>version</code></a></td><td>Format version string (read/write). C++ <code>version()</code> / <code>setVersion</code>.</td></tr>
+        <tr><td><a href="#generator"><code>generator</code></a></td><td>Creating tool name (read/write).</td></tr>
+        <tr><td><a href="#technology"><code>technology</code></a></td><td>PDK / technology id (read/write).</td></tr>
+        <tr><td><a href="#lib_name"><code>lib_name</code></a></td><td>Library name (read/write). C++ <code>lib().name()</code>.</td></tr>
+        <tr><td><a href="#file_view"><code>file_view</code></a></td><td><code>ViewType</code> (read/write).</td></tr>
       </table>
-      <h2 id="methods">Methods</h2>
+
+      <h2 id="methods">Methods (call with parentheses)</h2>
       <table class="memlist">
-        <tr><td><code>cell_names()</code></td><td>All cell names.</td></tr>
-        <tr><td><code>find_cell(name)</code></td><td><code>Cell | None</code>.</td></tr>
-        <tr><td><code>get_or_create_cell(name)</code></td><td>Create if missing.</td></tr>
-        <tr><td><code>add_layer(...)</code></td><td>Append layer; returns index.</td></tr>
-        <tr><td><code>info()</code></td><td>Summary <code>dict</code>.</td></tr>
-        <tr><td><code>save(path, view="layout")</code></td><td>Write <code>.room</code>.</td></tr>
+        <tr><td><a href="#cells"><code>cells()</code></a></td><td><code>list[Cell]</code> &mdash; C++ <code>lib().cells()</code>.</td></tr>
+        <tr><td><a href="#cell_names"><code>cell_names()</code></a></td><td>List of cell name strings.</td></tr>
+        <tr><td><a href="#layers"><code>layers()</code></a></td><td><code>list[Layer]</code> &mdash; C++ <code>lib().layers()</code>.</td></tr>
+        <tr><td><a href="#find_cell"><code>find_cell(name)</code></a></td><td><code>Cell | None</code>.</td></tr>
+        <tr><td><a href="#get_or_create_cell"><code>get_or_create_cell(name)</code></a></td><td>Create if missing.</td></tr>
+        <tr><td><a href="#add_layer"><code>add_layer(...)</code></a></td><td>Append layer; returns index.</td></tr>
+        <tr><td><code>summary_cell_count()</code> / <code>summary_primary_cell()</code></td><td>Header summary.</td></tr>
+        <tr><td><a href="#info"><code>info()</code></a></td><td>Summary <code>dict</code>.</td></tr>
+        <tr><td><a href="#save"><code>save(path, view="layout")</code></a></td><td>Write <code>.room</code>.</td></tr>
         <tr><td><code>to_gds / to_qucs / to_xschem / to_oas</code></td><td>Export.</td></tr>
         <tr><td><code>close()</code></td><td>Free handle (<code>with</code> supported).</td></tr>
       </table>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>
+        A <code>Database</code> holds file metadata and one library of cells.
+        Library operations that live on <code>db.lib()</code> in C++ are methods/attributes of
+        <code>Database</code> in Python (see <a href="python_lib.html">Lib</a>).
+      </p>
+
+      <h2>Member documentation</h2>
+
+      <div class="fn-block" id="create">
+        <h3 class="fn-title">Database.create() / room.create() &rarr; Database</h3>
+        <p class="fn-desc">Empty database. Default <code>version</code> is <code>"1.0"</code>, <code>lib_name</code> is <code>"default"</code>.</p>
+      </div>
+
+      <div class="fn-block" id="open">
+        <h3 class="fn-title">Database.open(path) / room.open(path) &rarr; Database</h3>
+        <p class="fn-desc">Loads a <code>.room</code> file (C++ <code>loadFromFile</code>).</p>
+      </div>
+
+      <div class="fn-block" id="version">
+        <h3 class="fn-title">version: str</h3>
+        <p class="fn-desc">Attribute (no call). Maps to C++ <code>version()</code> / <code>setVersion</code>. Assign with <code>db.version = "1.0"</code>.</p>
+      </div>
+
+      <div class="fn-block" id="generator">
+        <h3 class="fn-title">generator: str</h3>
+        <p class="fn-desc">Attribute. Creating tool name.</p>
+      </div>
+
+      <div class="fn-block" id="technology">
+        <h3 class="fn-title">technology: str</h3>
+        <p class="fn-desc">Attribute. Technology / PDK identifier.</p>
+      </div>
+
+      <div class="fn-block" id="lib_name">
+        <h3 class="fn-title">lib_name: str</h3>
+        <p class="fn-desc">Attribute. Library name (C++ <code>lib().name()</code>). Not <code>db.name()</code> &mdash; that would be ambiguous with cell names.</p>
+      </div>
+
+      <div class="fn-block" id="file_view">
+        <h3 class="fn-title">file_view: ViewType</h3>
+        <p class="fn-desc">Attribute. Primary view kind written into the file summary.</p>
+      </div>
+
+      <div class="fn-block" id="cells">
+        <h3 class="fn-title">cells() &rarr; list[Cell]</h3>
+        <p class="fn-desc">Method. All cells (C++ <code>lib().cells()</code>). Call as <code>db.cells()</code>.</p>
+      </div>
+
+      <div class="fn-block" id="cell_names">
+        <h3 class="fn-title">cell_names() &rarr; list[str]</h3>
+        <p class="fn-desc">Method. Equivalent to <code>[c.name() for c in db.cells()]</code>.</p>
+      </div>
+
+      <div class="fn-block" id="layers">
+        <h3 class="fn-title">layers() &rarr; list[Layer]</h3>
+        <p class="fn-desc">Method. Shared layer table (C++ <code>lib().layers()</code>).</p>
+      </div>
+
+      <div class="fn-block" id="find_cell">
+        <h3 class="fn-title">find_cell(name) &rarr; Cell | None</h3>
+        <p class="fn-desc">Method. Exact-name lookup (C++ <code>findCell</code>).</p>
+      </div>
+
+      <div class="fn-block" id="get_or_create_cell">
+        <h3 class="fn-title">get_or_create_cell(name) &rarr; Cell</h3>
+        <p class="fn-desc">Method. Return existing cell or create an empty one.</p>
+      </div>
+
+      <div class="fn-block" id="add_layer">
+        <h3 class="fn-title">add_layer(layer_num, data_type=0, name="", purpose=...) &rarr; int</h3>
+        <p class="fn-desc">Method. Append a layer; returns index usable as <code>layer_id</code> in <code>add_rect</code>.</p>
+      </div>
+
+      <div class="fn-block" id="info">
+        <h3 class="fn-title">info() &rarr; dict</h3>
+        <p class="fn-desc">Method. Convenience summary for printing / JSON.</p>
+      </div>
+
+      <div class="fn-block" id="save">
+        <h3 class="fn-title">save(path, view="layout")</h3>
+        <p class="fn-desc">Method. Write <code>.room</code> (C++ <code>saveToFile</code>).</p>
+      </div>
+
       <h2>Example</h2>
       <pre class="example"><code>import room
+
 with room.open("design.room") as db:
-    print(db.info())
-    print(db.find_cell(db.cell_names()[0]).layout.bbox)</code></pre>
+    print(db.lib_name)                 # attribute — no ()
+    print(db.cell_names())             # method — with ()
+    cell = db.find_cell(db.cell_names()[0])
+    print(cell.name())                 # method — with ()
+    print(cell.layout().bbox())</code></pre>
     </main>
+
     <aside class="page-toc">
       <h3>On this page</h3>
       <ul>
         <li><a href="#factories">Factories</a></li>
-        <li><a href="#props">Properties</a></li>
+        <li><a href="#attributes">Attributes</a></li>
         <li><a href="#methods">Methods</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#cells">cells()</a></li>
+        <li><a href="#find_cell">find_cell()</a></li>
+        <li><a href="#save">save()</a></li>
       </ul>
     </aside>
     </div>

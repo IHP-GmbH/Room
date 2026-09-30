@@ -56,22 +56,31 @@ add_custom_command(TARGET room_c POST_BUILD
 if(_ROOM_TOP_LEVEL)
     find_program(ROOM_PYTHON_EXECUTABLE NAMES python3 python)
     if(ROOM_PYTHON_EXECUTABLE)
-        set(_py_env "ROOM_C_DLL=$<TARGET_FILE:room_c>;PYTHONPATH=${CMAKE_SOURCE_DIR}/python")
-        if(WIN32 AND DEFINED ENV{MINGW_BIN})
-            set(_py_env "${_py_env};MINGW_BIN=$ENV{MINGW_BIN};PATH=$ENV{MINGW_BIN};$ENV{PATH}")
-        elseif(WIN32)
-            set(_py_env "${_py_env};MINGW_BIN=C:/msys64/mingw64/bin;PATH=C:/msys64/mingw64/bin;$ENV{PATH}")
+        execute_process(
+            COMMAND ${ROOM_PYTHON_EXECUTABLE} -c "import pytest"
+            RESULT_VARIABLE _ROOM_PYTEST_OK
+            OUTPUT_QUIET ERROR_QUIET
+        )
+        if(_ROOM_PYTEST_OK EQUAL 0)
+            set(_py_env "ROOM_C_DLL=$<TARGET_FILE:room_c>;PYTHONPATH=${CMAKE_SOURCE_DIR}/python")
+            if(WIN32 AND DEFINED ENV{MINGW_BIN})
+                set(_py_env "${_py_env};MINGW_BIN=$ENV{MINGW_BIN};PATH=$ENV{MINGW_BIN};$ENV{PATH}")
+            elseif(WIN32)
+                set(_py_env "${_py_env};MINGW_BIN=C:/msys64/mingw64/bin;PATH=C:/msys64/mingw64/bin;$ENV{PATH}")
+            endif()
+            add_test(
+                NAME python_room_tests
+                COMMAND ${ROOM_PYTHON_EXECUTABLE} -m pytest -q
+                        "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            )
+            set_tests_properties(python_room_tests PROPERTIES
+                LABELS "python"
+                TIMEOUT 120
+                ENVIRONMENT "${_py_env}"
+            )
+        else()
+            message(STATUS "pytest not found for ${ROOM_PYTHON_EXECUTABLE}; skipping python_room_tests")
         endif()
-        add_test(
-            NAME python_room_tests
-            COMMAND ${ROOM_PYTHON_EXECUTABLE} -m pytest -q
-                    "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        )
-        set_tests_properties(python_room_tests PROPERTIES
-            LABELS "python"
-            TIMEOUT 120
-            ENVIRONMENT "${_py_env}"
-        )
     endif()
 endif()

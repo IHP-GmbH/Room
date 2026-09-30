@@ -73,15 +73,20 @@
         <tr><th>C++:</th><td><a href="lib.html"><code>room::Lib</code></a> (<code>db.lib()</code>)</td></tr>
       </table>
 
+      <p class="note">
+        <strong>Notation:</strong> <code>name()</code> = method (call it).
+        <code>lib_name</code> = attribute (read/assign, no call).
+      </p>
+
       <h2 id="public-api">Public API (on Database)</h2>
       <table class="memlist">
-        <tr><td><a href="#lib_name"><code>lib_name</code></a></td><td>Library name (str, read/write).</td></tr>
-        <tr><td><a href="#cells"><code>cells</code></a></td><td>All cells as <code>list[Cell]</code>.</td></tr>
-        <tr><td><a href="#cell_names"><code>cell_names()</code></a></td><td>List of cell name strings.</td></tr>
-        <tr><td><a href="#layers"><code>layers</code></a></td><td>Shared layer table as <code>list[Layer]</code>.</td></tr>
-        <tr><td><a href="#add_layer"><code>add_layer(layer_num, data_type=0, name="", purpose=...)</code></a></td><td>Append a layer; returns its index.</td></tr>
-        <tr><td><a href="#find_cell"><code>find_cell(name)</code></a></td><td>Lookup cell by name, or <code>None</code>.</td></tr>
-        <tr><td><a href="#get_or_create_cell"><code>get_or_create_cell(name)</code></a></td><td>Return existing cell or create an empty one.</td></tr>
+        <tr><td><a href="#lib_name"><code>lib_name</code></a></td><td>Attribute &mdash; library name (str, read/write).</td></tr>
+        <tr><td><a href="#cells"><code>cells()</code></a></td><td>Method &mdash; all cells as <code>list[Cell]</code>.</td></tr>
+        <tr><td><a href="#cell_names"><code>cell_names()</code></a></td><td>Method &mdash; list of cell name strings.</td></tr>
+        <tr><td><a href="#layers"><code>layers()</code></a></td><td>Method &mdash; shared layer table as <code>list[Layer]</code>.</td></tr>
+        <tr><td><a href="#add_layer"><code>add_layer(layer_num, data_type=0, name="", purpose=...)</code></a></td><td>Method &mdash; append a layer; returns its index.</td></tr>
+        <tr><td><a href="#find_cell"><code>find_cell(name)</code></a></td><td>Method &mdash; lookup cell by name, or <code>None</code>.</td></tr>
+        <tr><td><a href="#get_or_create_cell"><code>get_or_create_cell(name)</code></a></td><td>Method &mdash; return existing cell or create an empty one.</td></tr>
       </table>
 
       <h2 id="details">Detailed Description</h2>
@@ -91,14 +96,14 @@
         Shape <code>layer_id</code> values index into that table (not raw GDS layer numbers).
       </p>
       <p>
-        In C++ you write <code>db.lib().cells()</code>. In Python the same operations are methods
-        and properties of <a href="python_database.html"><code>Database</code></a>:
+        In C++ you write <code>db.lib().cells()</code>. In Python the same operations are on
+        <a href="python_database.html"><code>Database</code></a>:
       </p>
       <table class="members">
         <tr><th>C++ (<code>db.lib()</code>)</th><th>Python (<code>db</code>)</th></tr>
-        <tr><td><code>name()</code></td><td><code>lib_name</code></td></tr>
-        <tr><td><code>cells()</code></td><td><code>cells</code> / <code>cell_names()</code></td></tr>
-        <tr><td><code>layers()</code></td><td><code>layers</code> / <code>add_layer(...)</code></td></tr>
+        <tr><td><code>name()</code></td><td><code>lib_name</code> (attribute)</td></tr>
+        <tr><td><code>cells()</code></td><td><code>cells()</code> / <code>cell_names()</code></td></tr>
+        <tr><td><code>layers()</code></td><td><code>layers()</code> / <code>add_layer(...)</code></td></tr>
         <tr><td><code>findCell(name)</code></td><td><code>find_cell(name)</code></td></tr>
         <tr><td><code>getOrCreateCell(name)</code></td><td><code>get_or_create_cell(name)</code></td></tr>
         <tr><td><code>properties()</code> / <code>refreshIndex()</code></td><td><em>not yet exposed in Python</em></td></tr>
@@ -109,15 +114,16 @@
       <div class="fn-block" id="lib_name">
         <h3 class="fn-title">lib_name: str</h3>
         <p class="fn-desc">
-          Name of the library stored in the <code>.room</code> file (C++ <code>Lib::name()</code>).
-          Readable and writable. Default for a new database is <code>"default"</code>.
+          Attribute (no parentheses). Name of the library stored in the <code>.room</code> file
+          (C++ <code>Lib::name()</code>). Readable and writable:
+          <code>db.lib_name = "stdcells"</code>. Default for a new database is <code>"default"</code>.
         </p>
       </div>
 
       <div class="fn-block" id="cells">
-        <h3 class="fn-title">cells &rarr; list[Cell]</h3>
+        <h3 class="fn-title">cells() &rarr; list[Cell]</h3>
         <p class="fn-desc">
-          All cells in this library (C++ <code>Lib::cells()</code>).
+          Method. All cells in this library (C++ <code>Lib::cells()</code>).
           Each element is a <a href="python_cell.html#cell">Cell</a> handle into the same database.
         </p>
         <p class="fn-returns"><strong>Returns:</strong> list of <code>Cell</code> objects (may be empty).</p>
@@ -126,16 +132,16 @@
       <div class="fn-block" id="cell_names">
         <h3 class="fn-title">cell_names() &rarr; list[str]</h3>
         <p class="fn-desc">
-          Convenience helper: returns only the cell names, without constructing full cell views.
-          Equivalent to <code>[c.name for c in db.cells]</code>.
+          Method. Convenience helper: returns only the cell names.
+          Equivalent to <code>[c.name() for c in db.cells()]</code>.
         </p>
         <p class="fn-returns"><strong>Returns:</strong> list of cell name strings.</p>
       </div>
 
       <div class="fn-block" id="layers">
-        <h3 class="fn-title">layers &rarr; list[Layer]</h3>
+        <h3 class="fn-title">layers() &rarr; list[Layer]</h3>
         <p class="fn-desc">
-          Shared layer catalog for the library (C++ <code>Lib::layers()</code> / <code>LayerSpec</code>).
+          Method. Shared layer catalog for the library (C++ <code>Lib::layers()</code> / <code>LayerSpec</code>).
           Each <a href="python_types.html#layer">Layer</a> has <code>layer_num</code>, <code>data_type</code>, <code>name</code>, and <code>purpose</code>.
           Shape <code>layer_id</code> values refer to indices in this list.
         </p>
@@ -191,8 +197,8 @@ layout = cell.ensure_content("layout")
 layout.add_rect(idx, 0, 0, 100, 200)
 
 print(db.cell_names())          # ['INVX1']
-print(db.find_cell("INVX1").name)
-for layer in db.layers:
+print(db.find_cell("INVX1").name())
+for layer in db.layers():
     print(layer.layer_num, layer.data_type, layer.name)</code></pre>
     </main>
 

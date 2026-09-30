@@ -44,7 +44,7 @@ def _cmd_ls(args: argparse.Namespace) -> int:
             for name in names:
                 print(name)
         if args.layers:
-            for layer in db.layers:
+            for layer in db.layers():
                 print(f"L{layer.layer_num}/{layer.data_type}\t{layer.name}\t{layer.purpose.name.lower()}")
     return 0
 

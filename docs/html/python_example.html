@@ -62,10 +62,10 @@
 
 with room.from_gds("testdata/sample.gds") as db:
     print(db.lib_name, db.cell_names())
-    for cell in db.cells:
-        layout = cell.layout
+    for cell in db.cells():
+        layout = cell.layout()
         if layout:
-            print(cell.name, "shapes=", len(layout.shapes), "bbox=", layout.bbox)
+            print(cell.name(), "shapes=", len(layout.shapes()), "bbox=", layout.bbox())
     db.save("output/sample.room")
 
 # room convert testdata/sample.gds output/sample.room</code></pre>

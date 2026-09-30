@@ -27,20 +27,20 @@ def test_mutate_create_save_reload(tmp_path: Path):
         assert db.lib_name == "demo_lib"
         assert db.technology == "sg13g2"
         assert db.generator == "python-mutate-test"
-        assert [layer.name for layer in db.layers] == ["Metal1"]
+        assert [layer.name for layer in db.layers()] == ["Metal1"]
         cell = db.find_cell("INVX1")
         assert cell is not None
-        layout = cell.layout
+        layout = cell.layout()
         assert layout is not None
-        rects = [s for s in layout.shapes if isinstance(s, room.Rect)]
+        rects = [s for s in layout.shapes() if isinstance(s, room.Rect)]
         assert len(rects) == 2
         boxes = {(r.llx, r.lly, r.urx, r.ury) for r in rects}
         assert boxes == {(0, 0, 100, 200), (10, 10, 40, 50)}
-        insts = layout.instances
+        insts = layout.instances()
         assert len(insts) == 1
         assert insts[0].cell_name == "FILL"
         assert insts[0].x == 1000 and insts[0].y == 2000
-        bbox = layout.bbox
+        bbox = layout.bbox()
         assert not bbox.empty
         assert bbox.urx >= 100
 
@@ -49,5 +49,5 @@ def test_get_or_create_is_idempotent():
     with room.create() as db:
         a = db.get_or_create_cell("A")
         b = db.get_or_create_cell("A")
-        assert a.name == b.name == "A"
-        assert len(db.cells) == 1
+        assert a.name() == b.name() == "A"
+        assert len(db.cells()) == 1

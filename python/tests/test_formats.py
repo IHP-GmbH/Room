@@ -30,7 +30,7 @@ def test_qucs_to_room_roundtrip(qucs_sch: Path, tmp_path: Path):
     sch_out = tmp_path / "out.sch"
 
     with room.from_qucs(qucs_sch) as db:
-        assert len(db.cells) >= 1
+        assert len(db.cells()) >= 1
         db.save(room_path, view="schematic")
         db.to_qucs(sch_out)
 
@@ -46,7 +46,7 @@ def test_xschem_to_room_roundtrip(xschem_sch: Path, tmp_path: Path):
     sch_out = tmp_path / "out.sch"
 
     with room.from_xschem(xschem_sch) as db:
-        assert len(db.cells) >= 1
+        assert len(db.cells()) >= 1
         db.save(room_path, view="schematic")
         db.to_xschem(sch_out)
 
@@ -60,7 +60,7 @@ def test_oas_export_from_gds(sample_gds: Path, tmp_path: Path):
 
     oas_path = tmp_path / "layout.oas"
     with room.from_gds(sample_gds) as db:
-        assert len(db.cells) >= 1
+        assert len(db.cells()) >= 1
         db.to_oas(oas_path)
 
     assert oas_path.is_file() and oas_path.stat().st_size > 0

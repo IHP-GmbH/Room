@@ -141,23 +141,23 @@ class CellContent:
         self._cell_index = cell_index
         self._content_index = content_index
 
-    @property
     def view(self) -> ViewType:
+        """View kind (C++ ``viewType()``)."""
         return ViewType(self._db._lib.room_db_cell_content_view(self._db._ptr, self._cell_index, self._content_index))
 
-    @property
     def dbu_per_micron(self) -> float:
+        """DBU per micron for layout views (C++ ``dbuPerMicron()``)."""
         return float(self._db._lib.room_db_cell_content_dbu(self._db._ptr, self._cell_index, self._content_index))
 
-    @property
     def bbox(self) -> Box:
+        """Cached axis-aligned bounding box (C++ ``block().bbox()``)."""
         out = _lib.RoomBoxC()
         if self._db._lib.room_db_cell_bbox(self._db._ptr, self._cell_index, self._content_index, out) != 0:
             raise RuntimeError("bbox unavailable")
         return Box(out.llx, out.lly, out.urx, out.ury, bool(out.empty))
 
-    @property
     def shapes(self) -> list[Rect | dict]:
+        """Geometry list (C++ ``block().shapes()``). Rectangles are ``Rect``; other kinds are dicts."""
         count = self._db._lib.room_db_shape_count(self._db._ptr, self._cell_index, self._content_index)
         result: list[Rect | dict] = []
         for i in range(count):
@@ -178,8 +178,8 @@ class CellContent:
             raise RuntimeError("failed to add rect")
         return int(idx)
 
-    @property
     def instances(self) -> list[Instance]:
+        """Child placements (C++ ``block().instances()``)."""
         count = self._db._lib.room_db_instance_count(self._db._ptr, self._cell_index, self._content_index)
         result: list[Instance] = []
         for i in range(count):
@@ -225,32 +225,34 @@ class Cell:
         self._db = db
         self._index = index
 
-    @property
     def name(self) -> str:
+        """Cell name (C++ ``Cell::name()``)."""
         return _lib.decode(self._db._lib.room_db_cell_name(self._db._ptr, self._index))
 
-    @property
     def contents(self) -> list[CellContent]:
+        """All view bodies on this cell (C++ ``contents()``)."""
         n = self._db._lib.room_db_cell_content_count(self._db._ptr, self._index)
         return [CellContent(self._db, self._index, i) for i in range(n)]
 
     def content(self, view: str | ViewType | int = ViewType.LAYOUT) -> CellContent | None:
+        """Lookup view body (C++ ``findContent``)."""
         wanted = parse_view(view)
-        for content in self.contents:
-            if content.view == wanted:
+        for content in self.contents():
+            if content.view() == wanted:
                 return content
         return None
 
     def ensure_content(self, view: str | ViewType | int = ViewType.LAYOUT, dbu_per_micron: float = 1000.0) -> CellContent:
+        """Get or create view body (C++ ``getOrCreateContent``)."""
         idx = self._db._lib.room_db_cell_ensure_content(
             self._db._ptr, self._index, int(parse_view(view)), float(dbu_per_micron)
         )
         if idx < 0:
-            raise RuntimeError(f"failed to ensure content for cell {self.name!r}")
+            raise RuntimeError(f"failed to ensure content for cell {self.name()!r}")
         return CellContent(self._db, self._index, idx)
 
-    @property
     def layout(self) -> CellContent | None:
+        """Convenience for ``content(ViewType.LAYOUT)``."""
         return self.content(ViewType.LAYOUT)
 
 
@@ -400,21 +402,19 @@ class Database:
     def lib_name(self, value: str) -> None:
         self._lib.room_db_set_lib_name(self._ptr, _lib.cstr(value))
 
-    @property
     def summary_cell_count(self) -> int:
         return int(self._lib.room_db_summary_cell_count(self._ptr))
 
-    @property
     def summary_primary_cell(self) -> str:
         return _lib.decode(self._lib.room_db_summary_primary_cell(self._ptr))
 
-    @property
     def cells(self) -> list[Cell]:
+        """All cells in the library (C++ ``lib().cells()``)."""
         n = self._lib.room_db_cell_count(self._ptr)
         return [Cell(self, i) for i in range(n)]
 
     def cell_names(self) -> list[str]:
-        return [c.name for c in self.cells]
+        return [c.name() for c in self.cells()]
 
     def find_cell(self, name: str) -> Cell | None:
         idx = self._lib.room_db_find_cell(self._ptr, _lib.cstr(name))
@@ -426,8 +426,8 @@ class Database:
             raise RuntimeError(f"failed to create cell {name!r}")
         return Cell(self, idx)
 
-    @property
     def layers(self) -> list[Layer]:
+        """Shared layer table (C++ ``lib().layers()``)."""
         n = self._lib.room_db_layer_count(self._ptr)
         result: list[Layer] = []
         for i in range(n):
@@ -465,9 +465,9 @@ class Database:
             "technology": self.technology,
             "lib_name": self.lib_name,
             "file_view": self.file_view.name.lower(),
-            "cell_count": len(self.cells),
+            "cell_count": len(self.cells()),
             "cells": self.cell_names(),
-            "layer_count": len(self.layers),
-            "summary_cell_count": self.summary_cell_count,
-            "summary_primary_cell": self.summary_primary_cell,
+            "layer_count": len(self.layers()),
+            "summary_cell_count": self.summary_cell_count(),
+            "summary_primary_cell": self.summary_primary_cell(),
         }

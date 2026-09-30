@@ -10,7 +10,7 @@ def test_create_empty_database():
         assert db.version == "1.0"
         assert db.lib_name == "default"
         assert db.cell_names() == []
-        assert db.layers == []
+        assert db.layers() == []
 
 
 def test_sniff_and_open_roundtrip(tmp_room: Path):
@@ -32,18 +32,18 @@ def test_find_cell(tmp_room: Path):
         name = db.cell_names()[0]
         cell = db.find_cell(name)
         assert cell is not None
-        assert cell.name == name
+        assert cell.name() == name
         assert db.find_cell("__no_such_cell__") is None
 
 
 def test_layout_shapes_readable(tmp_room: Path):
     with room.open(tmp_room) as db:
         found_shapes = False
-        for cell in db.cells:
-            layout = cell.layout
+        for cell in db.cells():
+            layout = cell.layout()
             if layout is None:
                 continue
-            shapes = layout.shapes
+            shapes = layout.shapes()
             if shapes:
                 found_shapes = True
                 # At least one shape entry (rect or typed dict)

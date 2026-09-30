@@ -10,7 +10,7 @@ def test_gds_to_room_to_gds(sample_gds: Path, tmp_path: Path):
     gds_out = tmp_path / "roundtrip.gds"
 
     with room.from_gds(sample_gds) as db:
-        assert len(db.cells) >= 1
+        assert len(db.cells()) >= 1
         db.generator = "room-python-test"
         db.save(room_path)
         db.to_gds(gds_out)

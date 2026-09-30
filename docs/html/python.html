@@ -81,10 +81,10 @@
 import room
 db = room.open("design.room")
 print(db.cell_names())
-for cell in db.cells:
-    layout = cell.layout
+for cell in db.cells():
+    layout = cell.layout()
     if layout:
-        print(cell.name, len(layout.shapes), layout.bbox)</code></pre>
+        print(cell.name(), len(layout.shapes()), layout.bbox())</code></pre>
 
       <h2>Install</h2>
       <pre class="example"><code>pip install ./python
