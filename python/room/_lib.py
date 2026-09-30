@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import ctypes
 import os
-import shutil
 import sys
 from ctypes import (
     POINTER,
@@ -104,7 +103,7 @@ def _candidate_dll_paths() -> list[Path]:
 
 
 def _prepare_windows_dll_search(native_dir: Path) -> None:
-    """Add directories so MinGW-built room_c can resolve libstdc++/libgcc/zlib."""
+    """Prefer the package dir (bundled MinGW runtimes), then MinGW installs."""
     dirs: list[Path] = [native_dir]
     env = os.environ.get("MINGW_BIN")
     if env:
@@ -116,9 +115,8 @@ def _prepare_windows_dll_search(native_dir: Path) -> None:
             Path(r"C:\msys64\clang64\bin"),
         ]
     )
-    gpp = shutil.which("g++")
-    if gpp:
-        dirs.append(Path(gpp).resolve().parent)
+    # Avoid shutil.which("g++") here: in Git Bash/MSYS it can point at a
+    # toolchain whose zlib conflicts with the MinGW-built room_c DLL.
 
     seen: set[str] = set()
     path_prefix: list[str] = []
@@ -136,17 +134,27 @@ def _prepare_windows_dll_search(native_dir: Path) -> None:
         path_prefix.append(str(folder))
 
     if path_prefix:
+        # Put known-good dirs first so MSYS /usr/bin zlib cannot win.
         os.environ["PATH"] = os.pathsep.join(path_prefix + [os.environ.get("PATH", "")])
 
 
 def _load_library() -> ctypes.CDLL:
     last_error: Exception | None = None
+    # Search the DLL's own directory for dependencies (bundled MinGW runtimes).
+    winmode = None
+    if sys.platform == "win32":
+        load_dll_dir = getattr(os, "add_dll_directory", None) is not None
+        # LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+        winmode = 0x00000100 | 0x00001000 if load_dll_dir else None
+
     for path in _candidate_dll_paths():
         if not path.is_file():
             continue
         try:
             if sys.platform == "win32":
                 _prepare_windows_dll_search(path.parent)
+                if winmode is not None:
+                    return ctypes.CDLL(str(path), winmode=winmode)
             return ctypes.CDLL(str(path))
         except OSError as exc:
             last_error = exc
@@ -158,7 +166,8 @@ def _load_library() -> ctypes.CDLL:
         f"and set ROOM_C_DLL if needed.\nTried:\n  {searched}"
         + (f"\nLast error: {last_error}" if last_error else "")
         + "\nOn Windows, ensure MinGW64 runtime is available "
-        r"(e.g. C:\msys64\mingw64\bin on PATH, or set MINGW_BIN)."
+        r"(e.g. C:\msys64\mingw64\bin on PATH, or set MINGW_BIN), "
+        "or reinstall with: python -m pip install --force-reinstall ./python"
     )
 
 
