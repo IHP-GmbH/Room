@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cell / CellContent (Python) | ROOM Python</title>
+  <title>Lib (Python) | ROOM Python</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -38,8 +38,8 @@
       <h3>ROOM</h3>
       <ul>
         <li><a href="python_database.html">Database</a></li>
-        <li><a href="python_lib.html">Lib</a></li>
-        <li><a href="python_cell.html#cell" class="active">Cell</a></li>
+        <li><a href="python_lib.html" class="active">Lib</a></li>
+        <li><a href="python_cell.html#cell">Cell</a></li>
         <li><a href="python_cell.html#cellcontent">CellContent</a></li>
         <li><a href="python_block.html">Block</a></li>
         <li><a href="python_shape.html">Shape</a></li>
@@ -56,29 +56,20 @@
     </aside>
     
     <main class="content">
-      <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Cell</p>
-      <h1 class="title" id="cell">Cell Class</h1>
-      <p class="brief">Named design cell. Counterpart of C++ <a href="cell.html"><code>room::Cell</code></a>.</p>
-      <table class="memlist">
-        <tr><td><code>name</code></td><td>Cell name (str).</td></tr>
-        <tr><td><code>contents</code></td><td><code>list[CellContent]</code>.</td></tr>
-        <tr><td><code>layout</code></td><td>Layout <code>CellContent</code> or <code>None</code>.</td></tr>
-        <tr><td><code>content(view="layout")</code></td><td>Existing view or <code>None</code>.</td></tr>
-        <tr><td><code>ensure_content(view="layout", dbu_per_micron=1000.0)</code></td><td>Get or create view.</td></tr>
+      <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Lib</p>
+      <h1 class="title">Lib</h1>
+      <p class="brief">No separate <code>Lib</code> class in Python. Library fields live on <a href="python_database.html"><code>Database</code></a> (same data as C++ <a href="lib.html"><code>room::Lib</code></a>).</p>
+      <table class="members">
+        <tr><th>C++</th><th>Python</th></tr>
+        <tr><td><code>db.lib().name()</code></td><td><code>db.lib_name</code></td></tr>
+        <tr><td><code>db.lib().cells()</code></td><td><code>db.cells</code> / <code>db.cell_names()</code></td></tr>
+        <tr><td><code>db.lib().layers()</code></td><td><code>db.layers</code> / <code>db.add_layer(...)</code></td></tr>
+        <tr><td><code>findCell / getOrCreateCell</code></td><td><code>db.find_cell</code> / <code>db.get_or_create_cell</code></td></tr>
       </table>
-      <h1 class="title" id="cellcontent">CellContent Class</h1>
-      <p class="brief">One view body. Counterpart of C++ <a href="cellcontent.html"><code>room::CellContent</code></a>.</p>
-      <table class="memlist">
-        <tr><td><code>view</code></td><td><code>ViewType</code>.</td></tr>
-        <tr><td><code>dbu_per_micron</code></td><td>float.</td></tr>
-        <tr><td><code>bbox</code></td><td><a href="python_types.html#box">Box</a>.</td></tr>
-        <tr><td><code>shapes</code></td><td>See <a href="python_shape.html">Shape</a>.</td></tr>
-        <tr><td><code>instances</code></td><td><code>list[Instance]</code>.</td></tr>
-        <tr><td><code>add_rect(...)</code> / <code>add_instance(...)</code></td><td>Mutators.</td></tr>
-      </table>
-      <pre class="example"><code>cell = db.find_cell("TOP")
-layout = cell.ensure_content("layout")
-print(layout.bbox, len(layout.shapes), len(layout.instances))</code></pre>
+      <pre class="example"><code>db.lib_name = "stdcells"
+for layer in db.layers:
+    print(layer.layer_num, layer.data_type, layer.name)
+cell = db.get_or_create_cell("INVX1")</code></pre>
     </main>
 
     

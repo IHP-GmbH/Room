@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cell / CellContent (Python) | ROOM Python</title>
+  <title>GDS import example (Python) | ROOM Python</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,7 +21,7 @@
       <h3>Getting Started</h3>
       <ul>
         <li><a href="python.html">Overview</a></li>
-        <li><a href="python_example.html">GDS import example</a></li>
+        <li><a href="python_example.html" class="active">GDS import example</a></li>
         <li><a href="python_example_qucs.html">Qucs import example</a></li>
         <li><a href="python_example_xschem.html">Xschem import example</a></li>
         <li><a href="python_classes.html">Class index</a></li>
@@ -39,7 +39,7 @@
       <ul>
         <li><a href="python_database.html">Database</a></li>
         <li><a href="python_lib.html">Lib</a></li>
-        <li><a href="python_cell.html#cell" class="active">Cell</a></li>
+        <li><a href="python_cell.html#cell">Cell</a></li>
         <li><a href="python_cell.html#cellcontent">CellContent</a></li>
         <li><a href="python_block.html">Block</a></li>
         <li><a href="python_shape.html">Shape</a></li>
@@ -56,29 +56,20 @@
     </aside>
     
     <main class="content">
-      <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Cell</p>
-      <h1 class="title" id="cell">Cell Class</h1>
-      <p class="brief">Named design cell. Counterpart of C++ <a href="cell.html"><code>room::Cell</code></a>.</p>
-      <table class="memlist">
-        <tr><td><code>name</code></td><td>Cell name (str).</td></tr>
-        <tr><td><code>contents</code></td><td><code>list[CellContent]</code>.</td></tr>
-        <tr><td><code>layout</code></td><td>Layout <code>CellContent</code> or <code>None</code>.</td></tr>
-        <tr><td><code>content(view="layout")</code></td><td>Existing view or <code>None</code>.</td></tr>
-        <tr><td><code>ensure_content(view="layout", dbu_per_micron=1000.0)</code></td><td>Get or create view.</td></tr>
-      </table>
-      <h1 class="title" id="cellcontent">CellContent Class</h1>
-      <p class="brief">One view body. Counterpart of C++ <a href="cellcontent.html"><code>room::CellContent</code></a>.</p>
-      <table class="memlist">
-        <tr><td><code>view</code></td><td><code>ViewType</code>.</td></tr>
-        <tr><td><code>dbu_per_micron</code></td><td>float.</td></tr>
-        <tr><td><code>bbox</code></td><td><a href="python_types.html#box">Box</a>.</td></tr>
-        <tr><td><code>shapes</code></td><td>See <a href="python_shape.html">Shape</a>.</td></tr>
-        <tr><td><code>instances</code></td><td><code>list[Instance]</code>.</td></tr>
-        <tr><td><code>add_rect(...)</code> / <code>add_instance(...)</code></td><td>Mutators.</td></tr>
-      </table>
-      <pre class="example"><code>cell = db.find_cell("TOP")
-layout = cell.ensure_content("layout")
-print(layout.bbox, len(layout.shapes), len(layout.instances))</code></pre>
+      <p class="doc-path"><a href="python.html">Python</a> &raquo; GDS import example</p>
+      <h1>GDS import example</h1>
+      <pre class="example"><code>import room
+
+with room.from_gds("testdata/sample.gds") as db:
+    print(db.lib_name, db.cell_names())
+    for cell in db.cells:
+        layout = cell.layout
+        if layout:
+            print(cell.name, "shapes=", len(layout.shapes), "bbox=", layout.bbox)
+    db.save("output/sample.room")
+
+# room convert testdata/sample.gds output/sample.room</code></pre>
+      <p>See <a href="python_gds.html">GDS import/export</a> and C++ <a href="example.html">example.html</a>.</p>
     </main>
 
     

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -9,128 +9,131 @@
 <body>
   <header class="site-header">
     <a class="logo" href="index.html">ROOM</a>
-    <nav>
-      <a href="index.html">Overview</a>
+        <nav>
+      <a href="index.html">C++</a>
       <a href="python.html">Python</a>
-      <a href="example.html">Example</a>
-      <a href="classes.html">C++ Classes</a>
+      <a href="python_example.html">Example</a>
+      <a href="python_classes.html">All Classes</a>
     </nav>
   </header>
 
   <div class="layout">
-    <aside class="sidebar">
-      <h3>Python</h3>
-      <ul>
-        <li><a href="python.html" class="active">Overview</a></li>
-        <li><a href="python_classes.html">Class index</a></li>
-        <li><a href="python_database.html">Database</a></li>
-        <li><a href="python_cell.html">Cell / CellContent</a></li>
-        <li><a href="python_types.html">Types &amp; enums</a></li>
-      </ul>
+        <aside class="sidebar">
       <h3>Getting Started</h3>
       <ul>
-        <li><a href="index.html">C++ Overview</a></li>
-        <li><a href="example.html">GDS import example</a></li>
-        <li><a href="classes.html">C++ class index</a></li>
+        <li><a href="python.html" class="active">Overview</a></li>
+        <li><a href="python_example.html">GDS import example</a></li>
+        <li><a href="python_example_qucs.html">Qucs import example</a></li>
+        <li><a href="python_example_xschem.html">Xschem import example</a></li>
+        <li><a href="python_classes.html">Class index</a></li>
+      </ul>
+      <h3>Types</h3>
+      <ul>
+        <li><a href="python_types.html#box">Box</a></li>
+        <li><a href="python_types.html#rect">Rect</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#layer">Layer</a></li>
+        <li><a href="python_types.html#fileinfo">FileInfo</a></li>
+        <li><a href="python_types.html#enums">Enums</a></li>
+      </ul>
+      <h3>ROOM</h3>
+      <ul>
+        <li><a href="python_database.html">Database</a></li>
+        <li><a href="python_lib.html">Lib</a></li>
+        <li><a href="python_cell.html#cell">Cell</a></li>
+        <li><a href="python_cell.html#cellcontent">CellContent</a></li>
+        <li><a href="python_block.html">Block</a></li>
+        <li><a href="python_shape.html">Shape</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#sniff">File summary / sniff</a></li>
+      </ul>
+      <h3>Utilities</h3>
+      <ul>
+        <li><a href="python_gds.html">GDS import/export</a></li>
+        <li><a href="python_qucs.html">Qucs import/export</a></li>
+        <li><a href="python_xschem.html">Xschem import/export</a></li>
+        <li><a href="python_oas.html">OASIS import/export</a></li>
       </ul>
     </aside>
 
-    <div class="content-with-toc">
     <main class="content">
-      <p class="doc-path"><a href="index.html">ROOM</a> &raquo; Python API</p>
+      <h1>ROOM <span class="subtitle">(Python)</span></h1>
+      <p class="subtitle">Reusable Open Object Model &middot; <code>import room</code> &middot; CLI <code>room</code></p>
 
-      <h1 class="title">Python API</h1>
-      <p class="brief">
-        Use ROOM from Python without knowing C++: open <code>.room</code> files, list cells, read shapes,
-        convert GDS / Qucs / Xschem / OASIS, and edit designs in scripts.
-        <a class="more" href="#model">More&hellip;</a>
-      </p>
-
-      <table class="props">
-        <tr><th>Package:</th><td><code>pip install ./python</code> (from the ROOM repository)</td></tr>
-        <tr><th>Import:</th><td><code>import room</code></td></tr>
-        <tr><th>CLI:</th><td><code>room &hellip;</code> or <code>python -m room &hellip;</code></td></tr>
-        <tr><th>Reference:</th><td><a href="python_classes.html">Python class index</a> (full members)</td></tr>
-      </table>
-
-      <h2 id="model">What is in the database?</h2>
-      <p>A <code>.room</code> file is a <a href="python_database.html">Database</a> with metadata, a layer table, and cells:</p>
-      <div class="diagram">Database
- +-- lib_name, version, generator, technology
- +-- layers[]     -&gt; Layer
- +-- cells[]      -&gt; Cell
-      +-- contents[]  -&gt; CellContent (layout / schematic / &hellip;)
-           +-- shapes[] / instances[] / bbox</div>
       <p>
-        Start at the <a href="python_classes.html">class index</a>, then
-        <a href="python_database.html">Database</a>,
-        <a href="python_cell.html">Cell / CellContent</a>,
-        <a href="python_types.html">types &amp; enums</a>.
-        C++ docs are optional &mdash; the Python pages list every function you can call.
+        The Python API exposes the same design database as the C++ <code>room::</code> library:
+        libraries, cells, layers, shapes, and instances in portable <code>.room</code> files.
+        You do not need C++ to script ROOM.
       </p>
 
-      <h2 id="install">Install</h2>
+      <h2>Data hierarchy</h2>
+      <div class="diagram">Database                         # room.open / room.create / room.from_gds &hellip;
+ +-- Lib (via Database)           # lib_name, layers[], cells[]
+      +-- layers[]                # room.Layer
+      +-- Cell[]                  # room.Cell
+           +-- CellContent[]      # layout / schematic / symbol / abstract
+                +-- Block         # shapes[] + instances[] + bbox
+                     +-- Rect / Instance</div>
+
+      <h2>Quick start</h2>
       <pre class="example"><code>pip install ./python
-# editable:
-pip install -e ./python[test]</code></pre>
-      <p>
-        On Windows use <strong>64-bit MinGW</strong> matching 64-bit CPython (default <code>C:\msys64\mingw64</code>).
-        First install builds <code>room_c</code> via CMake. OASIS needs zlib; check <code>room.has_oas()</code>.
-      </p>
 
-      <h2 id="quick">Quick start</h2>
-      <pre class="example"><code>import room
-
+import room
 db = room.open("design.room")
 print(db.cell_names())
 for cell in db.cells:
     layout = cell.layout
     if layout:
-        print(cell.name, "shapes", len(layout.shapes), "bbox", layout.bbox)
+        print(cell.name, len(layout.shapes), layout.bbox)</code></pre>
 
-with room.create() as db:
-    cell = db.get_or_create_cell("INVX1")
-    layout = cell.ensure_content("layout")
-    layout.add_rect(0, 0, 0, 100, 200)
-    db.save("out.room")</code></pre>
+      <h2>Install</h2>
+      <pre class="example"><code>pip install ./python
+# or editable:
+pip install -e ./python[test]</code></pre>
+      <p>
+        Builds the native <code>room_c</code> library via CMake on first install.
+        On Windows, MinGW64 (<code>C:\msys64\mingw64</code>) is used automatically when present.
+      </p>
 
-      <h2 id="cli">CLI</h2>
+      <h2>CLI</h2>
       <pre class="example"><code>room info design.room
 room ls design.room
 room convert chip.gds chip.room
-room convert --tool qucs rc.sch rc.room --view schematic
-room convert --tool xschem inv.sch inv.room --view schematic</code></pre>
+room convert --tool qucs rc.sch rc.room --view schematic</code></pre>
 
-      <h2 id="converters">Converters</h2>
-      <table class="members">
-        <tr><th>Python</th><th>Purpose</th></tr>
-        <tr><td><code>room.from_gds</code> / <code>db.to_gds</code></td><td>GDSII</td></tr>
-        <tr><td><code>room.from_qucs</code> / <code>db.to_qucs</code></td><td>Qucs <code>.sch</code></td></tr>
-        <tr><td><code>room.from_xschem</code> / <code>db.to_xschem</code></td><td>Xschem <code>.sch</code>/<code>.sym</code></td></tr>
-        <tr><td><code>room.from_oas</code> / <code>db.to_oas</code></td><td>OASIS (if built)</td></tr>
-      </table>
+      <h2>API reference</h2>
+      <p>Class pages follow the same layout as the C++ docs. Start from the sections in the left sidebar, or open the <a href="python_classes.html">class index</a>.</p>
 
-      <h2 id="classes">Class reference</h2>
+      <h2>Classes</h2>
       <ul class="class-list">
-        <li><a href="python_classes.html">Full class index + data model</a></li>
-        <li><a href="python_database.html"><code>room.Database</code></a></li>
-        <li><a href="python_cell.html"><code>room.Cell</code> / <code>room.CellContent</code></a></li>
-        <li><a href="python_types.html">Box, Rect, Instance, Layer, enums</a></li>
+        <li><a href="python_types.html#box">Box</a></li>
+        <li><a href="python_types.html#rect">Rect</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#layer">Layer</a></li>
+        <li><a href="python_types.html#enums">Enums</a></li>
+        <li><a href="python_database.html">room.Database</a></li>
+        <li><a href="python_lib.html">Lib (via Database)</a></li>
+        <li><a href="python_cell.html#cell">room.Cell</a></li>
+        <li><a href="python_cell.html#cellcontent">room.CellContent</a></li>
+        <li><a href="python_block.html">Block (via CellContent)</a></li>
+        <li><a href="python_shape.html">Shape</a></li>
+        <li><a href="python_types.html#sniff">sniff / FileInfo</a></li>
+        <li><a href="python_gds.html">GDS import/export</a></li>
+        <li><a href="python_qucs.html">Qucs import/export</a></li>
+        <li><a href="python_xschem.html">Xschem import/export</a></li>
+        <li><a href="python_oas.html">OASIS import/export</a></li>
       </ul>
-    </main>
 
-    <aside class="page-toc">
-      <h3>On this page</h3>
-      <ul>
-        <li><a href="#model">Data model</a></li>
-        <li><a href="#install">Install</a></li>
-        <li><a href="#quick">Quick start</a></li>
-        <li><a href="#cli">CLI</a></li>
-        <li><a href="#converters">Converters</a></li>
-        <li><a href="#classes">Class reference</a></li>
-      </ul>
-    </aside>
-    </div>
+      <h2>Examples</h2>
+      <p>
+        <a href="python_example.html">GDS layout import</a> &middot;
+        <a href="python_example_qucs.html">Qucs schematic import</a> &middot;
+        <a href="python_example_xschem.html">Xschem schematic import</a>
+      </p>
+
+      <p class="subtitle" style="margin-top:2rem;">C++ API: <a href="index.html">Overview</a> &middot; package sources in <code>python/</code>.</p>
+    </main>
   </div>
 </body>
 </html>
+

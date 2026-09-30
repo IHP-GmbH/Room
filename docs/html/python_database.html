@@ -2,153 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Database (Python) | ROOM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database (Python) | ROOM Python</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
     <a class="logo" href="index.html">ROOM</a>
     <nav>
-      <a href="index.html">Overview</a>
+      <a href="index.html">C++</a>
       <a href="python.html">Python</a>
-      <a href="classes.html">C++ Classes</a>
+      <a href="python_example.html">Example</a>
+      <a href="python_classes.html">All Classes</a>
     </nav>
   </header>
-
   <div class="layout">
     <aside class="sidebar">
-      <h3>Python</h3>
+      <h3>Getting Started</h3>
       <ul>
         <li><a href="python.html">Overview</a></li>
+        <li><a href="python_example.html">GDS import example</a></li>
+        <li><a href="python_example_qucs.html">Qucs import example</a></li>
+        <li><a href="python_example_xschem.html">Xschem import example</a></li>
         <li><a href="python_classes.html">Class index</a></li>
+      </ul>
+      <h3>Types</h3>
+      <ul>
+        <li><a href="python_types.html#box">Box</a></li>
+        <li><a href="python_types.html#rect">Rect</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#layer">Layer</a></li>
+        <li><a href="python_types.html#fileinfo">FileInfo</a></li>
+        <li><a href="python_types.html#enums">Enums</a></li>
+      </ul>
+      <h3>ROOM</h3>
+      <ul>
         <li><a href="python_database.html" class="active">Database</a></li>
-        <li><a href="python_cell.html">Cell / CellContent</a></li>
-        <li><a href="python_types.html">Types &amp; enums</a></li>
+        <li><a href="python_lib.html">Lib</a></li>
+        <li><a href="python_cell.html#cell">Cell</a></li>
+        <li><a href="python_cell.html#cellcontent">CellContent</a></li>
+        <li><a href="python_block.html">Block</a></li>
+        <li><a href="python_shape.html">Shape</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#sniff">File summary / sniff</a></li>
+      </ul>
+      <h3>Utilities</h3>
+      <ul>
+        <li><a href="python_gds.html">GDS import/export</a></li>
+        <li><a href="python_qucs.html">Qucs import/export</a></li>
+        <li><a href="python_xschem.html">Xschem import/export</a></li>
+        <li><a href="python_oas.html">OASIS import/export</a></li>
       </ul>
     </aside>
-
     <div class="content-with-toc">
     <main class="content">
-      <p class="doc-path"><a href="index.html">ROOM</a> &raquo; <a href="python.html">Python</a> &raquo; Database</p>
-
-      <h1 class="title">Database Class <span class="subtitle">(Python)</span></h1>
-      <p class="brief">
-        Root object of a ROOM design: metadata, layer table, and cells.
-        Same role as C++ <a href="database.html"><code>room::Database</code></a>, exposed for scripts.
-        <a class="more" href="#details">More&hellip;</a>
-      </p>
-
+      <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Database</p>
+      <h1 class="title">Database Class</h1>
+      <p class="brief">Root object of a ROOM design. Python counterpart of C++ <a href="database.html"><code>room::Database</code></a>.</p>
       <table class="props">
-        <tr><th>Import:</th><td><code>import room</code> &mdash; then <code>room.Database</code> or helpers below</td></tr>
-        <tr><th>Context manager:</th><td><code>with room.open(path) as db:</code> &hellip; auto-<code>close()</code></td></tr>
+        <tr><th>Import:</th><td><code>import room</code></td></tr>
+        <tr><th>Factories:</th><td><code>room.open</code>, <code>room.create</code>, <code>room.from_gds</code>, &hellip;</td></tr>
       </table>
-
-      <h2 id="constructors">Constructors / factories</h2>
+      <h2 id="factories">Factories</h2>
       <table class="memlist">
-        <tr><td><a href="#create"><code>Database.create()</code></a> / <code>room.create()</code></td><td>Empty database.</td></tr>
-        <tr><td><a href="#open"><code>Database.open(path)</code></a> / <code>room.open(path)</code></td><td>Load <code>.room</code>.</td></tr>
-        <tr><td><a href="#from_gds"><code>Database.from_gds(path)</code></a></td><td>Import GDSII.</td></tr>
-        <tr><td><a href="#from_qucs"><code>Database.from_qucs(path)</code></a></td><td>Import Qucs schematic.</td></tr>
-        <tr><td><a href="#from_xschem"><code>Database.from_xschem(path)</code></a></td><td>Import Xschem schematic/symbol.</td></tr>
-        <tr><td><a href="#from_oas"><code>Database.from_oas(path)</code></a></td><td>Import OASIS (needs <code>has_oas()</code>).</td></tr>
+        <tr><td><code>Database.create()</code> / <code>room.create()</code></td><td>Empty database.</td></tr>
+        <tr><td><code>Database.open(path)</code> / <code>room.open(path)</code></td><td>Load <code>.room</code>.</td></tr>
+        <tr><td><code>from_gds / from_qucs / from_xschem / from_oas</code></td><td>Import foreign formats.</td></tr>
       </table>
-
-      <h2 id="properties">Properties</h2>
+      <h2 id="props">Properties</h2>
       <table class="memlist">
-        <tr><td><code>version</code>, <code>generator</code>, <code>technology</code></td><td>File metadata (str, read/write).</td></tr>
-        <tr><td><code>lib_name</code></td><td>Library name (str, read/write).</td></tr>
-        <tr><td><code>file_view</code></td><td><a href="python_types.html#enums">ViewType</a> of the file.</td></tr>
-        <tr><td><code>cells</code></td><td><code>list[Cell]</code> &mdash; all cells.</td></tr>
-        <tr><td><code>layers</code></td><td><code>list[Layer]</code> &mdash; library layer catalog.</td></tr>
-        <tr><td><code>summary_cell_count</code>, <code>summary_primary_cell</code></td><td>From file summary / header.</td></tr>
+        <tr><td><code>version</code>, <code>generator</code>, <code>technology</code></td><td>File metadata (str).</td></tr>
+        <tr><td><code>lib_name</code></td><td>Library name (see <a href="python_lib.html">Lib</a>).</td></tr>
+        <tr><td><code>file_view</code></td><td><code>ViewType</code>.</td></tr>
+        <tr><td><code>cells</code></td><td><code>list[Cell]</code>.</td></tr>
+        <tr><td><code>layers</code></td><td><code>list[Layer]</code>.</td></tr>
+        <tr><td><code>summary_cell_count</code>, <code>summary_primary_cell</code></td><td>Header summary.</td></tr>
       </table>
-
       <h2 id="methods">Methods</h2>
       <table class="memlist">
-        <tr><td><code>cell_names() -&gt; list[str]</code></td><td>Names of all cells.</td></tr>
-        <tr><td><code>find_cell(name) -&gt; Cell | None</code></td><td>Lookup by name.</td></tr>
-        <tr><td><code>get_or_create_cell(name) -&gt; Cell</code></td><td>Create if missing.</td></tr>
-        <tr><td><code>add_layer(layer_num, data_type=0, name="", purpose=...)</code></td><td>Append a layer; returns index.</td></tr>
-        <tr><td><code>info() -&gt; dict</code></td><td>Convenient summary for printing/JSON.</td></tr>
+        <tr><td><code>cell_names()</code></td><td>All cell names.</td></tr>
+        <tr><td><code>find_cell(name)</code></td><td><code>Cell | None</code>.</td></tr>
+        <tr><td><code>get_or_create_cell(name)</code></td><td>Create if missing.</td></tr>
+        <tr><td><code>add_layer(...)</code></td><td>Append layer; returns index.</td></tr>
+        <tr><td><code>info()</code></td><td>Summary <code>dict</code>.</td></tr>
         <tr><td><code>save(path, view="layout")</code></td><td>Write <code>.room</code>.</td></tr>
-        <tr><td><code>to_gds(path)</code> / <code>to_qucs(path, cell=None)</code> / <code>to_xschem(...)</code> / <code>to_oas(path)</code></td><td>Export.</td></tr>
-        <tr><td><code>close()</code></td><td>Release native handle (also via <code>with</code>).</td></tr>
+        <tr><td><code>to_gds / to_qucs / to_xschem / to_oas</code></td><td>Export.</td></tr>
+        <tr><td><code>close()</code></td><td>Free handle (<code>with</code> supported).</td></tr>
       </table>
-
-      <h2 id="details">Detailed Description</h2>
-      <p>
-        A <code>Database</code> owns one library of cells. Use <code>cells</code> / <code>find_cell</code> to navigate,
-        then open a <a href="python_cell.html#cellcontent">CellContent</a> view to see shapes and instances.
-        You do not need the C++ API: everything listed here is available from Python.
-      </p>
-
-      <h2>Member documentation</h2>
-
-      <div class="fn-block" id="create">
-        <h3 class="fn-title">classmethod create() &rarr; Database</h3>
-        <p class="fn-desc">Creates an empty database (<code>lib_name="default"</code>, <code>version="1.0"</code>).</p>
-      </div>
-
-      <div class="fn-block" id="open">
-        <h3 class="fn-title">classmethod open(path: str | Path) &rarr; Database</h3>
-        <p class="fn-desc">Loads a <code>.room</code> file. Raises <code>RuntimeError</code> on I/O or parse failure.</p>
-      </div>
-
-      <div class="fn-block" id="from_gds">
-        <h3 class="fn-title">classmethod from_gds(path) &rarr; Database</h3>
-        <p class="fn-desc">Imports a GDSII layout into a new database (layout views).</p>
-      </div>
-
-      <div class="fn-block" id="from_qucs">
-        <h3 class="fn-title">classmethod from_qucs(path) &rarr; Database</h3>
-        <p class="fn-desc">Imports a Qucs <code>.sch</code> schematic.</p>
-      </div>
-
-      <div class="fn-block" id="from_xschem">
-        <h3 class="fn-title">classmethod from_xschem(path) &rarr; Database</h3>
-        <p class="fn-desc">Imports an Xschem <code>.sch</code> or <code>.sym</code> file.</p>
-      </div>
-
-      <div class="fn-block" id="from_oas">
-        <h3 class="fn-title">classmethod from_oas(path) &rarr; Database</h3>
-        <p class="fn-desc">Imports OASIS. Requires a build with zlib / <code>room_oas</code> (<code>room.has_oas()</code>).</p>
-      </div>
-
-      <div class="fn-block" id="save">
-        <h3 class="fn-title">save(path, view="layout") &rarr; None</h3>
-        <p class="fn-desc">Writes the database to <code>.room</code>. <code>view</code> may be a string (<code>"layout"</code>, <code>"schematic"</code>, &hellip;) or <code>ViewType</code>.</p>
-      </div>
-
-      <div class="fn-block" id="info">
-        <h3 class="fn-title">info() &rarr; dict</h3>
-        <p class="fn-desc">Returns keys: <code>version</code>, <code>generator</code>, <code>technology</code>, <code>lib_name</code>, <code>file_view</code>, <code>cell_count</code>, <code>cells</code>, <code>layer_count</code>, summary fields.</p>
-      </div>
-
       <h2>Example</h2>
       <pre class="example"><code>import room
-
-with room.open("stdcells.room") as db:
+with room.open("design.room") as db:
     print(db.info())
-    inv = db.find_cell("sg13g2_inv_1")
-    if inv and inv.layout:
-        print("bbox", inv.layout.bbox)
-        print("rects", [s for s in inv.layout.shapes if isinstance(s, room.Rect)][:3])
-
-with room.from_gds("chip.gds") as db:
-    db.lib_name = "chip"
-    db.save("chip.room")
-    db.to_gds("chip_roundtrip.gds")</code></pre>
+    print(db.find_cell(db.cell_names()[0]).layout.bbox)</code></pre>
     </main>
-
     <aside class="page-toc">
       <h3>On this page</h3>
       <ul>
-        <li><a href="#constructors">Factories</a></li>
-        <li><a href="#properties">Properties</a></li>
+        <li><a href="#factories">Factories</a></li>
+        <li><a href="#props">Properties</a></li>
         <li><a href="#methods">Methods</a></li>
-        <li><a href="#details">Details</a></li>
-        <li><a href="#open">open</a></li>
-        <li><a href="#save">save</a></li>
       </ul>
     </aside>
     </div>
