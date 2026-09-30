@@ -11,6 +11,8 @@
   <a href="https://ihp-gmbh.github.io/Room/"><strong>C++ API docs</strong></a>
   ·
   <a href="https://ihp-gmbh.github.io/Room/python.html"><strong>Python API docs</strong></a>
+  ·
+  <a href="https://ihp-gmbh.github.io/Room/python_classes.html"><strong>Python classes</strong></a>
 </p>
 
 ---

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cell / CellContent (Python) | ROOM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ROOM</a>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="python.html">Python</a>
+      <a href="python_classes.html">Python Classes</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Python</h3>
+      <ul>
+        <li><a href="python.html">Overview</a></li>
+        <li><a href="python_classes.html">Class index</a></li>
+        <li><a href="python_database.html">Database</a></li>
+        <li><a href="python_cell.html" class="active">Cell / CellContent</a></li>
+        <li><a href="python_types.html">Types &amp; enums</a></li>
+      </ul>
+    </aside>
+
+    <div class="content-with-toc">
+    <main class="content">
+      <p class="doc-path"><a href="index.html">ROOM</a> &raquo; <a href="python.html">Python</a> &raquo; Cell</p>
+
+      <h1 class="title" id="cell">Cell Class <span class="subtitle">(Python)</span></h1>
+      <p class="brief">A named design cell with one or more view bodies (<a href="#cellcontent">CellContent</a>).</p>
+
+      <table class="props">
+        <tr><th>Obtained from:</th><td><code>db.cells</code>, <code>db.find_cell(name)</code>, <code>db.get_or_create_cell(name)</code></td></tr>
+      </table>
+
+      <h2>Properties / methods</h2>
+      <table class="memlist">
+        <tr><td><code>name -&gt; str</code></td><td>Cell name (read-only).</td></tr>
+        <tr><td><code>contents -&gt; list[CellContent]</code></td><td>All stored views.</td></tr>
+        <tr><td><code>layout -&gt; CellContent | None</code></td><td>Shortcut for layout view.</td></tr>
+        <tr><td><code>content(view="layout") -&gt; CellContent | None</code></td><td>Find an existing view (<code>"layout"</code>, <code>"schematic"</code>, &hellip;).</td></tr>
+        <tr><td><code>ensure_content(view="layout", dbu_per_micron=1000.0) -&gt; CellContent</code></td><td>Get or create a view.</td></tr>
+      </table>
+
+      <h2>Example</h2>
+      <pre class="example"><code>cell = db.get_or_create_cell("INVX1")
+layout = cell.ensure_content("layout")
+sch = cell.content("schematic")  # may be None</code></pre>
+
+      <hr>
+
+      <h1 class="title" id="cellcontent">CellContent Class <span class="subtitle">(Python)</span></h1>
+      <p class="brief">
+        One view of a cell: geometry (<code>shapes</code>), placements (<code>instances</code>), and bounding box.
+        Corresponds to C++ <a href="cellcontent.html"><code>room::CellContent</code></a> + its <code>block()</code>.
+      </p>
+
+      <h2>Properties</h2>
+      <table class="memlist">
+        <tr><td><code>view -&gt; ViewType</code></td><td>Which view this body is.</td></tr>
+        <tr><td><code>dbu_per_micron -&gt; float</code></td><td>Coordinate scale for layout.</td></tr>
+        <tr><td><code>bbox -&gt; Box</code></td><td>Cached bounding box.</td></tr>
+        <tr><td><code>shapes -&gt; list[Rect | dict]</code></td><td>Rectangles as <code>Rect</code>; other kinds as <code>{"type": "...", "index": i}</code>.</td></tr>
+        <tr><td><code>instances -&gt; list[Instance]</code></td><td>Child cell placements.</td></tr>
+      </table>
+
+      <h2>Methods</h2>
+      <table class="memlist">
+        <tr><td><code>add_rect(layer_id, llx, lly, urx, ury) -&gt; int</code></td><td>Append a rectangle; returns shape index.</td></tr>
+        <tr><td><code>add_instance(cell_name, x=0, y=0, orient=Orient.R0, mag=1.0) -&gt; int</code></td><td>Place a child cell.</td></tr>
+      </table>
+
+      <div class="fn-block" id="add_rect">
+        <h3 class="fn-title">add_rect(layer_id, llx, lly, urx, ury) &rarr; int</h3>
+        <p class="fn-desc"><code>layer_id</code> indexes into the library layer table (see <code>db.layers</code>). Coordinates are integer database units.</p>
+      </div>
+
+      <div class="fn-block" id="add_instance">
+        <h3 class="fn-title">add_instance(cell_name, x=0, y=0, orient=Orient.R0, mag=1.0) &rarr; int</h3>
+        <p class="fn-desc">Adds a reference to another cell by name. The child cell should exist in the same database.</p>
+      </div>
+
+      <h2>Example</h2>
+      <pre class="example"><code>layout = cell.ensure_content("layout")
+layout.add_rect(layer_id=0, llx=0, lly=0, urx=100, ury=200)
+layout.add_instance("FILL", x=1000, y=0)
+
+for shape in layout.shapes:
+    if isinstance(shape, room.Rect):
+        print(shape.layer_id, shape.llx, shape.lly, shape.urx, shape.ury)
+
+for inst in layout.instances:
+    print(inst.cell_name, inst.x, inst.y, inst.orient)</code></pre>
+    </main>
+
+    <aside class="page-toc">
+      <h3>On this page</h3>
+      <ul>
+        <li><a href="#cell">Cell</a></li>
+        <li><a href="#cellcontent">CellContent</a></li>
+        <li><a href="#add_rect">add_rect</a></li>
+        <li><a href="#add_instance">add_instance</a></li>
+      </ul>
+    </aside>
+    </div>
+  </div>
+</body>
+</html>

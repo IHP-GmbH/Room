@@ -23,6 +23,7 @@
       <ul>
         <li><a href="index.html" class="active">Overview</a></li>
         <li><a href="python.html">Python API</a></li>
+        <li><a href="python_classes.html">Python classes</a></li>
         <li><a href="example.html">GDS import example</a></li>
         <li><a href="example_qucs.html">Qucs import example</a></li>
         <li><a href="example_xschem.html">Xschem import example</a></li>
@@ -117,13 +118,15 @@ cmake --build build
 
       <h2>Python API</h2>
       <p>
-        Script ROOM from Python without rebuilding C++ each time.
-        See the <a href="python.html">Python API</a> page for install, CLI, and converters
-        (GDS, OASIS, Qucs, Xschem).
+        Script ROOM from Python without rebuilding C++ (or reading C++ docs).
+        Start here: <a href="python.html">Python overview</a> &middot;
+        <a href="python_classes.html"><strong>Python class index</strong></a> &middot;
+        <a href="python_database.html">Database</a> &middot;
+        <a href="python_cell.html">Cell / CellContent</a>.
       </p>
       <pre class="example"><code>pip install ./python
 room info design.room
-python -c "import room; print(room.from_gds('chip.gds').cell_names())"</code></pre>
+python -c "import room; print(room.open('design.room').cell_names())"</code></pre>
 
       <h2>API reference</h2>
       <p>

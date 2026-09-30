@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Python Types &amp; Enums | ROOM</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ROOM</a>
+    <nav>
+      <a href="index.html">Overview</a>
+      <a href="python.html">Python</a>
+      <a href="python_classes.html">Python Classes</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Python</h3>
+      <ul>
+        <li><a href="python.html">Overview</a></li>
+        <li><a href="python_classes.html">Class index</a></li>
+        <li><a href="python_database.html">Database</a></li>
+        <li><a href="python_cell.html">Cell / CellContent</a></li>
+        <li><a href="python_types.html" class="active">Types &amp; enums</a></li>
+      </ul>
+    </aside>
+
+    <div class="content-with-toc">
+    <main class="content">
+      <p class="doc-path"><a href="index.html">ROOM</a> &raquo; <a href="python.html">Python</a> &raquo; Types</p>
+      <h1 class="title">Types &amp; enums <span class="subtitle">(Python)</span></h1>
+      <p class="brief">Dataclasses and enums returned by the Python API. Immutable value objects unless noted.</p>
+
+      <h2 id="module">Module helpers</h2>
+      <div class="fn-block" id="sniff">
+        <h3 class="fn-title">room.sniff(path) &rarr; FileInfo</h3>
+        <p class="fn-desc">Reads <code>.room</code> header metadata without fully decoding geometry (fast inventory).</p>
+      </div>
+      <div class="fn-block" id="has_oas">
+        <h3 class="fn-title">room.has_oas() &rarr; bool</h3>
+        <p class="fn-desc">True if this <code>room_c</code> build includes OASIS import/export.</p>
+      </div>
+
+      <h2 id="fileinfo">FileInfo</h2>
+      <table class="members">
+        <tr><th>Field</th><th>Type</th><th>Meaning</th></tr>
+        <tr><td><code>version</code></td><td>str</td><td>Format version string</td></tr>
+        <tr><td><code>generator</code></td><td>str</td><td>Tool that wrote the file</td></tr>
+        <tr><td><code>technology</code></td><td>str</td><td>Technology / PDK tag</td></tr>
+        <tr><td><code>lib_name</code></td><td>str</td><td>Library name</td></tr>
+        <tr><td><code>view</code></td><td>ViewType</td><td>Primary file view</td></tr>
+        <tr><td><code>cell_count</code></td><td>int</td><td>Cells in summary</td></tr>
+        <tr><td><code>primary_cell</code></td><td>str</td><td>Suggested top cell</td></tr>
+      </table>
+
+      <h2 id="box">Box</h2>
+      <p>Axis-aligned bounding box in database units: <code>llx, lly, urx, ury</code>, plus <code>empty: bool</code>.</p>
+
+      <h2 id="rect">Rect</h2>
+      <p>Rectangle shape: <code>layer_id</code>, <code>llx, lly, urx, ury</code>.</p>
+
+      <h2 id="instance">Instance</h2>
+      <table class="members">
+        <tr><th>Field</th><th>Type</th><th>Meaning</th></tr>
+        <tr><td><code>cell_name</code></td><td>str</td><td>Referenced child cell</td></tr>
+        <tr><td><code>x</code>, <code>y</code></td><td>int</td><td>Placement origin (DBU)</td></tr>
+        <tr><td><code>orient</code></td><td>Orient</td><td>Rotation / mirror</td></tr>
+        <tr><td><code>mag</code></td><td>float</td><td>Magnification (usually 1.0)</td></tr>
+      </table>
+
+      <h2 id="layer">Layer</h2>
+      <table class="members">
+        <tr><th>Field</th><th>Type</th><th>Meaning</th></tr>
+        <tr><td><code>layer_num</code></td><td>int</td><td>GDS layer number</td></tr>
+        <tr><td><code>data_type</code></td><td>int</td><td>GDS datatype</td></tr>
+        <tr><td><code>name</code></td><td>str</td><td>Optional name</td></tr>
+        <tr><td><code>purpose</code></td><td>LayerPurpose</td><td>Semantic role</td></tr>
+      </table>
+
+      <h2 id="enums">Enums</h2>
+      <table class="members">
+        <tr><th>Enum</th><th>Values</th></tr>
+        <tr><td><code>ViewType</code></td><td><code>LAYOUT</code>, <code>SCHEMATIC</code>, <code>SYMBOL</code>, <code>ABSTRACT</code></td></tr>
+        <tr><td><code>Orient</code></td><td><code>R0</code>, <code>R90</code>, <code>R180</code>, <code>R270</code>, <code>MY</code>, <code>MX</code>, <code>MX90</code>, <code>MY90</code></td></tr>
+        <tr><td><code>LayerPurpose</code></td><td><code>DRAWING</code>, <code>PIN</code>, <code>LABEL</code>, <code>BOUNDARY</code>, <code>BLOCKAGE</code>, <code>WIRE</code>, <code>FILL</code>, <code>OTHER</code></td></tr>
+        <tr><td><code>ShapeType</code></td><td><code>RECT</code>, <code>POLYGON</code>, <code>PATH</code>, <code>TEXT</code>, <code>ARC</code></td></tr>
+      </table>
+      <p>
+        View arguments also accept strings: <code>"layout"</code>, <code>"schematic"</code>, <code>"symbol"</code>, <code>"abstract"</code>.
+      </p>
+
+      <h2>Example</h2>
+      <pre class="example"><code>info = room.sniff("design.room")
+print(info.lib_name, info.cell_count, info.primary_cell)
+
+from room import ViewType, Orient, LayerPurpose
+db = room.create()
+db.add_layer(1, 0, "Metal1", LayerPurpose.DRAWING)
+cell = db.get_or_create_cell("TOP")
+layout = cell.ensure_content(ViewType.LAYOUT)
+layout.add_instance("INVX1", x=0, y=0, orient=Orient.R90)</code></pre>
+    </main>
+
+    <aside class="page-toc">
+      <h3>On this page</h3>
+      <ul>
+        <li><a href="#sniff">sniff</a></li>
+        <li><a href="#fileinfo">FileInfo</a></li>
+        <li><a href="#box">Box</a></li>
+        <li><a href="#rect">Rect</a></li>
+        <li><a href="#instance">Instance</a></li>
+        <li><a href="#layer">Layer</a></li>
+        <li><a href="#enums">Enums</a></li>
+      </ul>
+    </aside>
+    </div>
+  </div>
+</body>
+</html>
