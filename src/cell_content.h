@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block.h"
+#include "em_model_data.h"
 #include "source_info.h"
 #include "layer_spec.h"
 #include "types.h"
@@ -15,7 +16,8 @@ namespace room {
  * \brief The CellContent class holds one view of a cell: type, DBU scale, properties, and topology.
  *
  * In C++, block() is the ergonomic accessor for shapes, instances, and nets. On disk, topology
- * is stored in payload (compact or verbose block) according to SaveOptions.
+ * is stored in payload (compact or verbose block) according to SaveOptions. EmModel views use
+ * emModel() instead of geometry; opaque payloads use setOpaquePayload().
  *****************************************************************************************/
 class CellContent {
 public:
@@ -46,6 +48,12 @@ public:
     void                                                setOpaquePayload(std::string mimeType, std::vector<std::uint8_t> data);
     void                                                clearOpaquePayload();
 
+    bool                                                hasEmModelPayload() const { return m_emModelHasValue; }
+    EmModelViewData &                                   emModel() { return m_emModel; }
+    const EmModelViewData &                             emModel() const { return m_emModel; }
+    void                                                setEmModel(EmModelViewData data);
+    void                                                clearEmModel();
+
     SourceInfo &                                        sourceInfo() { return m_sourceInfo; }
     const SourceInfo &                                  sourceInfo() const { return m_sourceInfo; }
 
@@ -60,6 +68,8 @@ private:
     bool                                                m_opaqueHasValue = false;
     std::string                                         m_opaqueMimeType;
     std::vector<std::uint8_t>                           m_opaqueData;
+    bool                                                m_emModelHasValue = false;
+    EmModelViewData                                     m_emModel;
 };
 
 } // namespace room

@@ -64,6 +64,7 @@ schema::ViewType toSchemaViewType(ViewType v)
     case ViewType::Schematic: return schema::ViewType::SCHEMATIC;
     case ViewType::Symbol: return schema::ViewType::SYMBOL;
     case ViewType::Abstract: return schema::ViewType::ABSTRACT;
+    case ViewType::EmModel: return schema::ViewType::EM_MODEL;
     }
     return schema::ViewType::LAYOUT;
 }
@@ -75,6 +76,7 @@ ViewType fromSchemaViewType(schema::ViewType v)
     case schema::ViewType::SCHEMATIC: return ViewType::Schematic;
     case schema::ViewType::SYMBOL: return ViewType::Symbol;
     case schema::ViewType::ABSTRACT: return ViewType::Abstract;
+    case schema::ViewType::EM_MODEL: return ViewType::EmModel;
     }
     return ViewType::Layout;
 }
@@ -484,6 +486,73 @@ Block readViewTopology(ViewReader viewReader)
     return readBlock(blockReader);
 }
 
+void writeEmModelPayload(schema::EmModelViewData::Builder b, const EmModelViewData &data)
+{
+    b.setDefaultVariant(data.defaultVariant);
+    b.setSnpPath(data.snpPath);
+    auto ports = b.initPorts(data.ports.size());
+    for (std::size_t i = 0; i < data.ports.size(); ++i) {
+        ports[i].setName(data.ports[i].name);
+        ports[i].setIndex(data.ports[i].index);
+    }
+    b.setTool(data.tool);
+    b.setEmstudioPath(data.emstudioPath);
+    b.setZ0(data.z0);
+    {
+        auto topology = b.initTopology();
+        topology.setLayoutPath(data.topology.layoutPath);
+        topology.setLayoutHash(data.topology.layoutHash);
+        topology.setTopCell(data.topology.topCell);
+    }
+    {
+        auto setup = b.initSetup();
+        setup.setVariant(data.setup.variant);
+        setup.setModelPath(data.setup.modelPath);
+        setup.setModelHash(data.setup.modelHash);
+        setup.setSubstratePath(data.setup.substratePath);
+        setup.setSubstrateHash(data.setup.substrateHash);
+        setup.setTool(data.setup.tool);
+    }
+    b.setSnpHash(data.snpHash);
+    b.setPublishedAt(data.publishedAt);
+}
+
+EmModelViewData readEmModelPayload(schema::EmModelViewData::Reader r)
+{
+    EmModelViewData data;
+    data.defaultVariant = r.getDefaultVariant().cStr();
+    data.snpPath = r.getSnpPath().cStr();
+    const auto ports = r.getPorts();
+    data.ports.reserve(ports.size());
+    for (const auto port : ports) {
+        EmPort entry;
+        entry.name = port.getName().cStr();
+        entry.index = port.getIndex();
+        data.ports.push_back(std::move(entry));
+    }
+    data.tool = r.getTool().cStr();
+    data.emstudioPath = r.getEmstudioPath().cStr();
+    data.z0 = r.getZ0();
+    {
+        const auto topology = r.getTopology();
+        data.topology.layoutPath = topology.getLayoutPath().cStr();
+        data.topology.layoutHash = topology.getLayoutHash().cStr();
+        data.topology.topCell = topology.getTopCell().cStr();
+    }
+    {
+        const auto setup = r.getSetup();
+        data.setup.variant = setup.getVariant().cStr();
+        data.setup.modelPath = setup.getModelPath().cStr();
+        data.setup.modelHash = setup.getModelHash().cStr();
+        data.setup.substratePath = setup.getSubstratePath().cStr();
+        data.setup.substrateHash = setup.getSubstrateHash().cStr();
+        data.setup.tool = setup.getTool().cStr();
+    }
+    data.snpHash = r.getSnpHash().cStr();
+    data.publishedAt = r.getPublishedAt().cStr();
+    return data;
+}
+
 void writeViewPayload(schema::ViewPayload::Builder payload,
                       ViewType viewType,
                       const std::vector<LayerSpec> &layers,
@@ -511,6 +580,9 @@ void writeViewPayload(schema::ViewPayload::Builder payload,
         writeViewTopology(abstract, layers, block, compactGeometry);
         break;
     }
+    case ViewType::EmModel:
+        // EmModel uses writeEmModelPayload via writeCellContent.
+        break;
     }
 }
 
@@ -525,6 +597,8 @@ Block readBlockFromPayload(schema::ViewPayload::Reader payload)
         return readViewTopology(payload.getSymbol());
     case schema::ViewPayload::ABSTRACT:
         return readViewTopology(payload.getAbstract());
+    case schema::ViewPayload::OPAQUE:
+    case schema::ViewPayload::EM_MODEL:
     default:
         return Block{};
     }
@@ -545,6 +619,10 @@ void writeCellContent(schema::CellContent::Builder b,
         auto opaque = b.initPayload().initOpaque();
         opaque.setMimeType(content.opaqueMimeType());
         opaque.setData(kj::arrayPtr(content.opaqueData().data(), content.opaqueData().size()));
+        return;
+    }
+    if (content.hasEmModelPayload() || content.viewType() == ViewType::EmModel) {
+        writeEmModelPayload(b.initPayload().initEmModel(), content.emModel());
         return;
     }
     const std::vector<LayerSpec> viewLayers = layersForSerialization(content, libLayers);
@@ -589,6 +667,10 @@ CellContent readCellContent(schema::CellContent::Reader r)
         const auto data = opaque.getData();
         content.setOpaquePayload(opaque.getMimeType().cStr(),
                                  std::vector<std::uint8_t>(data.begin(), data.end()));
+        break;
+    }
+    case schema::ViewPayload::EM_MODEL: {
+        content.setEmModel(readEmModelPayload(payload.getEmModel()));
         break;
     }
     default:

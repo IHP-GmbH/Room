@@ -34,7 +34,11 @@ CellContent.payload :union
   symbol    → SymbolViewData
   abstract  → AbstractViewData
   opaque    → OpaqueViewData   # skip without decode
+  emModel   → EmModelViewData  # EM publish handle (paths, ports, snapshots)
 ```
+
+`ViewType.emModel` (`*.emmodel.room`) stores S-parameter publish metadata and topology/setup
+snapshot hashes. Touchstone / field dumps remain external files referenced by path.
 
 Optional persisted [index.capnp](../schema/index.capnp) at `Lib` level (not wired yet):
 

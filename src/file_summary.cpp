@@ -24,6 +24,7 @@ schema::ViewType toSchemaViewType(ViewType v)
     case ViewType::Schematic: return schema::ViewType::SCHEMATIC;
     case ViewType::Symbol: return schema::ViewType::SYMBOL;
     case ViewType::Abstract: return schema::ViewType::ABSTRACT;
+    case ViewType::EmModel: return schema::ViewType::EM_MODEL;
     }
     return schema::ViewType::LAYOUT;
 }
@@ -35,6 +36,7 @@ ViewType fromSchemaViewType(schema::ViewType v)
     case schema::ViewType::SCHEMATIC: return ViewType::Schematic;
     case schema::ViewType::SYMBOL: return ViewType::Symbol;
     case schema::ViewType::ABSTRACT: return ViewType::Abstract;
+    case schema::ViewType::EM_MODEL: return ViewType::EmModel;
     }
     return ViewType::Layout;
 }

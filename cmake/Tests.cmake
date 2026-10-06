@@ -26,6 +26,9 @@ if(ROOM_BUILD_TESTS)
     add_executable(room_paths_unit tests/room_paths_unit.cpp)
     target_link_libraries(room_paths_unit PRIVATE room)
 
+    add_executable(emmodel_roundtrip tests/emmodel_roundtrip.cpp)
+    target_link_libraries(emmodel_roundtrip PRIVATE room)
+
     add_executable(encapsulation_roundtrip tests/encapsulation_roundtrip.cpp)
     target_link_libraries(encapsulation_roundtrip PRIVATE room_utils)
 
@@ -126,6 +129,16 @@ if(ROOM_BUILD_TESTS)
     set_tests_properties(room_paths_unit PROPERTIES
         LABELS "room;paths"
         TIMEOUT 10
+    )
+
+    add_test(
+        NAME emmodel_roundtrip
+        COMMAND emmodel_roundtrip "${_ctest_out}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(emmodel_roundtrip PROPERTIES
+        LABELS "room;emmodel"
+        TIMEOUT 30
     )
 
     add_test(

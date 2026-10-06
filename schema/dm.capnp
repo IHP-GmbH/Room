@@ -10,6 +10,7 @@ enum ViewType {
   schematic @1;
   symbol    @2;
   abstract  @3;
+  emModel   @4;
 }
 
 enum LayerPurpose {

@@ -16,7 +16,8 @@ enum class ViewType {
     Layout,
     Schematic,
     Symbol,
-    Abstract
+    Abstract,
+    EmModel
 };
 
 /*! \brief Semantic purpose of a layer in the layer table. */

@@ -308,7 +308,7 @@ print(layout.bbox, len(layout.shapes), len(layout.instances))</code></pre>""",
       <h2 id="enums">Enums</h2>
       <table class="members">
         <tr><th>Enum</th><th>Values</th></tr>
-        <tr><td>ViewType</td><td>LAYOUT, SCHEMATIC, SYMBOL, ABSTRACT</td></tr>
+        <tr><td>ViewType</td><td>LAYOUT, SCHEMATIC, SYMBOL, ABSTRACT, EMMODEL</td></tr>
         <tr><td>Orient</td><td>R0, R90, R180, R270, MY, MX, MX90, MY90</td></tr>
         <tr><td>LayerPurpose</td><td>DRAWING, PIN, LABEL, BOUNDARY, BLOCKAGE, WIRE, FILL, OTHER</td></tr>
         <tr><td>ShapeType</td><td>RECT, POLYGON, PATH, TEXT, ARC</td></tr>

@@ -12,6 +12,10 @@ View-specific ROOM files use the pattern:
 | Schematic | `.schematic.room` | `sg13g2_stdcell.schematic.room` |
 | Symbol | `.symbol.room` | `inv.symbol.room` |
 | Abstract | `.abstract.room` | `block.abstract.room` |
+| EmModel | `.emmodel.room` | `inductor.emmodel.room` |
+
+EM setup variants (working models / results) are **not** a ViewType; they live in a folder
+`<cell>.emsetup/<variant>/` beside the cell’s ROOM views.
 
 LibMan and the Xschem/KLayout integrations expect this layout. Legacy names like `schematic.room` (no cell prefix) still work for examples but are not recommended for libraries.
 

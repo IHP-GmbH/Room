@@ -42,6 +42,9 @@ std::string viewTypeFromString(const std::string &text)
     if (lower == "abstract" || lower == "abs") {
         return "abstract";
     }
+    if (lower == "emmodel" || lower == "em_model") {
+        return "emmodel";
+    }
     return {};
 }
 
@@ -59,6 +62,9 @@ std::optional<ViewType> parseViewTypeName(const std::string &suffix)
     }
     if (lower == "abstract" || lower == "abs") {
         return ViewType::Abstract;
+    }
+    if (lower == "emmodel" || lower == "em_model") {
+        return ViewType::EmModel;
     }
     return std::nullopt;
 }

@@ -32,6 +32,16 @@ int main()
         return 5;
     }
 
+    if (room::roomFileName("ind", room::ViewType::EmModel) != "ind.emmodel.room") {
+        std::cerr << "roomFileName emmodel failed\n";
+        return 6;
+    }
+    const room::ParsedRoomPath em = room::parseRoomFilePath("lib/ind.emmodel.room");
+    if (!em.valid || em.cellName != "ind" || em.view != room::ViewType::EmModel) {
+        std::cerr << "parseRoomFilePath emmodel failed\n";
+        return 7;
+    }
+
     std::cout << "room_paths OK\n";
     return 0;
 }

@@ -39,6 +39,7 @@ Database
                      │    ├── layers[]   (per-view layer table on disk)
                      │    ├── block      (verbose geometry, opt-in)
                      │    └── compact    (layer-grouped geometry, default on save)
+                     ├── emModel        (EM publish: snp/ports/setup snapshot refs)
                      └── opaque         (skip-friendly unknown views)
 ```
 

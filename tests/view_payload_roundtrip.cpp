@@ -72,6 +72,8 @@ bool payloadMatchesViewType(room::schema::ViewPayload::Reader payload, room::sch
         return payload.which() == room::schema::ViewPayload::SYMBOL;
     case room::schema::ViewType::ABSTRACT:
         return payload.which() == room::schema::ViewPayload::ABSTRACT;
+    case room::schema::ViewType::EM_MODEL:
+        return payload.which() == room::schema::ViewPayload::EM_MODEL;
     }
     return false;
 }

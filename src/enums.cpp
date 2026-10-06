@@ -14,6 +14,7 @@ std::string viewTypeToString(ViewType type)
     case ViewType::Schematic: return "schematic";
     case ViewType::Symbol: return "symbol";
     case ViewType::Abstract: return "abstract";
+    case ViewType::EmModel: return "emmodel";
     }
     return "unknown";
 }

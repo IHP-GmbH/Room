@@ -14,6 +14,7 @@ class ViewType(IntEnum):
     SCHEMATIC = 1
     SYMBOL = 2
     ABSTRACT = 3
+    EMMODEL = 4
 
 
 class ShapeType(IntEnum):
@@ -51,6 +52,8 @@ VIEW_NAMES = {
     "schematic": ViewType.SCHEMATIC,
     "symbol": ViewType.SYMBOL,
     "abstract": ViewType.ABSTRACT,
+    "emmodel": ViewType.EMMODEL,
+    "em_model": ViewType.EMMODEL,
 }
 
 

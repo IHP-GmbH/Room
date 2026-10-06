@@ -62,6 +62,8 @@ room::ViewType to_view(int view)
         return room::ViewType::Symbol;
     case 3:
         return room::ViewType::Abstract;
+    case 4:
+        return room::ViewType::EmModel;
     default:
         return room::ViewType::Layout;
     }
@@ -76,6 +78,8 @@ int from_view(room::ViewType view)
         return 2;
     case room::ViewType::Abstract:
         return 3;
+    case room::ViewType::EmModel:
+        return 4;
     default:
         return 0;
     }
