@@ -29,6 +29,9 @@ if(ROOM_BUILD_TESTS)
     add_executable(emmodel_roundtrip tests/emmodel_roundtrip.cpp)
     target_link_libraries(emmodel_roundtrip PRIVATE room)
 
+    add_executable(em_lookalike_symbol_unit tests/em_lookalike_symbol_unit.cpp)
+    target_link_libraries(em_lookalike_symbol_unit PRIVATE room_utils)
+
     add_executable(encapsulation_roundtrip tests/encapsulation_roundtrip.cpp)
     target_link_libraries(encapsulation_roundtrip PRIVATE room_utils)
 
@@ -138,6 +141,16 @@ if(ROOM_BUILD_TESTS)
     )
     set_tests_properties(emmodel_roundtrip PROPERTIES
         LABELS "room;emmodel"
+        TIMEOUT 30
+    )
+
+    add_test(
+        NAME em_lookalike_symbol_unit
+        COMMAND em_lookalike_symbol_unit "${_ctest_out}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(em_lookalike_symbol_unit PROPERTIES
+        LABELS "room;emmodel;symbol"
         TIMEOUT 30
     )
 

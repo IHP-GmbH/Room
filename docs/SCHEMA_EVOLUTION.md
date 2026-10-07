@@ -39,6 +39,9 @@ CellContent.payload :union
 
 `ViewType.emModel` (`*.emmodel.room`) stores S-parameter publish metadata and topology/setup
 snapshot hashes. Touchstone / field dumps remain external files referenced by path.
+EMStudio Create also writes a layout-lookalike `ViewType.symbol` (`*.symbol.room`,
+`em.lookalike=1`) via `utils/em_lookalike_symbol.*` so schematic tools can place the cell;
+netlist resolve to Touchstone from emmodel is separate work.
 
 Optional persisted [index.capnp](../schema/index.capnp) at `Lib` level (not wired yet):
 

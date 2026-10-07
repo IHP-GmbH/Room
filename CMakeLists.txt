@@ -117,6 +117,7 @@ add_library(room_utils STATIC
     utils/coord_scale.cpp
     utils/net_name_propagation.cpp
     utils/pin_retarget.cpp
+    utils/em_lookalike_symbol.cpp
     utils/xschem_format.cpp
     utils/xschem_io.cpp
     utils/xschem_importer.cpp
