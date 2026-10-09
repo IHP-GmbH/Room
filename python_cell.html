@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cell / CellContent (Python) | ROOM Python</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ROOM</a>
+    <nav>
+      <a href="index.html">C++</a>
+      <a href="python.html">Python</a>
+      <a href="python_example.html">Example</a>
+      <a href="python_classes.html">All Classes</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Getting Started</h3>
+      <ul>
+        <li><a href="python.html">Overview</a></li>
+        <li><a href="python_example.html">GDS import example</a></li>
+        <li><a href="python_example_qucs.html">Qucs import example</a></li>
+        <li><a href="python_example_xschem.html">Xschem import example</a></li>
+        <li><a href="python_classes.html">Class index</a></li>
+      </ul>
+      <h3>Types</h3>
+      <ul>
+        <li><a href="python_types.html#box">Box</a></li>
+        <li><a href="python_types.html#rect">Rect</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#layer">Layer</a></li>
+        <li><a href="python_types.html#fileinfo">FileInfo</a></li>
+        <li><a href="python_types.html#enums">Enums</a></li>
+      </ul>
+      <h3>ROOM</h3>
+      <ul>
+        <li><a href="python_database.html">Database</a></li>
+        <li><a href="python_lib.html">Lib</a></li>
+        <li><a href="python_cell.html#cell" class="active">Cell</a></li>
+        <li><a href="python_cell.html#cellcontent">CellContent</a></li>
+        <li><a href="python_block.html">Block</a></li>
+        <li><a href="python_shape.html">Shape</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#sniff">File summary / sniff</a></li>
+      </ul>
+      <h3>Utilities</h3>
+      <ul>
+        <li><a href="python_gds.html">GDS import/export</a></li>
+        <li><a href="python_qucs.html">Qucs import/export</a></li>
+        <li><a href="python_xschem.html">Xschem import/export</a></li>
+        <li><a href="python_oas.html">OASIS import/export</a></li>
+      </ul>
+    </aside>
+
+    <div class="content-with-toc">
+    <main class="content">
+      <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Cell</p>
+
+      <h1 class="title" id="cell">Cell Class</h1>
+      <p class="brief">
+        Named design cell. Python counterpart of C++ <a href="cell.html"><code>room::Cell</code></a>.
+        <a class="more" href="#cell-details">More&hellip;</a>
+      </p>
+      <table class="props">
+        <tr><th>Import:</th><td><code>import room</code></td></tr>
+        <tr><th>Obtain:</th><td><code>db.find_cell(name)</code> / <code>db.get_or_create_cell(name)</code> / <code>db.cells()</code></td></tr>
+        <tr><th>C++:</th><td><a href="cell.html"><code>room::Cell</code></a></td></tr>
+      </table>
+
+      <p class="note">
+        <strong>Notation:</strong> <code>name()</code> with parentheses = method (call it).
+        A bare name without <code>()</code> would mean an attribute &mdash; Cell has none of those;
+        use <code>cell.name()</code>, not <code>cell.name</code>.
+      </p>
+
+      <h2 id="cell-api">Public API</h2>
+      <table class="memlist">
+        <tr><td><a href="#name"><code>name()</code></a></td><td>Cell name (str).</td></tr>
+        <tr><td><a href="#contents"><code>contents()</code></a></td><td>All view bodies as <code>list[CellContent]</code>.</td></tr>
+        <tr><td><a href="#content"><code>content(view="layout")</code></a></td><td>Existing view or <code>None</code> (C++ <code>findContent</code>).</td></tr>
+        <tr><td><a href="#ensure_content"><code>ensure_content(view="layout", dbu_per_micron=1000.0)</code></a></td><td>Get or create view (C++ <code>getOrCreateContent</code>).</td></tr>
+        <tr><td><a href="#layout"><code>layout()</code></a></td><td>Shortcut for <code>content("layout")</code>.</td></tr>
+        <tr><td><code>properties()</code></td><td><em>not yet exposed</em></td></tr>
+      </table>
+
+      <h2 id="cell-details">Detailed Description</h2>
+      <p>
+        A cell is a named design unit inside the library. It holds zero or more
+        <a href="#cellcontent">CellContent</a> entries (layout, schematic, symbol, abstract).
+        Names must be unique within the parent library.
+      </p>
+      <p>
+        Accessors match the C++ method style: call <code>cell.name()</code>, not <code>cell.name</code>.
+      </p>
+
+      <h2>Member documentation</h2>
+
+      <div class="fn-block" id="name">
+        <h3 class="fn-title">name() &rarr; str</h3>
+        <p class="fn-desc">Returns the cell name (C++ <code>Cell::name()</code>).</p>
+        <p class="fn-returns"><strong>Returns:</strong> Name assigned at creation or read from a file.</p>
+      </div>
+
+      <div class="fn-block" id="contents">
+        <h3 class="fn-title">contents() &rarr; list[CellContent]</h3>
+        <p class="fn-desc">Returns all view data attached to this cell (C++ <code>contents()</code>).</p>
+        <p class="fn-returns"><strong>Returns:</strong> List of <a href="#cellcontent">CellContent</a> handles (may be empty).</p>
+      </div>
+
+      <div class="fn-block" id="content">
+        <h3 class="fn-title">content(view="layout") &rarr; CellContent | None</h3>
+        <p class="fn-desc">Looks up view data for a specific view type (C++ <code>findContent</code>).</p>
+        <table class="fn-params">
+          <tr><th>Parameter</th><th>Description</th></tr>
+          <tr><td><code>view</code></td><td><code>ViewType</code>, int, or string (<code>"layout"</code>, <code>"schematic"</code>, <code>"symbol"</code>, <code>"abstract"</code>).</td></tr>
+        </table>
+        <p class="fn-returns"><strong>Returns:</strong> Matching content, or <code>None</code> if that view has not been created.</p>
+      </div>
+
+      <div class="fn-block" id="ensure_content">
+        <h3 class="fn-title">ensure_content(view="layout", dbu_per_micron=1000.0) &rarr; CellContent</h3>
+        <p class="fn-desc">Returns existing view data or creates a new entry (C++ <code>getOrCreateContent</code>).</p>
+        <table class="fn-params">
+          <tr><th>Parameter</th><th>Description</th></tr>
+          <tr><td><code>view</code></td><td>View type to retrieve or create.</td></tr>
+          <tr><td><code>dbu_per_micron</code></td><td>Used only when a new content entry is created.</td></tr>
+        </table>
+      </div>
+
+      <div class="fn-block" id="layout">
+        <h3 class="fn-title">layout() &rarr; CellContent | None</h3>
+        <p class="fn-desc">Convenience alias for <code>content(ViewType.LAYOUT)</code>.</p>
+      </div>
+
+      <h1 class="title" id="cellcontent">CellContent Class</h1>
+      <p class="brief">
+        One view body of a cell. Counterpart of C++ <a href="cellcontent.html"><code>room::CellContent</code></a>.
+        Block topology (shapes / instances / bbox) is exposed directly on this object
+        (there is no separate <code>block()</code> step in Python).
+      </p>
+      <table class="props">
+        <tr><th>Obtain:</th><td><code>cell.content(...)</code> / <code>cell.ensure_content(...)</code> / <code>cell.layout()</code></td></tr>
+        <tr><th>C++:</th><td><a href="cellcontent.html"><code>room::CellContent</code></a> + <a href="block.html"><code>block()</code></a></td></tr>
+      </table>
+
+      <h2 id="content-api">Public API</h2>
+      <table class="memlist">
+        <tr><td><a href="#view"><code>view()</code></a></td><td><code>ViewType</code> (C++ <code>viewType()</code>).</td></tr>
+        <tr><td><a href="#dbu"><code>dbu_per_micron()</code></a></td><td>float (C++ <code>dbuPerMicron()</code>).</td></tr>
+        <tr><td><a href="#bbox"><code>bbox()</code></a></td><td><a href="python_types.html#box">Box</a> (C++ <code>block().bbox()</code>).</td></tr>
+        <tr><td><a href="#shapes"><code>shapes()</code></a></td><td>Geometry list &mdash; see <a href="python_shape.html">Shape</a>.</td></tr>
+        <tr><td><a href="#instances"><code>instances()</code></a></td><td><code>list[Instance]</code>.</td></tr>
+        <tr><td><a href="#add_rect"><code>add_rect(...)</code></a></td><td>Append a rectangle; returns index.</td></tr>
+        <tr><td><a href="#add_instance"><code>add_instance(...)</code></a></td><td>Append a child placement; returns index.</td></tr>
+        <tr><td><code>properties()</code> / <code>sourceInfo()</code> / <code>nets()</code></td><td><em>not yet exposed</em></td></tr>
+      </table>
+
+      <div class="fn-block" id="view">
+        <h3 class="fn-title">view() &rarr; ViewType</h3>
+        <p class="fn-desc">Returns the view kind of this content (C++ <code>viewType()</code>).</p>
+      </div>
+
+      <div class="fn-block" id="dbu">
+        <h3 class="fn-title">dbu_per_micron() &rarr; float</h3>
+        <p class="fn-desc">DBU per micron for layout views (C++ <code>dbuPerMicron()</code>). Typically <code>1000</code> for GDS imports.</p>
+      </div>
+
+      <div class="fn-block" id="bbox">
+        <h3 class="fn-title">bbox() &rarr; Box</h3>
+        <p class="fn-desc">Cached axis-aligned bounding box of the block (C++ <code>block().bbox()</code>).</p>
+      </div>
+
+      <div class="fn-block" id="shapes">
+        <h3 class="fn-title">shapes() &rarr; list[Rect | dict]</h3>
+        <p class="fn-desc">Geometry in this view (C++ <code>block().shapes()</code>). Rectangles become <a href="python_types.html#rect"><code>room.Rect</code></a>; other kinds are <code>{"type", "index"}</code> dicts until fully decoded.</p>
+      </div>
+
+      <div class="fn-block" id="instances">
+        <h3 class="fn-title">instances() &rarr; list[Instance]</h3>
+        <p class="fn-desc">Child cell placements (C++ <code>block().instances()</code>).</p>
+      </div>
+
+      <div class="fn-block" id="add_rect">
+        <h3 class="fn-title">add_rect(layer_id, llx, lly, urx, ury) &rarr; int</h3>
+        <p class="fn-desc">Appends a rectangle shape. <code>layer_id</code> indexes into <code>db.layers()</code>.</p>
+      </div>
+
+      <div class="fn-block" id="add_instance">
+        <h3 class="fn-title">add_instance(cell_name, x=0, y=0, orient=Orient.R0, mag=1.0) &rarr; int</h3>
+        <p class="fn-desc">Appends a child placement referencing another cell by name.</p>
+      </div>
+
+      <h2>Example</h2>
+      <pre class="example"><code>import room
+
+db = room.open("design.room")
+cell = db.find_cell("INVX1")
+print(cell.name())                 # 'INVX1'
+
+layout = cell.ensure_content("layout")
+print(layout.view(), layout.dbu_per_micron())
+print(layout.bbox(), len(layout.shapes()), len(layout.instances()))</code></pre>
+    </main>
+
+    <aside class="page-toc">
+      <h3>On this page</h3>
+      <ul>
+        <li><a href="#cell">Cell</a></li>
+        <li><a href="#cell-api">Cell API</a></li>
+        <li><a href="#name">name()</a></li>
+        <li><a href="#contents">contents()</a></li>
+        <li><a href="#content">content()</a></li>
+        <li><a href="#ensure_content">ensure_content()</a></li>
+        <li><a href="#layout">layout()</a></li>
+        <li><a href="#cellcontent">CellContent</a></li>
+        <li><a href="#content-api">CellContent API</a></li>
+        <li><a href="#shapes">shapes()</a></li>
+        <li><a href="#instances">instances()</a></li>
+      </ul>
+    </aside>
+    </div>
+  </div>
+</body>
+</html>
