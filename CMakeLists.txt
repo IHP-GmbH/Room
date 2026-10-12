@@ -7,13 +7,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(ROOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
-set(_ROOM_TOP_LEVEL "${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+# set(... STREQUAL ...) does not evaluate — use if() so subdirectory embeds get FALSE.
+if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(_ROOM_TOP_LEVEL TRUE)
+else()
+    set(_ROOM_TOP_LEVEL FALSE)
+endif()
 
 include("${ROOM_ROOT}/cmake/Coverage.cmake")
 
 option(ROOM_BOOTSTRAP_CAPNP "Build Cap'n Proto automatically when capnp-install is missing" ON)
 option(ROOM_BUILD_EXAMPLES "Build ROOM example command-line tools" ON)
 option(ROOM_BUILD_XSCHEM_TCL "Build Tcl extension (roomtcl.so) for in-process Xschem integration" OFF)
+# When embedded (e.g. Qucs-S), enable explicitly so cmake --install of the ROOM
+# binary dir still installs libraries/headers needed by packaging.
+option(ROOM_INSTALL "Install ROOM libraries, headers, and CMake package" ${_ROOM_TOP_LEVEL})
 
 if(ROOM_BUILD_XSCHEM_TCL)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -196,7 +204,7 @@ endif()
 add_executable(make_empty_room_views tools/make_empty_room_views.cpp)
 target_link_libraries(make_empty_room_views PRIVATE room)
 
-if(_ROOM_TOP_LEVEL)
+if(ROOM_INSTALL)
     install(TARGETS room room_utils EXPORT ROOMTargets
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib
