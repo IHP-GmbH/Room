@@ -401,7 +401,8 @@ public:
             case GDS_AREF:
                 flushDraft();
                 draft.type = ElementDraft::Type::Aref;
-                m_warnings.push_back("AREF geometry expansion is not implemented; storing as instance reference");
+                // Count only — identical per-AREF warnings flood LibMan/CI logs on fill-heavy chips.
+                ++m_arefWarningCount;
                 break;
             case GDS_LAYER:
                 if (payloadLen >= 2) {
@@ -476,6 +477,12 @@ public:
         if (!sawEndLib) {
             m_warnings.push_back("ENDLIB not found; file may be truncated");
         }
+        if (m_arefWarningCount > 0) {
+            m_warnings.push_back(
+                "AREF geometry expansion is not implemented; storing "
+                + std::to_string(m_arefWarningCount)
+                + " array reference(s) as instance references");
+        }
 
         for (auto &cell : db.lib().cells()) {
             if (CellContent *content = cell.findContent(ViewType::Layout)) {
@@ -496,6 +503,7 @@ private:
     std::vector<std::string> &m_errors;
     std::vector<LayerSpec> m_globalLayers;
     std::unordered_map<LayerKey, std::uint32_t, LayerKeyHash> m_layerMap;
+    std::size_t m_arefWarningCount = 0;
 };
 
 } // namespace

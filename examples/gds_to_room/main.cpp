@@ -25,19 +25,21 @@ constexpr const char *kDefaultRoom = "examples/gds_to_room/output/sg13g2_inv_2.r
 
 void printUsage(const char *prog)
 {
-    std::cerr << "Usage: " << prog << " [--all-cells] <input.gds|dir> <output.room> [dump.txt] [cell-name]\n"
+    std::cerr << "Usage: " << prog
+              << " [--all-cells] [--dump dump.txt] <input.gds|dir> <output.room> [cell-name]\n"
               << "\n"
               << "  input       GDSII file or directory of *.gds files\n"
               << "  output.room ROOM file path\n"
-              << "  dump.txt    optional text dump (default: output name with .txt)\n"
               << "  cell-name   optional single cell to keep (default: auto-detect inv2)\n"
               << "  --all-cells import every cell (skip inv2 filter)\n"
+              << "  --dump      write optional text dump (off by default; never printed to stdout)\n"
               << "\n"
               << "With no arguments, runs the bundled sg13g2 demo (single inv2 cell).\n"
               << "\n"
               << "Examples:\n"
               << "  " << prog << " --all-cells C:/pdk/stdcell/gds out/stdcell.room\n"
-              << "  " << prog << " data/chip.gds out/layout.room out/layout.txt TOP\n";
+              << "  " << prog << " data/chip.gds out/layout.room TOP\n"
+              << "  " << prog << " --dump out/layout.txt data/chip.gds out/layout.room\n";
 }
 
 std::string defaultDumpPath(const std::string &roomPath)
@@ -197,11 +199,18 @@ int main(int argc, char *argv[])
     }
 
     bool allCells = false;
+    std::string dumpPath;
     std::vector<std::string> positional;
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
         if (arg == "--all-cells") {
             allCells = true;
+        } else if (arg == "--dump") {
+            if (i + 1 >= argc) {
+                std::cerr << "--dump requires a path argument\n";
+                return 1;
+            }
+            dumpPath = argv[++i];
         } else {
             positional.push_back(arg);
         }
@@ -210,10 +219,21 @@ int main(int argc, char *argv[])
     const bool useDefaults = positional.empty();
     const std::string inputPath = useDefaults ? kDefaultGds : positional[0];
     const std::string roomPath = useDefaults ? kDefaultRoom : positional[1];
-    const std::string dumpPath =
-        useDefaults ? defaultDumpPath(kDefaultRoom)
-                    : ((positional.size() >= 3) ? positional[2] : defaultDumpPath(roomPath));
-    const std::string requestedCell = (positional.size() >= 4) ? positional[3] : std::string{};
+    // Legacy positional dump.txt (3rd arg ending in .txt) still accepted.
+    std::string requestedCell;
+    if (!useDefaults && positional.size() >= 3) {
+        if (endsWith(toLower(positional[2]), ".txt") && dumpPath.empty()) {
+            dumpPath = positional[2];
+            if (positional.size() >= 4) {
+                requestedCell = positional[3];
+            }
+        } else {
+            requestedCell = positional[2];
+        }
+    }
+    if (useDefaults && dumpPath.empty()) {
+        dumpPath = defaultDumpPath(kDefaultRoom);
+    }
 
     if (!useDefaults && positional.size() < 2) {
         printUsage(argv[0]);
@@ -279,11 +299,13 @@ int main(int argc, char *argv[])
         std::cout << "  cells: " << db.lib().cells().size() << "\n";
     }
 
-    room::TextDumper dumper;
-    dumper.dumpToFile(db, dumpPath);
-    std::cout << "Text dump: " << dumpPath << "\n";
-
-    dumper.dump(db, std::cout);
+    // Never dump full geometry to stdout — LibMan streams converter output into the UI
+    // log and a multi-MB text dump freezes the import dialog (~180k lines on large chips).
+    if (!dumpPath.empty()) {
+        room::TextDumper dumper;
+        dumper.dumpToFile(db, dumpPath);
+        std::cout << "Text dump: " << dumpPath << "\n";
+    }
 
     return 0;
 }
