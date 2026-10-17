@@ -46,7 +46,9 @@ Touchstone (`S2Spice` subcircuit; instance nodes = pins + trailing gnd reference
 Xschem-roomdb does the same at export/netlist time: lookalike `.sym` gets
 `format="@name @pinlist 0 @symname"` + `spice_stop=true`, a sibling `.spice` is
 written via `utils/touchstone_to_spice.*`, and `room.tcl` prepends `.include` of
-those files into the batch netlist.
+those files into the batch netlist. Qucs EM testbenches (`Pac` / `.SP` / `NutmegEq`)
+map to ngspice `port` + `sp` on Xschem export so the same `*.schematic.room` opens
+in both editors.
 
 Optional persisted [index.capnp](../schema/index.capnp) at `Lib` level (not wired yet):
 

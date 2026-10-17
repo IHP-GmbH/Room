@@ -246,6 +246,9 @@ std::string mapQucsSymbol(const std::string &qucsType)
         {"IProbe", "IProbe.sym"},
         {"VProbe", "ngspice_probe.sym"},
         {"Port", "iopin.sym"},
+        // EM / S-parameter TB (Qucs Pac + SP + equations → ngspice)
+        {"Pac", "Pac.sym"},
+        {"NutmegEq", "devices/code_shown.sym"},
     };
     const auto it = kMap.find(qucsType);
     if (it != kMap.end()) {
@@ -254,6 +257,9 @@ std::string mapQucsSymbol(const std::string &qucsType)
     if (!qucsType.empty() && qucsType.front() == '.') {
         if (qucsType == ".TR") {
             return "analogLib/TR.sym";
+        }
+        if (qucsType == ".SP") {
+            return "devices/code_shown.sym";
         }
         return "code_shown.sym";
     }
@@ -460,7 +466,22 @@ Instance instanceForQucsExport(const Instance &src)
         }
     }
 
-    if (symbol == "qucs_blackbox.sym") {
+    if (symbol == "Pac.sym" || resolvedModel == "Pac") {
+        // Qucs Pac: Num, Z, P, f, Temp, Noise → ngspice port=num z0=
+        std::string num = "1";
+        std::string z0 = "50";
+        if (const std::string *p0 = findProperty(src.properties(), "param.0"); p0 && !p0->empty()) {
+            num = *p0;
+        }
+        if (const std::string *p1 = findProperty(src.properties(), "param.1"); p1 && !p1->empty()) {
+            z0 = normalizeSpiceDeviceValue(*p1); // "50 Ohm" → "50"
+        }
+        addProperty(inst.properties(), "num", num);
+        addProperty(inst.properties(), "z0", z0);
+        if (!findProperty(inst.properties(), "name")) {
+            addProperty(inst.properties(), "name", "P" + num);
+        }
+    } else if (symbol == "qucs_blackbox.sym") {
         addProperty(inst.properties(), "symname", resolvedModel);
     } else if (symbol == "qucs_directive.sym" || symbol == "code_shown.sym" || symbol == "devices/code_shown.sym") {
         // Xschem code_shown / directive: spice text via @value (type=netlist_commands).
@@ -475,6 +496,74 @@ Instance instanceForQucsExport(const Instance &src)
                 }
                 addProperty(inst.properties(), "value", libLine);
             }
+            addProperty(inst.properties(), "only_toplevel", "true");
+        } else if (resolvedModel == ".SP" || logicalType == ".SP") {
+            // Qucs .SP → ngspice `sp` (S-parameter sweep for Pac + lookalike DUT).
+            std::string type = "lin";
+            std::string start = "100Meg";
+            std::string stop = "100G";
+            std::string points = "101";
+            if (const std::string *t = findProperty(src.properties(), "param.0"); t && !t->empty()) {
+                type = *t;
+                for (char &c : type) {
+                    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+                }
+            }
+            auto qucsFreqToSpice = [](std::string f) {
+                // "100 MHz" → "100Meg", "100 GHz" → "100G"
+                while (!f.empty() && (f.back() == ' ' || f.back() == '\t')) {
+                    f.pop_back();
+                }
+                const auto sp = f.find(' ');
+                std::string num = sp == std::string::npos ? f : f.substr(0, sp);
+                std::string unit = sp == std::string::npos ? "" : f.substr(sp + 1);
+                for (char &c : unit) {
+                    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+                }
+                if (unit == "hz") {
+                    return num;
+                }
+                if (unit == "khz") {
+                    return num + "k";
+                }
+                if (unit == "mhz") {
+                    return num + "Meg";
+                }
+                if (unit == "ghz") {
+                    return num + "G";
+                }
+                return normalizeSpiceDeviceValue(f);
+            };
+            if (const std::string *s = findProperty(src.properties(), "param.1"); s && !s->empty()) {
+                start = qucsFreqToSpice(*s);
+            }
+            if (const std::string *s = findProperty(src.properties(), "param.2"); s && !s->empty()) {
+                stop = qucsFreqToSpice(*s);
+            }
+            if (const std::string *s = findProperty(src.properties(), "param.3"); s && !s->empty()) {
+                points = *s;
+            }
+            if (type != "log" && type != "lin" && type != "dec" && type != "oct") {
+                type = "lin";
+            }
+            addProperty(inst.properties(), "value",
+                        std::string(".control\nsp ") + type + " " + points + " " + start + " " + stop
+                            + "\nwrite testbench_sp.raw\n.endc");
+            addProperty(inst.properties(), "only_toplevel", "true");
+        } else if (resolvedModel == "NutmegEq" || logicalType == "NutmegEq") {
+            // Post-process equations; keep as comments + let lines for ngspice.
+            std::ostringstream eq;
+            eq << "* Qucs NutmegEq (S-param post)\n.control\n";
+            for (int i = 1; i < 16; ++i) {
+                const std::string key = "param." + std::to_string(i);
+                const std::string *line = findProperty(src.properties(), key);
+                if (!line || line->empty()) {
+                    continue;
+                }
+                eq << "let " << *line << '\n';
+            }
+            eq << ".endc\n";
+            addProperty(inst.properties(), "value", eq.str());
             addProperty(inst.properties(), "only_toplevel", "true");
         } else if (!resolvedModel.empty() && (resolvedModel.front() == '.' || resolvedModel == "TR")) {
             if (resolvedModel == ".TR" || resolvedModel == "TR") {
