@@ -54,14 +54,37 @@ bool pathExists(const std::string &path)
     return ::stat(path.c_str(), &st) == 0;
 }
 
+bool isWindowsDrivePath(const std::string &path)
+{
+    return path.size() >= 2 && std::isalpha(static_cast<unsigned char>(path[0])) && path[1] == ':';
+}
+
 bool isAbsolutePath(const std::string &path)
 {
-#ifdef _WIN32
-    if (path.size() >= 2 && std::isalpha(static_cast<unsigned char>(path[0])) && path[1] == ':') {
+    if (isWindowsDrivePath(path)) {
         return true;
     }
-#endif
     return !path.empty() && (path[0] == '/' || path[0] == '\\');
+}
+
+/*! Map C:/foo or C:\foo → /mnt/c/foo when running under WSL/Linux. */
+std::string windowsPathToPosixIfNeeded(const std::string &path)
+{
+    if (!isWindowsDrivePath(path)) {
+        return path;
+    }
+#ifdef _WIN32
+    return path;
+#else
+    std::string out = "/mnt/";
+    out.push_back(static_cast<char>(std::tolower(static_cast<unsigned char>(path[0]))));
+    out.push_back('/');
+    for (std::size_t i = 2; i < path.size(); ++i) {
+        const char ch = path[i];
+        out.push_back(ch == '\\' ? '/' : ch);
+    }
+    return out;
+#endif
 }
 
 std::string parentDir(const std::string &path)
@@ -135,9 +158,23 @@ std::string resolveSnpPath(const std::string &emModelPath, const std::string &sn
         return {};
     }
     if (isAbsolutePath(snp)) {
-        return snp;
+        const std::string abs = windowsPathToPosixIfNeeded(snp);
+        if (pathExists(abs)) {
+            return abs;
+        }
+        return abs;
     }
-    return joinPath(parentDir(emModelPath), snp);
+    const std::string joined = joinPath(parentDir(emModelPath), snp);
+    if (pathExists(joined)) {
+        return joined;
+    }
+    // Emmodel may still store a Windows absolute path that failed isAbsolutePath
+    // heuristics; try the POSIX mapping of the raw string as a last resort.
+    const std::string mapped = windowsPathToPosixIfNeeded(snp);
+    if (mapped != snp && pathExists(mapped)) {
+        return mapped;
+    }
+    return joined;
 }
 
 void replaceOrPush(std::vector<Property> &props, const std::string &name, const std::string &value)
