@@ -30,8 +30,15 @@
 # ## API
 #
 #   import room
-#   db = room.open("design.room")
+#   db = room.open("design.room")   # paths are strip()'d
 #   print(db.cell_names())
+#   cell = db.find_cell(db.cell_names()[0])
+#   cxt = cell.content()           # sole view when the file has one content
+#   print(cxt.view(), len(cxt.instances()))
+#
+#   # Explicit view when a cell has several contents:
+#   cell.content("schematic")
+#   cell.layout()
 #
 #   python -m room info design.room
 #   python -m room ls design.room
@@ -40,5 +47,7 @@
 #   room convert --tool xschem inv.sch inv.room --view schematic
 #
 # HTML docs (same site as C++): https://ihp-gmbh.github.io/Room/python.html
+#
+# LibMan hosts the same API in its Command Line (Messages panel).
 #
 # PyPI wheels are not published yet — install from this repository.

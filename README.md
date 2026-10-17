@@ -98,6 +98,11 @@ Default build task: **Build: Static Libraries (.a)** (`Ctrl+Shift+B` may need to
 
 ROOM ships a **ctypes** package (`import room`) plus CLI (`room` / `python -m room`) on top of a small C API shared library (`room_c`).
 
+Useful defaults in the Python API:
+
+- `room.open("path with spaces")` — path is trimmed; quotes around the path are stripped
+- `cell.content()` / `cell.contents()` — with no view name, returns the first available view (not always `LAYOUT`)
+
 Full reference: **[Python API docs](https://ihp-gmbh.github.io/Room/python.html)** (same site as the C++ docs).
 
 ### pip install (from this repo)
@@ -217,6 +222,8 @@ Custom paths:
 ```bat
 build\gds_to_room.exe input.gds output\layout.room output\layout.txt CELL_NAME
 ```
+
+Optional flags: `--all-cells` (one `.room` per GDS cell), `--dump` (write a text dump next to the `.room` — do not stream huge dumps to the console).
 
 ### Qucs schematic import
 

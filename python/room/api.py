@@ -9,6 +9,11 @@ from pathlib import Path
 from . import _lib
 
 
+def _path_str(path: str | Path) -> str:
+    """Normalize filesystem paths (trim accidental leading/trailing whitespace)."""
+    return str(path).strip()
+
+
 class ViewType(IntEnum):
     LAYOUT = 0
     SCHEMATIC = 1
@@ -119,7 +124,7 @@ def sniff(path: str | Path) -> FileInfo:
     lib = _lib.get_lib()
     info = _lib.RoomFileInfoC()
     err = _lib.errbuf()
-    rc = lib.room_sniff(_lib.cstr(str(path)), info, err, len(err))
+    rc = lib.room_sniff(_lib.cstr(_path_str(path)), info, err, len(err))
     if rc != 0:
         raise RuntimeError(err.value.decode("utf-8", errors="replace") or "sniff failed")
     return FileInfo(
@@ -237,10 +242,19 @@ class Cell:
         n = self._db._lib.room_db_cell_content_count(self._db._ptr, self._index)
         return [CellContent(self._db, self._index, i) for i in range(n)]
 
-    def content(self, view: str | ViewType | int = ViewType.LAYOUT) -> CellContent | None:
-        """Lookup view body (C++ ``findContent``)."""
+    def content(self, view: str | ViewType | int | None = None) -> CellContent | None:
+        """Lookup view body (C++ ``findContent``).
+
+        With no ``view`` (or ``None``): if the cell has exactly one content
+        (typical for a single ``*.schematic.room`` / ``*.layout.room`` file),
+        return that body. If there are zero or several views, return ``None``
+        — pass ``\"schematic\"`` / ``ViewType.LAYOUT`` / … explicitly.
+        """
+        bodies = self.contents()
+        if view is None:
+            return bodies[0] if len(bodies) == 1 else None
         wanted = parse_view(view)
-        for content in self.contents():
+        for content in bodies:
             if content.view() == wanted:
                 return content
         return None
@@ -294,7 +308,7 @@ class Database:
     @classmethod
     def open(cls, path: str | Path) -> "Database":
         err = _lib.errbuf()
-        ptr = _lib.get_lib().room_db_open(_lib.cstr(str(path)), err, len(err))
+        ptr = _lib.get_lib().room_db_open(_lib.cstr(_path_str(path)), err, len(err))
         if not ptr:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to open {path}")
         return cls(ptr)
@@ -302,7 +316,7 @@ class Database:
     @classmethod
     def from_gds(cls, path: str | Path) -> "Database":
         err = _lib.errbuf()
-        ptr = _lib.get_lib().room_from_gds(_lib.cstr(str(path)), err, len(err))
+        ptr = _lib.get_lib().room_from_gds(_lib.cstr(_path_str(path)), err, len(err))
         if not ptr:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to import {path}")
         return cls(ptr)
@@ -310,7 +324,7 @@ class Database:
     @classmethod
     def from_qucs(cls, path: str | Path) -> "Database":
         err = _lib.errbuf()
-        ptr = _lib.get_lib().room_from_qucs(_lib.cstr(str(path)), err, len(err))
+        ptr = _lib.get_lib().room_from_qucs(_lib.cstr(_path_str(path)), err, len(err))
         if not ptr:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to import {path}")
         return cls(ptr)
@@ -318,7 +332,7 @@ class Database:
     @classmethod
     def from_xschem(cls, path: str | Path) -> "Database":
         err = _lib.errbuf()
-        ptr = _lib.get_lib().room_from_xschem(_lib.cstr(str(path)), err, len(err))
+        ptr = _lib.get_lib().room_from_xschem(_lib.cstr(_path_str(path)), err, len(err))
         if not ptr:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to import {path}")
         return cls(ptr)
@@ -328,32 +342,32 @@ class Database:
         if not has_oas():
             raise RuntimeError("OAS support was not built into room_c (install zlib and rebuild)")
         err = _lib.errbuf()
-        ptr = _lib.get_lib().room_from_oas(_lib.cstr(str(path)), err, len(err))
+        ptr = _lib.get_lib().room_from_oas(_lib.cstr(_path_str(path)), err, len(err))
         if not ptr:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to import {path}")
         return cls(ptr)
 
     def save(self, path: str | Path, view: str | ViewType | int = ViewType.LAYOUT) -> None:
         err = _lib.errbuf()
-        rc = self._lib.room_db_save(self._ptr, _lib.cstr(str(path)), int(parse_view(view)), err, len(err))
+        rc = self._lib.room_db_save(self._ptr, _lib.cstr(_path_str(path)), int(parse_view(view)), err, len(err))
         if rc != 0:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to save {path}")
 
     def to_gds(self, path: str | Path) -> None:
         err = _lib.errbuf()
-        rc = self._lib.room_to_gds(self._ptr, _lib.cstr(str(path)), err, len(err))
+        rc = self._lib.room_to_gds(self._ptr, _lib.cstr(_path_str(path)), err, len(err))
         if rc != 0:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to export {path}")
 
     def to_qucs(self, path: str | Path, cell: str | None = None) -> None:
         err = _lib.errbuf()
-        rc = self._lib.room_to_qucs(self._ptr, _lib.cstr(str(path)), _lib.cstr(cell), err, len(err))
+        rc = self._lib.room_to_qucs(self._ptr, _lib.cstr(_path_str(path)), _lib.cstr(cell), err, len(err))
         if rc != 0:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to export {path}")
 
     def to_xschem(self, path: str | Path, cell: str | None = None) -> None:
         err = _lib.errbuf()
-        rc = self._lib.room_to_xschem(self._ptr, _lib.cstr(str(path)), _lib.cstr(cell), err, len(err))
+        rc = self._lib.room_to_xschem(self._ptr, _lib.cstr(_path_str(path)), _lib.cstr(cell), err, len(err))
         if rc != 0:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to export {path}")
 
@@ -361,7 +375,7 @@ class Database:
         if not has_oas():
             raise RuntimeError("OAS support was not built into room_c (install zlib and rebuild)")
         err = _lib.errbuf()
-        rc = self._lib.room_to_oas(self._ptr, _lib.cstr(str(path)), err, len(err))
+        rc = self._lib.room_to_oas(self._ptr, _lib.cstr(_path_str(path)), err, len(err))
         if rc != 0:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to export {path}")
 

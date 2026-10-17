@@ -126,7 +126,7 @@
 
       <div class="fn-block" id="open">
         <h3 class="fn-title">Database.open(path) / room.open(path) &rarr; Database</h3>
-        <p class="fn-desc">Loads a <code>.room</code> file (C++ <code>loadFromFile</code>).</p>
+        <p class="fn-desc">Loads a <code>.room</code> file (C++ <code>loadFromFile</code>). Path strings are <code>strip()</code>&rsquo;d so accidental leading/trailing spaces (e.g. from paste) do not break open. Import/export helpers apply the same normalization.</p>
       </div>
 
       <div class="fn-block" id="version">
