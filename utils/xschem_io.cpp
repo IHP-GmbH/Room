@@ -14,6 +14,7 @@
 #include "xschem_format.h"
 
 #include "block.h"
+#include "em_model_netlist.h"
 #include "primitive_resolver.h"
 
 #include <algorithm>
@@ -1178,6 +1179,9 @@ void writeVersionRecord(std::ostream &out, const SourceInfo &info)
 
 void normalizeSubcircuitMetadata(std::vector<Property> &props)
 {
+    // Layout-lookalike EM cells: pins + trailing gnd; .SUBCKT body from sibling .spice.
+    applyLookalikeXschemNetlistProps(props);
+
     const std::string *type = findProperty(props, "type");
     if (!type || *type != "subcircuit") {
         return;

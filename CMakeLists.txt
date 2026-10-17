@@ -126,6 +126,8 @@ add_library(room_utils STATIC
     utils/net_name_propagation.cpp
     utils/pin_retarget.cpp
     utils/em_lookalike_symbol.cpp
+    utils/touchstone_to_spice.cpp
+    utils/em_model_netlist.cpp
     utils/xschem_format.cpp
     utils/xschem_io.cpp
     utils/xschem_importer.cpp

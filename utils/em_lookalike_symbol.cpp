@@ -279,6 +279,10 @@ std::string writeLookalikeSymbolRoom(const EmLookalikeInput &in)
         content.properties().clear();
         content.properties().push_back({"em.lookalike", "1"});
         content.properties().push_back({"type", "subcircuit"});
+        // Xschem: black-box subckt from sibling *.spice (S2Spice); trailing 0 = ref node.
+        content.properties().push_back({"spice_stop", "true"});
+        content.properties().push_back({"format", "@name @pinlist 0 @symname"});
+        content.properties().push_back({"template", "name=x1"});
 
         const std::uint32_t drawingLayer =
             ensureNamedLayer(content, "drawing", LayerPurpose::Drawing, 1);

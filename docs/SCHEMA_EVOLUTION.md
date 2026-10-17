@@ -43,6 +43,10 @@ EMStudio Create also writes a layout-lookalike `ViewType.symbol` (`*.symbol.room
 `em.lookalike=1`) via `utils/em_lookalike_symbol.*` so schematic tools can place the cell.
 Qucs-S-roomdb LibComp resolves lookalike instances to the sibling `*.emmodel.room`
 Touchstone (`S2Spice` subcircuit; instance nodes = pins + trailing gnd reference).
+Xschem-roomdb does the same at export/netlist time: lookalike `.sym` gets
+`format="@name @pinlist 0 @symname"` + `spice_stop=true`, a sibling `.spice` is
+written via `utils/touchstone_to_spice.*`, and `room.tcl` prepends `.include` of
+those files into the batch netlist.
 
 Optional persisted [index.capnp](../schema/index.capnp) at `Lib` level (not wired yet):
 

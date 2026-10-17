@@ -2,6 +2,7 @@
 
 #include "room_paths.h"
 #include "database.h"
+#include "em_model_netlist.h"
 #include "xschem_exporter.h"
 #include "xschem_format.h"
 
@@ -64,6 +65,21 @@ Status exportCell(const std::string &roomPath, const std::string &cellName, cons
         exporter.exportCell(db, cellName, outputPath);
         appendMessages(status, exporter.warnings(), false);
         appendMessages(status, exporter.errors(), true);
+        if (status.ok && symbolRoomIsLookalike(roomPath)) {
+            std::string spicePath = outputPath;
+            const auto dot = spicePath.find_last_of('.');
+            const auto slash = spicePath.find_last_of("/\\");
+            if (dot != std::string::npos && (slash == std::string::npos || dot > slash)) {
+                spicePath = spicePath.substr(0, dot) + ".spice";
+            } else {
+                spicePath += ".spice";
+            }
+            const std::string err =
+                writeLookalikeSpiceForSymbolRoom(roomPath, spicePath, cellName);
+            if (!err.empty()) {
+                status.warnings.push_back("lookalike spice: " + err);
+            }
+        }
     } catch (const std::exception &ex) {
         status.ok = false;
         status.errors.push_back(ex.what());
