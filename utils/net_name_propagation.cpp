@@ -136,6 +136,10 @@ bool pointOnWireSegment(Point p, Point a, Point b, std::int64_t tol)
 
 LayerPurpose layerPurpose(const std::vector<LayerSpec> &layers, std::uint32_t layerId)
 {
+    // Shapes store an index into layers (see findOrAddViewLayer). Prefer that.
+    if (layerId < layers.size()) {
+        return layers[layerId].purpose;
+    }
     for (const LayerSpec &layer : layers) {
         if (layer.layerNum == layerId) {
             return layer.purpose;

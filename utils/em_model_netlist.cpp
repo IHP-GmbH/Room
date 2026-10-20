@@ -373,9 +373,12 @@ void applyLookalikeXschemNetlistProps(std::vector<Property> &props)
     if (!lookalike) {
         return;
     }
-    // Black-box subcircuit: instance nodes = pins + trailing gnd; body from sibling .spice.
+    // Black-box subcircuit: instance nodes = pins + trailing gnd; body from sibling .spice
+    // (.include injected by room.tcl). default_schematic=ignore skips spice_block_netlist's
+    // empty .subckt wrapper (spice_stop alone still emits .subckt … .ends).
     replaceOrPush(props, "type", "subcircuit");
     replaceOrPush(props, "spice_stop", "true");
+    replaceOrPush(props, "default_schematic", "ignore");
     replaceOrPush(props, "format", "@name @pinlist 0 @symname");
     replaceOrPush(props, "template", "name=x1");
 }

@@ -903,6 +903,10 @@ void writeSection(std::ostream &out, const std::string &name, const std::vector<
 
 LayerPurpose layerPurpose(const CellContent &content, std::uint32_t layerId)
 {
+    // Shapes store an index into content.layers() (see findOrAddViewLayer). Prefer that.
+    if (layerId < content.layers().size()) {
+        return content.layers()[layerId].purpose;
+    }
     for (const LayerSpec &layer : content.layers()) {
         if (layer.layerNum == layerId) {
             return layer.purpose;

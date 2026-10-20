@@ -247,7 +247,7 @@ std::string mapQucsSymbol(const std::string &qucsType)
         {"VProbe", "ngspice_probe.sym"},
         {"Port", "iopin.sym"},
         // EM / S-parameter TB (Qucs Pac + SP + equations → ngspice)
-        {"Pac", "Pac.sym"},
+        {"Pac", "analogLib/Pac.sym"},
         {"NutmegEq", "devices/code_shown.sym"},
     };
     const auto it = kMap.find(qucsType);
@@ -460,14 +460,15 @@ Instance instanceForQucsExport(const Instance &src)
         addProperty(inst.properties(), "sig_type", "std_logic");
     }
 
-    if (symbol == "gnd.sym" || resolvedModel == "GND") {
-        if (!findProperty(inst.properties(), "lab")) {
-            addProperty(inst.properties(), "lab", "GND");
-        }
+    if (symbol == "gnd.sym" || symbol == "GND.sym" || symbol == "analogLib/GND.sym"
+        || resolvedModel == "GND") {
+        // ngspice global ground is node 0 (stock devices/gnd.sym). Qucs lab "GND" is display-only.
+        addProperty(inst.properties(), "lab", "0");
     }
 
-    if (symbol == "Pac.sym" || resolvedModel == "Pac") {
-        // Qucs Pac: Num, Z, P, f, Temp, Noise → ngspice port=num z0=
+    if (symbol == "Pac.sym" || symbol == "analogLib/Pac.sym" || resolvedModel == "Pac") {
+        // Qucs Pac → ngspice RF VSRC port (manual 4.1.11): Vn n+ n- portnum n z0 R
+        // Equals-form (portnum=1) is rejected by some builds; use space-separated tokens.
         std::string num = "1";
         std::string z0 = "50";
         if (const std::string *p0 = findProperty(src.properties(), "param.0"); p0 && !p0->empty()) {
@@ -478,6 +479,8 @@ Instance instanceForQucsExport(const Instance &src)
         }
         addProperty(inst.properties(), "num", num);
         addProperty(inst.properties(), "z0", z0);
+        // Port 1 driven (ac 1); other ports ac 0 — required for .sp.
+        addProperty(inst.properties(), "ac", (num == "1") ? "1" : "0");
         if (!findProperty(inst.properties(), "name")) {
             addProperty(inst.properties(), "name", "P" + num);
         }
@@ -545,6 +548,53 @@ Instance instanceForQucsExport(const Instance &src)
             }
             if (type != "log" && type != "lin" && type != "dec" && type != "oct") {
                 type = "lin";
+            }
+            // Qucs Type log/lin → ngspice .sp dec/lin (there is no `sp log`).
+            // Qucs Points=N is TOTAL points across Start..Stop; ngspice `sp dec N`
+            // is points *per decade*. Convert so LibMan matches Qucs density.
+            if (type == "log") {
+                type = "dec";
+                try {
+                    auto spiceToHz = [](std::string f) -> double {
+                        while (!f.empty() && (f.back() == ' ' || f.back() == '\t')) {
+                            f.pop_back();
+                        }
+                        double mult = 1.0;
+                        auto ends = [&](const char *suf) {
+                            const size_t n = std::strlen(suf);
+                            return f.size() >= n
+                                && f.compare(f.size() - n, n, suf) == 0;
+                        };
+                        if (ends("Meg") || ends("meg")) {
+                            mult = 1e6;
+                            f.resize(f.size() - 3);
+                        } else if (ends("G") || ends("g")) {
+                            mult = 1e9;
+                            f.pop_back();
+                        } else if (ends("k") || ends("K")) {
+                            mult = 1e3;
+                            f.pop_back();
+                        } else if (ends("M") || ends("m")) {
+                            // bare M = mega in SPICE for frequency contexts we emit
+                            mult = 1e6;
+                            f.pop_back();
+                        }
+                        return std::stod(f) * mult;
+                    };
+                    const double f1 = spiceToHz(start);
+                    const double f2 = spiceToHz(stop);
+                    const int total = std::max(2, std::stoi(points));
+                    if (f1 > 0.0 && f2 > f1) {
+                        const double decades = std::log10(f2 / f1);
+                        if (decades > 1e-9) {
+                            const int perDec =
+                                std::max(2, static_cast<int>(std::lround((total - 1) / decades)));
+                            points = std::to_string(perDec);
+                        }
+                    }
+                } catch (...) {
+                    // keep Qucs Points as-is if parse fails
+                }
             }
             addProperty(inst.properties(), "value",
                         std::string(".control\nsp ") + type + " " + points + " " + start + " " + stop
@@ -657,8 +707,7 @@ Instance instanceForQucsExport(const Instance &src)
         rebadged.properties() = inst.properties();
         setProperty(rebadged.properties(), "core.primitive", *controllerRef);
         inst = std::move(rebadged);
-    }
-    if (const std::string *corePrim = findProperty(src.properties(), "core.primitive")) {
+    } else if (const std::string *corePrim = findProperty(src.properties(), "core.primitive")) {
         addProperty(inst.properties(), "core.primitive", *corePrim);
     } else {
         annotatePrimitiveReference(inst);
@@ -851,6 +900,11 @@ std::uint32_t ensureLayer(CellContent &content, const std::string &name, LayerPu
 
 LayerPurpose layerPurpose(const CellContent &content, std::uint32_t layerId)
 {
+    // Shapes store an index into content.layers() (see findOrAddViewLayer). Prefer that.
+    // Fall back to layerNum match for older files that stored GDS layer numbers.
+    if (layerId < content.layers().size()) {
+        return content.layers()[layerId].purpose;
+    }
     for (const LayerSpec &layer : content.layers()) {
         if (layer.layerNum == layerId) {
             return layer.purpose;
@@ -958,6 +1012,16 @@ std::optional<std::string> analogLibControllerRef(const Instance &inst)
     if (logical == "launcher" || cellStem(inst.cellName()) == "launcher") {
         return "analogLib/launcher.symbol.room";
     }
+    // S-param / RF ports and grounds live in analogLib (same tier as Vdc/Vac).
+    if (logical == "Pac") {
+        return "analogLib/Pac.symbol.room";
+    }
+    if (logical == "GND" || logical == "gnd") {
+        return "analogLib/GND.symbol.room";
+    }
+    if (logical == "Port") {
+        return "analogLib/Port.symbol.room";
+    }
     return std::nullopt;
 }
 
@@ -974,7 +1038,8 @@ std::string analogLibControllerCellName(const std::string &primitiveRef)
 bool isAnalogLibControllerSymbol(const std::string &cellName)
 {
     const std::string stem = cellStem(cellName);
-    return stem == "INCLSCR" || stem == "TR" || stem == ".TR" || stem == "launcher";
+    return stem == "INCLSCR" || stem == "TR" || stem == ".TR" || stem == "launcher"
+        || stem == "Pac" || stem == "GND" || stem == "gnd" || stem == "Port";
 }
 
 void normalizeAnalogLibController(Instance &inst)
@@ -1388,7 +1453,7 @@ void applyGndLabelsToWireProps(const Block &block, double dbuPerEditorUnit,
         }
         for (const Point &g : gndPins) {
             if (pointNear(pts.front(), g.x, g.y, tol) || pointNear(pts.back(), g.x, g.y, tol)) {
-                addProperty(mutableWireProps[i], "lab", "GND");
+                addProperty(mutableWireProps[i], "lab", "0");
                 break;
             }
         }
@@ -1478,20 +1543,33 @@ void writePolygonRecord(std::ostream &out, const Shape::PolygonData &polygon, co
 void writePinRecord(std::ostream &out, const Shape::RectData &rect, const std::vector<Property> &props)
 {
     const int width = findProperty(props, "pinWidth") ? std::stoi(*findProperty(props, "pinWidth")) : 5;
+    // Device/subckt pins use name= (+ optional pinnumber). Emitting lab= on those B-rects
+    // makes xschem treat them as net labels on the parent and isolates Pac↔DUT wires.
+    const bool devicePin = findProperty(props, "pinnumber") != nullptr
+                           || findProperty(props, "name") != nullptr;
     std::vector<Property> pinProps;
     for (const Property &prop : props) {
-        if (prop.name != "pinWidth") {
-            pinProps.push_back(prop);
+        if (prop.name == "pinWidth") {
+            continue;
         }
+        if (devicePin && prop.name == "lab") {
+            continue;
+        }
+        pinProps.push_back(prop);
     }
+    // Snap pin box to integer editor-unit grid (xschem touch() is exact FP on pin center).
+    auto snapEd = [](std::int64_t dbu) -> std::int64_t {
+        const double eu = dbuToEditorUnits(dbu, g_dbuPerEditorUnit);
+        return editorUnitsToDbu(std::round(eu), g_dbuPerEditorUnit);
+    };
     out << 'B' << ' ' << width << ' ';
-    writeCoord(out, rect.box.llx);
+    writeCoord(out, snapEd(rect.box.llx));
     out << ' ';
-    writeCoord(out, rect.box.lly);
+    writeCoord(out, snapEd(rect.box.lly));
     out << ' ';
-    writeCoord(out, rect.box.urx);
+    writeCoord(out, snapEd(rect.box.urx));
     out << ' ';
-    writeCoord(out, rect.box.ury);
+    writeCoord(out, snapEd(rect.box.ury));
     out << ' ' << formatAttrBlock(pinProps) << '\n';
 }
 
@@ -1811,13 +1889,10 @@ std::optional<std::string> probeFromDiagramSection(const CellContent &content)
         std::size_t search = 0;
         while (search < lower.size()) {
             std::size_t start = std::string::npos;
-            std::size_t prefixLen = 0;
             if ((search = lower.find("ngspice/tran.v(", search)) != std::string::npos) {
                 start = search + 15;
-                prefixLen = 15;
             } else if ((search = lower.find("ngspice/v(", search)) != std::string::npos) {
                 start = search + 10;
-                prefixLen = 10;
             } else {
                 break;
             }
@@ -1835,19 +1910,89 @@ std::optional<std::string> probeFromDiagramSection(const CellContent &content)
     return std::nullopt;
 }
 
+bool diagramLooksFrequencyDomain(const CellContent &content)
+{
+    for (const Property &prop : content.properties()) {
+        if (prop.name != "section.Diagrams") {
+            continue;
+        }
+        const std::string lower = toLowerAscii(prop.value);
+        if (lower.find("\"frequency\"") != std::string::npos || lower.find("ac.s") != std::string::npos
+            || lower.find("s11") != std::string::npos || lower.find("s21") != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool blockHasSpAnalysis(const Block &block)
+{
+    for (const Instance &inst : block.instances()) {
+        const std::string logical = instanceLogicalType(inst);
+        if (logical == ".SP" || logical == "SP" || logical == "Pac") {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*! Map Qucs diagram wave names (ac.s11_db) to ngspice/NutmegEq lets (S11_dB). */
+std::string mapDiagramWaveToNgspice(std::string wave)
+{
+    while (!wave.empty() && (wave.front() == '"' || wave.front() == '\'' || wave.front() == '<')) {
+        wave.erase(wave.begin());
+    }
+    while (!wave.empty() && (wave.back() == '"' || wave.back() == '\'' || wave.back() == '>' || wave.back() == ' ')) {
+        wave.pop_back();
+    }
+    std::string lower = toLowerAscii(wave);
+    if (lower.rfind("ac.", 0) == 0) {
+        lower = lower.substr(3);
+    }
+    // s11_db / s21_db → S11_dB / S21_dB (matches NutmegEq let names).
+    if (lower.size() >= 6 && lower[0] == 's' && std::isdigit(static_cast<unsigned char>(lower[1]))) {
+        const std::size_t db = lower.find("_db");
+        if (db != std::string::npos) {
+            std::string out = lower;
+            out[0] = 'S';
+            out.replace(db, 3, "_dB");
+            return out;
+        }
+    }
+    return wave;
+}
+
+std::vector<std::string> waveformsFromDiagramSection(const CellContent &content)
+{
+    std::vector<std::string> waves;
+    for (const Property &prop : content.properties()) {
+        if (prop.name != "section.Diagrams") {
+            continue;
+        }
+        std::size_t pos = 0;
+        while (pos < prop.value.size()) {
+            const std::size_t start = prop.value.find("<\"", pos);
+            if (start == std::string::npos) {
+                break;
+            }
+            const std::size_t end = prop.value.find('"', start + 2);
+            if (end == std::string::npos) {
+                break;
+            }
+            std::string mapped = mapDiagramWaveToNgspice(prop.value.substr(start + 2, end - (start + 2)));
+            if (!mapped.empty()) {
+                waves.push_back(std::move(mapped));
+            }
+            pos = end + 1;
+        }
+    }
+    return waves;
+}
+
 std::optional<std::string> buildGraphRecordFromQucsDiagram(const Block &block, const CellContent &content)
 {
     const std::optional<std::array<int, 4>> rect = qucsDiagramRectFromContent(content);
     if (!rect) {
-        return std::nullopt;
-    }
-
-    std::optional<std::string> probe = probeFromDiagramSection(content);
-    if (!probe) {
-        probe = outputProbeNodeFromBlock(block);
-    }
-    const std::optional<double> tstopSec = transientStopSecondsFromBlock(block);
-    if (!probe || !tstopSec || *tstopSec <= 0.0) {
         return std::nullopt;
     }
 
@@ -1864,11 +2009,53 @@ std::optional<std::string> buildGraphRecordFromQucsDiagram(const Block &block, c
         }
     }
 
-    // Qucs <Rect cx cy x2 y2>: (cx, cy) is the bottom-left corner; the plot extends upward by y2.
+    // Qucs <Rect cx cy w h>: (cx, cy) is the bottom-left corner; the plot extends upward by h.
     const int gx1 = (*rect)[0];
     const int gx2 = gx1 + (*rect)[2];
     const int gy2 = (*rect)[1];
     const int gy1 = gy2 - (*rect)[3];
+
+    const bool freqDomain = diagramLooksFrequencyDomain(content) || blockHasSpAnalysis(block);
+    if (freqDomain) {
+        std::vector<std::string> waves = waveformsFromDiagramSection(content);
+        if (waves.empty()) {
+            waves = {"S11_dB", "S21_dB", "S22_dB"};
+        }
+        // Default SP sweep if diagram axes missing.
+        if (!(limits.xMax > limits.xMin) || limits.xMax < 1e3) {
+            limits.xMin = 1e8;
+            limits.xMax = 1e11;
+        }
+        if (!(limits.yMax > limits.yMin)) {
+            limits.yMin = -80.0;
+            limits.yMax = 10.0;
+            limits.yManual = true;
+        }
+        std::ostringstream nodeList;
+        for (std::size_t i = 0; i < waves.size(); ++i) {
+            if (i) {
+                nodeList << ' ';
+            }
+            nodeList << waves[i];
+        }
+        std::ostringstream graph;
+        graph << std::setprecision(12);
+        graph << "B 2 " << gx1 << ' ' << gy1 << ' ' << gx2 << ' ' << gy2 << " {flags=graph y1=" << limits.yMin
+              << " y2=" << limits.yMax
+              << " ypos1=0 ypos2=2 divy=5 subdivy=1 unity=1 x1=" << limits.xMin << " x2=" << limits.xMax
+              << " divx=5 subdivx=1 xlabmag=1.0 ylabmag=1.0 node=\"" << nodeList.str()
+              << "\" color=4 dataset=-1 unitx=1 logx=1 logy=0}\n";
+        return graph.str();
+    }
+
+    std::optional<std::string> probe = probeFromDiagramSection(content);
+    if (!probe) {
+        probe = outputProbeNodeFromBlock(block);
+    }
+    const std::optional<double> tstopSec = transientStopSecondsFromBlock(block);
+    if (!probe || !tstopSec || *tstopSec <= 0.0) {
+        return std::nullopt;
+    }
 
     std::ostringstream graph;
     graph << "B 2 " << gx1 << ' ' << gy1 << ' ' << gx2 << ' ' << gy2 << " {flags=graph y1=" << limits.yMin
@@ -2447,6 +2634,24 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
                     waveRawFile = raw;
                 }
             }
+            // SP Analysis is loaded by xschem as sim_type=ac (save.c Plotname match).
+            // "... raw sp" skips the dataset → empty graph + file picker.
+            if (blockHasSpAnalysis(block)) {
+                if (const std::string *cmd = findProperty(exported.properties(), "tclcommand");
+                    cmd && cmd->find("raw_read") != std::string::npos) {
+                    std::string fixed = *cmd;
+                    const std::size_t tran = fixed.rfind(" tran");
+                    if (tran != std::string::npos && tran + 5 == fixed.size()) {
+                        fixed.replace(tran, 5, " ac");
+                        setProperty(exported.properties(), "tclcommand", fixed);
+                    }
+                    const std::size_t sp = fixed.rfind(" sp");
+                    if (sp != std::string::npos && sp + 3 == fixed.size()) {
+                        fixed.replace(sp, 3, " ac");
+                        setProperty(exported.properties(), "tclcommand", fixed);
+                    }
+                }
+            }
             writeComponentRecord(out, exported);
         } else {
             writeComponentRecord(out, inst);
@@ -2463,7 +2668,7 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
         }
     }
 
-    // Qucs dual-tool TB uses .TR (no launcher). Restore launcher for Xschem when derivable from ROOM.
+    // Qucs dual-tool TB uses .TR/.SP (no launcher). Restore launcher for Xschem when derivable from ROOM.
     if (fromQucs && needWaveLauncher && !hasLauncher && !waveRawFile.empty()) {
         const Box bbox = block.bbox();
         double launchX = dbuToEditorUnits(bbox.urx, g_dbuPerEditorUnit) + 100.0;
@@ -2476,8 +2681,11 @@ void exportRecords(std::ostream &out, const Cell &cell, const CellContent &conte
         Instance launcher("analogLib/launcher.sym", xf);
         addProperty(launcher.properties(), "name", "h5");
         addProperty(launcher.properties(), "descr", "load waves");
+        // xschem maps ngspice "SP Analysis" → ac (not a separate "sp" type).
+        const std::string rawType =
+            (waveRawFile.find("_sp") != std::string::npos || blockHasSpAnalysis(block)) ? "ac" : "tran";
         addProperty(launcher.properties(), "tclcommand",
-                    "xschem raw_read $netlist_dir/" + waveRawFile + " tran");
+                    "xschem raw_read $netlist_dir/" + waveRawFile + " " + rawType);
         writeComponentRecord(out, launcher);
     }
 

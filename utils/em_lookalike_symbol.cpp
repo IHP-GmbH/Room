@@ -259,9 +259,11 @@ std::string writeLookalikeSymbolRoom(const EmLookalikeInput &in)
     const double scale = kTargetMaxEditorUnits / std::max(width, height);
     const double dbu = kXschemDbuPerEditorUnit;
 
+    // Round pin/outline to integer editor units so xschem touch() matches Qucs wire ends
+    // (touch requires the pin *center* to lie exactly on the segment — sub-unit pins miss).
     auto toSym = [&](double xUm, double yUm) -> Point {
-        const double ex = (xUm - cx) * scale;
-        const double ey = (yUm - cy) * scale;
+        const double ex = std::round((xUm - cx) * scale);
+        const double ey = std::round((yUm - cy) * scale);
         return Point{editorUnitsToDbu(ex, dbu), editorUnitsToDbu(ey, dbu)};
     };
 
@@ -280,7 +282,9 @@ std::string writeLookalikeSymbolRoom(const EmLookalikeInput &in)
         content.properties().push_back({"em.lookalike", "1"});
         content.properties().push_back({"type", "subcircuit"});
         // Xschem: black-box subckt from sibling *.spice (S2Spice); trailing 0 = ref node.
+        // default_schematic=ignore: skip empty .subckt wrapper (spice_stop alone still emits it).
         content.properties().push_back({"spice_stop", "true"});
+        content.properties().push_back({"default_schematic", "ignore"});
         content.properties().push_back({"format", "@name @pinlist 0 @symname"});
         content.properties().push_back({"template", "name=x1"});
 
@@ -332,7 +336,8 @@ std::string writeLookalikeSymbolRoom(const EmLookalikeInput &in)
             rect.layerId = pinLayer;
             rect.box = Box(pinPt.x - pinHalf, pinPt.y - pinHalf, pinPt.x + pinHalf, pinPt.y + pinHalf);
             Shape shape(rect);
-            shape.properties().push_back({"lab", port.name});
+            // Do not set lab= on symbol pins: in xschem that acts like a net label on the
+            // parent and disconnects Pac/DUT wires (pins stay on isolated P1/P2 nets).
             shape.properties().push_back({"name", port.name});
             shape.properties().push_back({"pinnumber", std::to_string(port.index)});
             shape.properties().push_back({"direction", "inout"});
