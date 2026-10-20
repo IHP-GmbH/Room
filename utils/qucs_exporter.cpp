@@ -214,7 +214,7 @@ std::string qucsComponentType(const std::string &cellName)
         return type;
     }
     if (type == "INCLSCR" || type == "SpiceLib" || type == ".TR" || type == "TR" || type == ".DC" || type == ".SW" ||
-        type == ".AC" || type == ".SP" || type == ".HB") {
+        type == ".AC" || type == ".SP" || type == ".HB" || type == "Pac" || type == "NutmegEq") {
         return type == "TR" ? ".TR" : type;
     }
     if (type == "vsource") {
@@ -271,13 +271,16 @@ std::string qucsComponentTypeForInstance(const Instance &inst)
 
 bool isNativeQucsComponentType(const std::string &type)
 {
+    // Pac/NutmegEq live as analogLib *.symbol.room for Xschem, but must stay built-in
+    // Qucs components on export — otherwise they become <Lib analogLib Pac> and SP breaks.
     return type == "Port" || type == "GND" || type == "R" || type == "C" || type == "L" || type == "INDQ"
         || type == "Vdc" || type == "Vac" || type == "Vpulse" || type == "Vexp" || type == "Vrect"
         || type == "Vfile" || type == "Vpwl" || type == "Varith" || type == "Idc" || type == "Iac"
         || type == "Ipulse" || type == "Iexp" || type == "Irect" || type == "Ifile" || type == "Ipwl"
         || type == "Iarith" || type == "IProbe" || type == "VProbe" || type == "INCLSCR" || type == "SpiceLib"
         || type == ".TR" || type == "TR" || type == ".DC" || type == ".SW" || type == ".AC" || type == ".SP"
-        || type == ".HB" || type == "vdd" || type == "vss" || type == "Sub";
+        || type == ".HB" || type == "vdd" || type == "vss" || type == "Sub"
+        || type == "Pac" || type == "NutmegEq";
 }
 
 // Collect param.N values already stored on the instance.
@@ -555,12 +558,19 @@ std::optional<std::string> maybeFormatPrimitiveLine(const Instance &inst, double
                                                     const PrimitiveResolver &resolver, const std::string &qucsLibrary)
 {
     // Xschem stores analogLib controllers (INCLSCR, .TR, …) as code_shown.sym in ROOM; keep Qucs-native export.
+    // Also keep Pac/NutmegEq/.SP native even when analogLib/*.symbol.room is indexed as a primitive.
     if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && !qt->empty()) {
         std::string logical = *qt;
         if (logical == "TR") {
             logical = ".TR";
         }
         if (isNativeQucsComponentType(logical)) {
+            return std::nullopt;
+        }
+    }
+    {
+        const std::string stem = xschemCellStem(inst.cellName());
+        if (isNativeQucsComponentType(stem) || isNativeQucsComponentType(qucsComponentType(stem))) {
             return std::nullopt;
         }
     }
