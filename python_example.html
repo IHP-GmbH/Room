@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GDS import example (Python) | ROOM Python</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ROOM</a>
+    <nav>
+      <a href="index.html">C++</a>
+      <a href="python.html">Python</a>
+      <a href="python_example.html">Example</a>
+      <a href="python_classes.html">All Classes</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Getting Started</h3>
+      <ul>
+        <li><a href="python.html">Overview</a></li>
+        <li><a href="python_example.html" class="active">GDS import example</a></li>
+        <li><a href="python_example_qucs.html">Qucs import example</a></li>
+        <li><a href="python_example_xschem.html">Xschem import example</a></li>
+        <li><a href="python_classes.html">Class index</a></li>
+      </ul>
+      <h3>Types</h3>
+      <ul>
+        <li><a href="python_types.html#box">Box</a></li>
+        <li><a href="python_types.html#rect">Rect</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#layer">Layer</a></li>
+        <li><a href="python_types.html#fileinfo">FileInfo</a></li>
+        <li><a href="python_types.html#enums">Enums</a></li>
+      </ul>
+      <h3>ROOM</h3>
+      <ul>
+        <li><a href="python_database.html">Database</a></li>
+        <li><a href="python_lib.html">Lib</a></li>
+        <li><a href="python_cell.html#cell">Cell</a></li>
+        <li><a href="python_cell.html#cellcontent">CellContent</a></li>
+        <li><a href="python_block.html">Block</a></li>
+        <li><a href="python_shape.html">Shape</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#sniff">File summary / sniff</a></li>
+      </ul>
+      <h3>Utilities</h3>
+      <ul>
+        <li><a href="python_gds.html">GDS import/export</a></li>
+        <li><a href="python_qucs.html">Qucs import/export</a></li>
+        <li><a href="python_xschem.html">Xschem import/export</a></li>
+        <li><a href="python_oas.html">OASIS import/export</a></li>
+      </ul>
+    </aside>
+    
+    <main class="content">
+      <p class="doc-path"><a href="python.html">Python</a> &raquo; GDS import example</p>
+      <h1>GDS import example</h1>
+      <pre class="example"><code>import room
+
+with room.from_gds("testdata/sample.gds") as db:
+    print(db.lib_name, db.cell_names())
+    for cell in db.cells():
+        layout = cell.layout()
+        if layout:
+            print(cell.name(), "shapes=", len(layout.shapes()), "bbox=", layout.bbox())
+    db.save("output/sample.room")
+
+# room convert testdata/sample.gds output/sample.room</code></pre>
+      <p>See <a href="python_gds.html">GDS import/export</a> and C++ <a href="example.html">example.html</a>.</p>
+    </main>
+
+    
+  </div>
+</body>
+</html>
