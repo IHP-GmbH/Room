@@ -83,7 +83,7 @@ ParsedRoomPath parseRoomFilePath(const std::string &path)
 {
     ParsedRoomPath parsed;
     const std::string base = fileBaseName(path);
-    if (!endsWith(base, kRoomFileExtension)) {
+    if (!endsWith(toLower(base), kRoomFileExtension)) {
         return parsed;
     }
 

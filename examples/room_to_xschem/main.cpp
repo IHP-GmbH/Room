@@ -1,10 +1,12 @@
 #include "database.h"
+#include "room_json_io.h"
 #include "xschem_exporter.h"
 #include "xschem_importer.h"
 #include "xschem_format.h"
 
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 namespace {
@@ -12,10 +14,20 @@ namespace {
 void printUsage(const char *prog)
 {
     std::cerr << "Usage:\n"
-              << "  " << prog << " <input.room> <cell> <output.sch|sym>\n"
-              << "  " << prog << " --all <input.room> <output_dir>\n"
-              << "  " << prog << " --list-cells <input.room>\n"
+              << "  " << prog << " <input.room|.json> <cell> <output.sch|sym>\n"
+              << "  " << prog << " --all <input.room|.json> <output_dir>\n"
+              << "  " << prog << " --list-cells <input.room|.json>\n"
               << "  " << prog << " --save <input.sch|sym> <output.room> [--cell name] [--lib name]\n";
+}
+
+room::Database loadRoomOrJsonOrDie(const std::string &path)
+{
+    room::Database db;
+    const room::RoomJsonIo::Result loaded = room::RoomJsonIo::loadRoomOrJson(path, db);
+    if (!loaded.ok) {
+        throw std::runtime_error(loaded.message);
+    }
+    return db;
 }
 
 void printMessages(const char *kind, const std::vector<std::string> &messages)
@@ -80,9 +92,14 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        const room::Database db = room::Database::loadFromFile(argv[2]);
-        for (const auto &cell : db.lib().cells()) {
-            std::cout << cell.name() << '\n';
+        try {
+            const room::Database db = loadRoomOrJsonOrDie(argv[2]);
+            for (const auto &cell : db.lib().cells()) {
+                std::cout << cell.name() << '\n';
+            }
+        } catch (const std::exception &ex) {
+            std::cerr << "error: " << ex.what() << '\n';
+            return 3;
         }
         return 0;
     }
@@ -93,15 +110,20 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        const room::Database db = room::Database::loadFromFile(argv[2]);
-        room::XschemExporter exporter;
-        const std::size_t count = exporter.exportAll(db, argv[3]);
-        printMessages("warning", exporter.warnings());
-        printMessages("error", exporter.errors());
-        if (!exporter.errors().empty()) {
-            return 2;
+        try {
+            const room::Database db = loadRoomOrJsonOrDie(argv[2]);
+            room::XschemExporter exporter;
+            const std::size_t count = exporter.exportAll(db, argv[3]);
+            printMessages("warning", exporter.warnings());
+            printMessages("error", exporter.errors());
+            if (!exporter.errors().empty()) {
+                return 2;
+            }
+            std::cout << "Exported " << count << " Xschem payload file(s) to " << argv[3] << '\n';
+        } catch (const std::exception &ex) {
+            std::cerr << "error: " << ex.what() << '\n';
+            return 3;
         }
-        std::cout << "Exported " << count << " Xschem payload file(s) to " << argv[3] << '\n';
         return 0;
     }
 
@@ -110,15 +132,19 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    const room::Database db = room::Database::loadFromFile(argv[1]);
-    room::XschemExporter exporter;
-    exporter.exportCell(db, argv[2], argv[3]);
-    printMessages("warning", exporter.warnings());
-    printMessages("error", exporter.errors());
-    if (!exporter.errors().empty()) {
-        return 2;
+    try {
+        const room::Database db = loadRoomOrJsonOrDie(argv[1]);
+        room::XschemExporter exporter;
+        exporter.exportCell(db, argv[2], argv[3]);
+        printMessages("warning", exporter.warnings());
+        printMessages("error", exporter.errors());
+        if (!exporter.errors().empty()) {
+            return 2;
+        }
+        std::cout << "Exported cell " << argv[2] << " to " << argv[3] << '\n';
+    } catch (const std::exception &ex) {
+        std::cerr << "error: " << ex.what() << '\n';
+        return 3;
     }
-
-    std::cout << "Exported cell " << argv[2] << " to " << argv[3] << '\n';
     return 0;
 }

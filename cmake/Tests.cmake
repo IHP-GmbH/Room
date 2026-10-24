@@ -50,6 +50,34 @@ if(ROOM_BUILD_TESTS)
     add_executable(gds_properties_roundtrip tests/gds_properties_roundtrip.cpp)
     target_link_libraries(gds_properties_roundtrip PRIVATE room_utils)
 
+    add_executable(room_json_roundtrip tests/room_json_roundtrip.cpp)
+    target_link_libraries(room_json_roundtrip PRIVATE room_utils)
+
+    add_test(
+        NAME room_json_roundtrip
+        COMMAND room_json_roundtrip "${_ctest_out}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(room_json_roundtrip PROPERTIES
+        LABELS "room;json"
+        TIMEOUT 30
+    )
+
+    add_executable(qucs_room_json_roundtrip tests/qucs_room_json_roundtrip.cpp)
+    target_link_libraries(qucs_room_json_roundtrip PRIVATE room_utils)
+
+    add_test(
+        NAME qucs_room_json_roundtrip
+        COMMAND qucs_room_json_roundtrip
+                "${CMAKE_SOURCE_DIR}/examples/qucs_to_room/data/rc_lowpass.sch"
+                "${_ctest_out}"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(qucs_room_json_roundtrip PROPERTIES
+        LABELS "room;json;qucs"
+        TIMEOUT 60
+    )
+
     add_test(
         NAME gds_properties_roundtrip
         COMMAND gds_properties_roundtrip

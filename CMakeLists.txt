@@ -135,6 +135,7 @@ add_library(room_utils STATIC
     utils/primitive_resolver.cpp
     utils/xschem_bridge.cpp
     utils/text_dump.cpp
+    utils/room_json_io.cpp
 )
 set_target_properties(room_utils PROPERTIES AUTOMOC OFF AUTOUIC OFF AUTORCC OFF)
 
@@ -194,6 +195,12 @@ if(ROOM_BUILD_EXAMPLES)
 
     add_executable(room_to_qucs examples/room_to_qucs/main.cpp)
     target_link_libraries(room_to_qucs PRIVATE room_utils)
+
+    add_executable(room_to_json examples/room_to_json/main.cpp)
+    target_link_libraries(room_to_json PRIVATE room_utils)
+
+    add_executable(json_to_room examples/json_to_room/main.cpp)
+    target_link_libraries(json_to_room PRIVATE room_utils)
 
     add_executable(make_sample_gds tools/make_sample_gds.cpp)
 

@@ -6,6 +6,7 @@
 #include "gds_importer.h"
 #include "qucs_exporter.h"
 #include "qucs_importer.h"
+#include "room_json_io.h"
 #include "xschem_exporter.h"
 #include "xschem_importer.h"
 
@@ -147,13 +148,19 @@ RoomDb *room_db_open(const char *path, char *err, size_t err_len)
     }
     try {
         auto *handle = new RoomDb{};
-        handle->db = room::Database::loadFromFile(path);
+        const room::RoomJsonIo::Result loaded =
+            room::RoomJsonIo::loadRoomOrJson(path, handle->db);
+        if (!loaded.ok) {
+            delete handle;
+            set_error(err, err_len, loaded.message.c_str());
+            return nullptr;
+        }
         return handle;
     } catch (const std::exception &ex) {
         set_error(err, err_len, ex.what());
         return nullptr;
     } catch (...) {
-        set_error(err, err_len, "unknown error opening .room file");
+        set_error(err, err_len, "unknown error opening .room/.json file");
         return nullptr;
     }
 }
@@ -166,7 +173,13 @@ int room_db_save(RoomDb *db, const char *path, int view, char *err, size_t err_l
         return -1;
     }
     try {
-        db->db.saveToFile(path, to_view(view));
+        // Schematic/symbol: write *.room and twin *.json so git stays in sync with editors.
+        const room::RoomJsonIo::Result saved =
+            room::RoomJsonIo::saveViewWithJsonTwin(db->db, to_view(view), path);
+        if (!saved.ok) {
+            set_error(err, err_len, saved.message.c_str());
+            return -1;
+        }
         return 0;
     } catch (const std::exception &ex) {
         set_error(err, err_len, ex.what());

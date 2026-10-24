@@ -181,7 +181,9 @@ int CoreImportDataCmd(ClientData, Tcl_Interp *interp, int objc, Tcl_Obj *const o
 
     const std::string text = objToString(objv[1]);
     const std::string roomPath = objToString(objv[2]);
-    const std::string extension = roomPath.find(".symbol.room") != std::string::npos ? ".sym" : ".sch";
+    const bool isSymbol = roomPath.find(".symbol.room") != std::string::npos
+                          || roomPath.find(".symbol.json") != std::string::npos;
+    const std::string extension = isSymbol ? ".sym" : ".sch";
     const bridge::Status status = bridge::importTextIntoCore(text, extension, roomPath, options);
     appendWarnings(interp, status);
     if (!status.ok) {

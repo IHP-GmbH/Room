@@ -1,6 +1,7 @@
 #include "room_paths.h"
 #include "database.h"
 #include "qucs_exporter.h"
+#include "room_json_io.h"
 
 #include <iostream>
 #include <string>
@@ -9,7 +10,7 @@ namespace {
 
 void printUsage(const char *prog)
 {
-    std::cerr << "Usage: " << prog << " <input.room> <cell> <output.sch>\n";
+    std::cerr << "Usage: " << prog << " <input.room|.json> <cell> <output.sch>\n";
 }
 
 void printMessages(const char *kind, const std::vector<std::string> &messages)
@@ -44,7 +45,12 @@ int main(int argc, char *argv[])
     const std::string schPath = argv[3];
 
     try {
-        const room::Database db = room::Database::loadFromFile(roomPath);
+        room::Database db;
+        const room::RoomJsonIo::Result loaded = room::RoomJsonIo::loadRoomOrJson(roomPath, db);
+        if (!loaded.ok) {
+            std::cerr << "error: " << loaded.message << '\n';
+            return 3;
+        }
         room::QucsExporter exporter;
         if (isSymbolCorePath(roomPath)) {
             exporter.exportSymbolCell(db, cellName, schPath);

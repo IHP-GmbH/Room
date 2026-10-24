@@ -14,6 +14,15 @@ View-specific ROOM files use the pattern:
 | Abstract | `.abstract.room` | `block.abstract.room` |
 | EmModel | `.emmodel.room` | `inductor.emmodel.room` |
 
+### JSON exchange (schematic / symbol only)
+
+| View | Suffix | Example |
+|------|--------|---------|
+| Schematic | `.schematic.json` | `testbench.schematic.json` |
+| Symbol | `.symbol.json` | `inv.symbol.json` |
+
+JSON is an **exchange / git** format (`room_to_json` / `json_to_room`). Editors still use `*.room`. See [ROOM_JSON.md](ROOM_JSON.md).
+
 EM setup variants (working models / results) are **not** a ViewType; they live in a folder
 `<cell>.emsetup/<variant>/` beside the cell’s ROOM views.
 
