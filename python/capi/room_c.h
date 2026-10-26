@@ -140,6 +140,9 @@ ROOM_C_API int room_db_instance_prop_count(const RoomDb *db, int cell_index, int
 ROOM_C_API int room_db_instance_prop_get(const RoomDb *db, int cell_index, int content_index, int inst_index,
                                          int prop_index, char *name, size_t name_len, char *value,
                                          size_t value_len);
+/*! Set or add instance property ``key`` = ``value``. Returns 0 on success. */
+ROOM_C_API int room_db_instance_prop_set(RoomDb *db, int cell_index, int content_index, int inst_index,
+                                         const char *key, const char *value);
 
 /* ---- convert ---- */
 ROOM_C_API RoomDb *room_from_gds(const char *gds_path, char *err, size_t err_len);

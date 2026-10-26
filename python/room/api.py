@@ -291,6 +291,34 @@ class CellContent:
             raise RuntimeError("failed to add instance")
         return int(idx)
 
+    def find_instance_index(self, name: str) -> int:
+        """Index of the first instance whose label (``name``) matches (case-insensitive), else ``-1``."""
+        want = str(name).strip().lower()
+        for i, inst in enumerate(self.instances()):
+            if inst.name.lower() == want:
+                return i
+        return -1
+
+    def set_instance_property(self, inst_index: int, key: str, value: str | int | float) -> None:
+        """Set/add a property on the instance at ``inst_index`` (writes into the database)."""
+        rc = self._db._lib.room_db_instance_prop_set(
+            self._db._ptr,
+            self._cell_index,
+            self._content_index,
+            int(inst_index),
+            _lib.cstr(str(key)),
+            _lib.cstr(str(value)),
+        )
+        if rc != 0:
+            raise RuntimeError(f"failed to set instance[{inst_index}].{key}")
+
+    def set_instance_property_by_name(self, name: str, key: str, value: str | int | float) -> None:
+        """Find instance by label and set a property (raises if not found)."""
+        idx = self.find_instance_index(name)
+        if idx < 0:
+            raise LookupError(f"instance named {name!r} not found")
+        self.set_instance_property(idx, key, value)
+
 
 class Cell:
     def __init__(self, db: "Database", index: int):
@@ -340,12 +368,13 @@ class Cell:
 class Database:
     """Root handle for a ROOM design (.room file)."""
 
-    def __init__(self, ptr, *, owned: bool = True):
+    def __init__(self, ptr, *, owned: bool = True, path: str | Path | None = None):
         if not ptr:
             raise RuntimeError("null ROOM database handle")
         self._ptr = ptr
         self._owned = owned
         self._lib = _lib.get_lib()
+        self._path: str | None = _path_str(path) if path is not None else None
 
     def __del__(self):
         self.close()
@@ -362,6 +391,11 @@ class Database:
             self._ptr = None
             self._owned = False
 
+    @property
+    def path(self) -> str | None:
+        """Filesystem path last used by ``open`` / ``save`` (if any)."""
+        return self._path
+
     @classmethod
     def create(cls) -> "Database":
         ptr = _lib.get_lib().room_db_create()
@@ -372,10 +406,11 @@ class Database:
     @classmethod
     def open(cls, path: str | Path) -> "Database":
         err = _lib.errbuf()
-        ptr = _lib.get_lib().room_db_open(_lib.cstr(_path_str(path)), err, len(err))
+        norm = _path_str(path)
+        ptr = _lib.get_lib().room_db_open(_lib.cstr(norm), err, len(err))
         if not ptr:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to open {path}")
-        return cls(ptr)
+        return cls(ptr, path=norm)
 
     @classmethod
     def from_gds(cls, path: str | Path) -> "Database":
@@ -411,11 +446,25 @@ class Database:
             raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to import {path}")
         return cls(ptr)
 
-    def save(self, path: str | Path, view: str | ViewType | int = ViewType.LAYOUT) -> None:
+    def save(
+        self,
+        path: str | Path | None = None,
+        view: str | ViewType | int | None = None,
+    ) -> None:
+        """Write the database.
+
+        ``path`` defaults to the path from ``open()`` / last ``save()``.
+        ``view`` defaults to ``file_view`` (schematic/symbol/layout of this file).
+        """
+        out = _path_str(path) if path is not None else self._path
+        if not out:
+            raise TypeError("Database.save() requires path (database was not opened from a file)")
+        view_ord = int(parse_view(view)) if view is not None else int(self.file_view)
         err = _lib.errbuf()
-        rc = self._lib.room_db_save(self._ptr, _lib.cstr(_path_str(path)), int(parse_view(view)), err, len(err))
+        rc = self._lib.room_db_save(self._ptr, _lib.cstr(out), view_ord, err, len(err))
         if rc != 0:
-            raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to save {path}")
+            raise RuntimeError(err.value.decode("utf-8", errors="replace") or f"failed to save {out}")
+        self._path = out
 
     def to_gds(self, path: str | Path) -> None:
         err = _lib.errbuf()

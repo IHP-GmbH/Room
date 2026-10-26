@@ -289,6 +289,8 @@ def _bind(lib: ctypes.CDLL) -> ctypes.CDLL:
         ctypes.c_size_t,
     ]
     lib.room_db_instance_prop_get.restype = c_int
+    lib.room_db_instance_prop_set.argtypes = [c_void_p, c_int, c_int, c_int, c_char_p, c_char_p]
+    lib.room_db_instance_prop_set.restype = c_int
 
     lib.room_from_gds.argtypes = [c_char_p, c_char_p, ctypes.c_size_t]
     lib.room_from_gds.restype = c_void_p

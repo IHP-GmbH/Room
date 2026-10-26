@@ -751,6 +751,33 @@ int room_db_instance_prop_get(const RoomDb *db, int cell_index, int content_inde
     return 0;
 }
 
+int room_db_instance_prop_set(RoomDb *db, int cell_index, int content_index, int inst_index,
+                              const char *key, const char *value)
+{
+    if (!db || !key) {
+        return -1;
+    }
+    room::CellContent *content = content_at(db->db, cell_index, content_index);
+    if (!content) {
+        return -1;
+    }
+    auto &instances = content->block().instances();
+    if (inst_index < 0 || static_cast<size_t>(inst_index) >= instances.size()) {
+        return -1;
+    }
+    auto &props = instances[static_cast<size_t>(inst_index)].properties();
+    const std::string k(key);
+    const std::string v(value ? value : "");
+    for (room::Property &p : props) {
+        if (p.name == k) {
+            p.value = v;
+            return 0;
+        }
+    }
+    props.emplace_back(k, v);
+    return 0;
+}
+
 RoomDb *room_from_gds(const char *gds_path, char *err, size_t err_len)
 {
     clear_error(err, err_len);
