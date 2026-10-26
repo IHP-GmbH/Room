@@ -59,6 +59,7 @@ class RoomInstanceC(Structure):
         ("y", c_int64),
         ("orient", c_int),
         ("mag", c_double),
+        ("name", ctypes.c_char * 128),
     ]
 
 
@@ -274,6 +275,20 @@ def _bind(lib: ctypes.CDLL) -> ctypes.CDLL:
     lib.room_db_instance_get.restype = c_int
     lib.room_db_add_instance.argtypes = [c_void_p, c_int, c_int, c_char_p, c_int64, c_int64, c_int, c_double]
     lib.room_db_add_instance.restype = c_int
+    lib.room_db_instance_prop_count.argtypes = [c_void_p, c_int, c_int, c_int]
+    lib.room_db_instance_prop_count.restype = c_int
+    lib.room_db_instance_prop_get.argtypes = [
+        c_void_p,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_char_p,
+        ctypes.c_size_t,
+        c_char_p,
+        ctypes.c_size_t,
+    ]
+    lib.room_db_instance_prop_get.restype = c_int
 
     lib.room_from_gds.argtypes = [c_char_p, c_char_p, ctypes.c_size_t]
     lib.room_from_gds.restype = c_void_p

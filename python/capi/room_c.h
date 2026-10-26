@@ -52,6 +52,7 @@ typedef struct RoomInstanceC {
     int64_t y;
     int orient; /* Orient enum ordinal */
     double mag;
+    char name[128]; /* property "name" (instance label); empty if unset */
 } RoomInstanceC;
 
 typedef struct RoomLayerC {
@@ -134,6 +135,11 @@ ROOM_C_API int room_db_instance_get(const RoomDb *db, int cell_index, int conten
                                     RoomInstanceC *out);
 ROOM_C_API int room_db_add_instance(RoomDb *db, int cell_index, int content_index, const char *cell_name,
                                     int64_t x, int64_t y, int orient, double mag);
+ROOM_C_API int room_db_instance_prop_count(const RoomDb *db, int cell_index, int content_index,
+                                           int inst_index);
+ROOM_C_API int room_db_instance_prop_get(const RoomDb *db, int cell_index, int content_index, int inst_index,
+                                         int prop_index, char *name, size_t name_len, char *value,
+                                         size_t value_len);
 
 /* ---- convert ---- */
 ROOM_C_API RoomDb *room_from_gds(const char *gds_path, char *err, size_t err_len);

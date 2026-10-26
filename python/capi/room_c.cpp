@@ -682,6 +682,13 @@ int room_db_instance_get(const RoomDb *db, int cell_index, int content_index, in
     out->y = inst.transform().y;
     out->orient = static_cast<int>(inst.transform().orient);
     out->mag = inst.transform().mag;
+    out->name[0] = '\0';
+    for (const room::Property &p : inst.properties()) {
+        if (p.name == "name") {
+            copy_str(out->name, sizeof(out->name), p.value);
+            break;
+        }
+    }
     return 0;
 }
 
@@ -701,6 +708,47 @@ int room_db_add_instance(RoomDb *db, int cell_index, int content_index, const ch
     }
     content->block().instances().emplace_back(cell_name, room::Transform(x, y, o, mag));
     return static_cast<int>(content->block().instances().size()) - 1;
+}
+
+int room_db_instance_prop_count(const RoomDb *db, int cell_index, int content_index, int inst_index)
+{
+    if (!db) {
+        return 0;
+    }
+    const room::CellContent *content = content_at(db->db, cell_index, content_index);
+    if (!content) {
+        return 0;
+    }
+    const auto &instances = content->block().instances();
+    if (inst_index < 0 || static_cast<size_t>(inst_index) >= instances.size()) {
+        return 0;
+    }
+    return static_cast<int>(instances[static_cast<size_t>(inst_index)].properties().size());
+}
+
+int room_db_instance_prop_get(const RoomDb *db, int cell_index, int content_index, int inst_index,
+                              int prop_index, char *name, size_t name_len, char *value, size_t value_len)
+{
+    if (!db || !name || !value || name_len == 0 || value_len == 0) {
+        return -1;
+    }
+    name[0] = '\0';
+    value[0] = '\0';
+    const room::CellContent *content = content_at(db->db, cell_index, content_index);
+    if (!content) {
+        return -1;
+    }
+    const auto &instances = content->block().instances();
+    if (inst_index < 0 || static_cast<size_t>(inst_index) >= instances.size()) {
+        return -1;
+    }
+    const auto &props = instances[static_cast<size_t>(inst_index)].properties();
+    if (prop_index < 0 || static_cast<size_t>(prop_index) >= props.size()) {
+        return -1;
+    }
+    copy_str(name, name_len, props[static_cast<size_t>(prop_index)].name);
+    copy_str(value, value_len, props[static_cast<size_t>(prop_index)].value);
+    return 0;
 }
 
 RoomDb *room_from_gds(const char *gds_path, char *err, size_t err_len)

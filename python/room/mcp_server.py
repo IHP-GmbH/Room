@@ -80,7 +80,7 @@ def _api_help_text() -> str:
         "  cell = db.find_cell('cell') or db.cells()[0]",
         "  cnt = cell.content()  # or content('schematic'|'symbol'|'layout')",
         "  result = [p.name for p in cnt.pins()]",
-        "  result = [i.cell_name for i in cnt.instances()]",
+        "  result = [(i.name, i.cell_name) for i in cnt.instances()]  # label, master",
         "",
         "Mutate / save:",
         "  cell = db.get_or_create_cell('name')  # alias: db.create_cell",

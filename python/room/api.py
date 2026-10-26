@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import ctypes
+from dataclasses import dataclass, field
 from enum import IntEnum
 from pathlib import Path
 
@@ -93,11 +94,20 @@ class Rect:
 
 @dataclass(frozen=True)
 class Instance:
+    """Placement of a child cell.
+
+    ``name`` is the instance label (property ``name``, e.g. ``M1`` / ``Xnmos``).
+    ``cell_name`` is the referenced master cell (e.g. ``sg13_lv_nmos``).
+    ``properties`` holds all instance properties (name, model, W, L, …).
+    """
+
     cell_name: str
     x: int
     y: int
     orient: Orient = Orient.R0
     mag: float = 1.0
+    name: str = ""
+    properties: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -198,10 +208,36 @@ class CellContent:
         """Child placements (C++ ``block().instances()``)."""
         count = self._db._lib.room_db_instance_count(self._db._ptr, self._cell_index, self._content_index)
         result: list[Instance] = []
+        name_buf = ctypes.create_string_buffer(256)
+        value_buf = ctypes.create_string_buffer(1024)
         for i in range(count):
             out = _lib.RoomInstanceC()
             if self._db._lib.room_db_instance_get(self._db._ptr, self._cell_index, self._content_index, i, out) != 0:
                 continue
+            props: dict[str, str] = {}
+            nprops = self._db._lib.room_db_instance_prop_count(
+                self._db._ptr, self._cell_index, self._content_index, i
+            )
+            for pi in range(nprops):
+                if (
+                    self._db._lib.room_db_instance_prop_get(
+                        self._db._ptr,
+                        self._cell_index,
+                        self._content_index,
+                        i,
+                        pi,
+                        name_buf,
+                        len(name_buf),
+                        value_buf,
+                        len(value_buf),
+                    )
+                    != 0
+                ):
+                    continue
+                props[_lib.decode(name_buf.value)] = _lib.decode(value_buf.value)
+            inst_name = _lib.decode(out.name)
+            if not inst_name:
+                inst_name = props.get("name", "")
             result.append(
                 Instance(
                     cell_name=_lib.decode(out.cell_name),
@@ -209,6 +245,8 @@ class CellContent:
                     y=out.y,
                     orient=Orient(out.orient),
                     mag=out.mag,
+                    name=inst_name,
+                    properties=props,
                 )
             )
         return result
