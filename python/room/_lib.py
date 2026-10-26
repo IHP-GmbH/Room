@@ -71,6 +71,15 @@ class RoomLayerC(Structure):
     ]
 
 
+class RoomPinC(Structure):
+    _fields_ = [
+        ("name", ctypes.c_char * 128),
+        ("dir", ctypes.c_char * 32),
+        ("x", c_int64),
+        ("y", c_int64),
+    ]
+
+
 def _candidate_dll_paths() -> list[Path]:
     env = os.environ.get("ROOM_C_DLL")
     paths: list[Path] = []
@@ -240,6 +249,24 @@ def _bind(lib: ctypes.CDLL) -> ctypes.CDLL:
     lib.room_db_shape_rect.restype = c_int
     lib.room_db_add_rect.argtypes = [c_void_p, c_int, c_int, c_uint32, c_int64, c_int64, c_int64, c_int64]
     lib.room_db_add_rect.restype = c_int
+    lib.room_db_shape_prop_count.argtypes = [c_void_p, c_int, c_int, c_int]
+    lib.room_db_shape_prop_count.restype = c_int
+    lib.room_db_shape_prop_get.argtypes = [
+        c_void_p,
+        c_int,
+        c_int,
+        c_int,
+        c_int,
+        c_char_p,
+        ctypes.c_size_t,
+        c_char_p,
+        ctypes.c_size_t,
+    ]
+    lib.room_db_shape_prop_get.restype = c_int
+    lib.room_db_pin_count.argtypes = [c_void_p, c_int, c_int]
+    lib.room_db_pin_count.restype = c_int
+    lib.room_db_pin_get.argtypes = [c_void_p, c_int, c_int, c_int, POINTER(RoomPinC)]
+    lib.room_db_pin_get.restype = c_int
 
     lib.room_db_instance_count.argtypes = [c_void_p, c_int, c_int]
     lib.room_db_instance_count.restype = c_int

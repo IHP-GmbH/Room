@@ -50,4 +50,14 @@
 #
 # LibMan hosts the same API in its Command Line (Messages panel).
 #
+# ## MCP (LLM agents)
+#
+# Stdio MCP server exposing ROOM Python tools for DOOR Assistant / other agents:
+#
+#   python -m room mcp
+#   # or
+#   python -m room.mcp_server
+#
+# Tools: room_info, room_ls, room_sniff, room_python_eval, room_convert, room_api_help
+#
 # PyPI wheels are not published yet — install from this repository.

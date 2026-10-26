@@ -171,7 +171,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_conv.set_defaults(func=_cmd_convert)
 
+    p_mcp = sub.add_parser(
+        "mcp",
+        help="Run ROOM MCP stdio server (JSON-RPC tools for LLM agents)",
+    )
+    p_mcp.set_defaults(func=_cmd_mcp)
+
     return parser
+
+
+def _cmd_mcp(args: argparse.Namespace) -> int:
+    from .mcp_server import main as mcp_main
+
+    return int(mcp_main())
 
 
 def main(argv: list[str] | None = None) -> int:

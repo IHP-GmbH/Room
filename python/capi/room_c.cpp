@@ -24,6 +24,7 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 struct RoomDb {
     room::Database db;
@@ -506,6 +507,150 @@ int room_db_add_rect(RoomDb *db, int cell_index, int content_index, uint32_t lay
     content->block().shapes().emplace_back(std::move(data));
     content->block().recomputeBBox();
     return static_cast<int>(content->block().shapes().size()) - 1;
+}
+
+int room_db_shape_prop_count(const RoomDb *db, int cell_index, int content_index, int shape_index)
+{
+    if (!db) {
+        return 0;
+    }
+    const room::CellContent *content = content_at(db->db, cell_index, content_index);
+    if (!content) {
+        return 0;
+    }
+    const auto &shapes = content->block().shapes();
+    if (shape_index < 0 || static_cast<size_t>(shape_index) >= shapes.size()) {
+        return 0;
+    }
+    return static_cast<int>(shapes[static_cast<size_t>(shape_index)].properties().size());
+}
+
+int room_db_shape_prop_get(const RoomDb *db, int cell_index, int content_index, int shape_index,
+                           int prop_index, char *name, size_t name_len, char *value, size_t value_len)
+{
+    if (!db || !name || !value || name_len == 0 || value_len == 0) {
+        return -1;
+    }
+    name[0] = '\0';
+    value[0] = '\0';
+    const room::CellContent *content = content_at(db->db, cell_index, content_index);
+    if (!content) {
+        return -1;
+    }
+    const auto &shapes = content->block().shapes();
+    if (shape_index < 0 || static_cast<size_t>(shape_index) >= shapes.size()) {
+        return -1;
+    }
+    const auto &props = shapes[static_cast<size_t>(shape_index)].properties();
+    if (prop_index < 0 || static_cast<size_t>(prop_index) >= props.size()) {
+        return -1;
+    }
+    copy_str(name, name_len, props[static_cast<size_t>(prop_index)].name);
+    copy_str(value, value_len, props[static_cast<size_t>(prop_index)].value);
+    return 0;
+}
+
+namespace {
+
+bool layer_is_pin(const room::Database &db, const room::CellContent &content, std::uint32_t layerId)
+{
+    const auto &libLayers = db.lib().layers();
+    if (layerId < libLayers.size() && libLayers[layerId].purpose == room::LayerPurpose::Pin) {
+        return true;
+    }
+    const auto &viewLayers = content.layers();
+    if (layerId < viewLayers.size() && viewLayers[layerId].purpose == room::LayerPurpose::Pin) {
+        return true;
+    }
+    return false;
+}
+
+std::string prop_value(const std::vector<room::Property> &props, const char *key)
+{
+    for (const room::Property &p : props) {
+        if (p.name == key) {
+            return p.value;
+        }
+    }
+    return {};
+}
+
+struct CollectedPin {
+    std::string name;
+    std::string dir;
+    std::int64_t x = 0;
+    std::int64_t y = 0;
+};
+
+std::vector<CollectedPin> collect_pins(const room::Database &db, const room::CellContent &content)
+{
+    std::vector<CollectedPin> pins;
+    const auto &shapes = content.block().shapes();
+    for (const room::Shape &sh : shapes) {
+        const room::Shape::RectData *rect = sh.rect();
+        if (!rect || !layer_is_pin(db, content, rect->layerId)) {
+            continue;
+        }
+        const std::string name = prop_value(sh.properties(), "name");
+        if (name.empty()) {
+            continue;
+        }
+        CollectedPin pin;
+        pin.name = name;
+        pin.dir = prop_value(sh.properties(), "dir");
+        pin.x = (rect->box.llx + rect->box.urx) / 2;
+        pin.y = (rect->box.lly + rect->box.ury) / 2;
+        pins.push_back(std::move(pin));
+    }
+    if (!pins.empty()) {
+        return pins;
+    }
+    // Fallback: net terminals when present.
+    for (const room::Net &net : content.block().nets()) {
+        for (const room::Term &term : net.terms()) {
+            CollectedPin pin;
+            pin.name = term.name().empty() ? net.name() : term.name();
+            pin.x = term.position().x;
+            pin.y = term.position().y;
+            pins.push_back(std::move(pin));
+        }
+    }
+    return pins;
+}
+
+} // namespace
+
+int room_db_pin_count(const RoomDb *db, int cell_index, int content_index)
+{
+    if (!db) {
+        return 0;
+    }
+    const room::CellContent *content = content_at(db->db, cell_index, content_index);
+    if (!content) {
+        return 0;
+    }
+    return static_cast<int>(collect_pins(db->db, *content).size());
+}
+
+int room_db_pin_get(const RoomDb *db, int cell_index, int content_index, int pin_index, RoomPinC *out)
+{
+    if (!db || !out) {
+        return -1;
+    }
+    const room::CellContent *content = content_at(db->db, cell_index, content_index);
+    if (!content) {
+        return -1;
+    }
+    const std::vector<CollectedPin> pins = collect_pins(db->db, *content);
+    if (pin_index < 0 || static_cast<size_t>(pin_index) >= pins.size()) {
+        return -1;
+    }
+    const CollectedPin &pin = pins[static_cast<size_t>(pin_index)];
+    copy_str(out->name, sizeof(out->name), pin.name);
+    copy_str(out->dir, sizeof(out->dir), pin.dir);
+    out->x = pin.x;
+    out->y = pin.y;
+    return 0;
 }
 
 int room_db_instance_count(const RoomDb *db, int cell_index, int content_index)

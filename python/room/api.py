@@ -101,6 +101,14 @@ class Instance:
 
 
 @dataclass(frozen=True)
+class Pin:
+    name: str
+    dir: str = ""
+    x: int = 0
+    y: int = 0
+
+
+@dataclass(frozen=True)
 class Layer:
     layer_num: int
     data_type: int
@@ -201,6 +209,24 @@ class CellContent:
                     y=out.y,
                     orient=Orient(out.orient),
                     mag=out.mag,
+                )
+            )
+        return result
+
+    def pins(self) -> list[Pin]:
+        """Port pins: pin-layer rects with ``name=`` (symbols), else net terminals."""
+        count = self._db._lib.room_db_pin_count(self._db._ptr, self._cell_index, self._content_index)
+        result: list[Pin] = []
+        for i in range(count):
+            out = _lib.RoomPinC()
+            if self._db._lib.room_db_pin_get(self._db._ptr, self._cell_index, self._content_index, i, out) != 0:
+                continue
+            result.append(
+                Pin(
+                    name=_lib.decode(out.name),
+                    dir=_lib.decode(out.dir),
+                    x=out.x,
+                    y=out.y,
                 )
             )
         return result
@@ -442,6 +468,10 @@ class Database:
         if idx < 0:
             raise RuntimeError(f"failed to create cell {name!r}")
         return Cell(self, idx)
+
+    def create_cell(self, name: str) -> Cell:
+        """Alias of ``get_or_create_cell`` (agent-friendly name)."""
+        return self.get_or_create_cell(name)
 
     def layers(self) -> list[Layer]:
         """Shared layer table (C++ ``lib().layers()``)."""

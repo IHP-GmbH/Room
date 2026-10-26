@@ -112,6 +112,21 @@ ROOM_C_API int room_db_shape_rect(const RoomDb *db, int cell_index, int content_
                                   RoomRectC *out);
 ROOM_C_API int room_db_add_rect(RoomDb *db, int cell_index, int content_index, uint32_t layer_id,
                                 int64_t llx, int64_t lly, int64_t urx, int64_t ury);
+ROOM_C_API int room_db_shape_prop_count(const RoomDb *db, int cell_index, int content_index, int shape_index);
+ROOM_C_API int room_db_shape_prop_get(const RoomDb *db, int cell_index, int content_index, int shape_index,
+                                      int prop_index, char *name, size_t name_len, char *value,
+                                      size_t value_len);
+
+/*! Symbol/schematic pins: pin-layer rects with name=, else net terms. */
+typedef struct RoomPinC {
+    char name[128];
+    char dir[32];
+    int64_t x;
+    int64_t y;
+} RoomPinC;
+ROOM_C_API int room_db_pin_count(const RoomDb *db, int cell_index, int content_index);
+ROOM_C_API int room_db_pin_get(const RoomDb *db, int cell_index, int content_index, int pin_index,
+                               RoomPinC *out);
 
 /* ---- instances ---- */
 ROOM_C_API int room_db_instance_count(const RoomDb *db, int cell_index, int content_index);
