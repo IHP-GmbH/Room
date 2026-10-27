@@ -100,6 +100,31 @@ std::vector<std::string> normalizeDiagramLines(const std::vector<std::string> &l
         }
     };
 
+    // Repair probes broken by quoting graph node="out\\nin" as v("out) instead of v(out).
+    auto stripEmbeddedQuotesInProbes = [](std::string &line) {
+        for (const char *prefix : {"ngspice/tran.v(\"", "ngspice/tran.i(\"", "ngspice/v(\"", "ngspice/i(\"",
+                                   "ngspice/ac.v(\"", "ngspice/ac.i(\"", "ngspice/dc.v(\"", "ngspice/dc.i(\""}) {
+            for (;;) {
+                const std::size_t pos = line.find(prefix);
+                if (pos == std::string::npos) {
+                    break;
+                }
+                // Drop the quote right after '('.
+                line.erase(pos + std::char_traits<char>::length(prefix) - 1, 1);
+            }
+        }
+        // Also drop a stray quote before ')': v(out") → v(out)
+        for (const char *needle : {"\")\" #", "\")\"\t", "\")\"\n", "\")\">"}) {
+            for (;;) {
+                const std::size_t pos = line.find(needle);
+                if (pos == std::string::npos) {
+                    break;
+                }
+                line.erase(pos, 1); // remove the quote before )
+            }
+        }
+    };
+
     std::vector<std::string> normalized;
     normalized.reserve(lines.size());
     for (std::string line : lines) {
@@ -114,6 +139,7 @@ std::vector<std::string> normalizeDiagramLines(const std::vector<std::string> &l
             }
             line.replace(pos, 17, "ngspice/tran.");
         }
+        stripEmbeddedQuotesInProbes(line);
         normalized.push_back(std::move(line));
     }
     return normalized;
@@ -241,6 +267,9 @@ std::string qucsComponentType(const std::string &cellName)
     }
     if (type.rfind("title", 0) == 0) {
         return "Sub";
+    }
+    if (type == "parax_cap" || type == "capa") {
+        return "C";
     }
     return type;
 }
@@ -619,7 +648,7 @@ std::string formatComponentLine(const Instance &inst, double dbuPerEditorUnit, c
         }
     }
 
-    const std::string type = qucsComponentTypeForInstance(inst);
+    std::string type = qucsComponentTypeForInstance(inst);
     const std::string instName = findProperty(inst.properties(), "name") ? *findProperty(inst.properties(), "name")
                                                                          : inst.cellName();
     const int active = findProperty(inst.properties(), "active") ? std::stoi(*findProperty(inst.properties(), "active")) : 1;
@@ -704,6 +733,15 @@ std::string formatComponentLine(const Instance &inst, double dbuPerEditorUnit, c
                 return *line;
             }
         }
+    }
+
+    // Qucs Schematic::loadComponents aborts on unknown Module-Names when QucsMain is null
+    // (ROOM bridge). Map Xschem code_shown → INCLSCR; opaque PDK masters → Sub.
+    if (type == "code_shown") {
+        type = "INCLSCR";
+    } else if (!isNativeQucsComponentType(type) && type != "Lib" && type != "SpiceCode"
+               && type != "ammeter") {
+        type = "Sub";
     }
 
     std::ostringstream oss;

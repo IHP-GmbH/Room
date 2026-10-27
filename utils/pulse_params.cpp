@@ -170,7 +170,16 @@ std::vector<std::string> tokenizePulseBody(const std::string &val)
     std::istringstream iss(body);
     std::string tok;
     while (iss >> tok) {
-        toks.push_back(tok);
+        // Xschem often writes pulse(0, 1.8, 0, 100p, …) — strip list commas.
+        while (!tok.empty() && (tok.back() == ',' || tok.back() == ';')) {
+            tok.pop_back();
+        }
+        while (!tok.empty() && (tok.front() == ',' || tok.front() == ';')) {
+            tok.erase(tok.begin());
+        }
+        if (!tok.empty()) {
+            toks.push_back(tok);
+        }
     }
     return toks;
 }

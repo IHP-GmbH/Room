@@ -2194,26 +2194,101 @@ void removeInvalidGraphProperties(std::vector<Property> &props)
                 props.end());
 }
 
+std::string stripGraphNodeToken(std::string token)
+{
+    while (!token.empty()
+           && (token.front() == '"' || token.front() == '\'' || std::isspace(static_cast<unsigned char>(token.front())))) {
+        token.erase(token.begin());
+    }
+    while (!token.empty()
+           && (token.back() == '"' || token.back() == '\'' || std::isspace(static_cast<unsigned char>(token.back())))) {
+        token.pop_back();
+    }
+    return token;
+}
+
+/*! Parse xschem graph node=… (may be quoted and span lines: node="out\\nin"). */
+std::vector<std::string> parseGraphNodeNames(const std::string &graphRecord)
+{
+    std::vector<std::string> nodes;
+    const std::size_t nodePos = graphRecord.find("node=");
+    if (nodePos == std::string::npos) {
+        return nodes;
+    }
+    std::size_t start = nodePos + 5;
+    while (start < graphRecord.size()
+           && std::isspace(static_cast<unsigned char>(graphRecord[start]))) {
+        ++start;
+    }
+    std::string raw;
+    if (start < graphRecord.size() && graphRecord[start] == '"') {
+        ++start;
+        const std::size_t end = graphRecord.find('"', start);
+        if (end == std::string::npos) {
+            return nodes;
+        }
+        raw = graphRecord.substr(start, end - start);
+    } else {
+        const std::size_t end = graphRecord.find_first_of(" \t}\n", start);
+        raw = graphRecord.substr(start, end == std::string::npos ? std::string::npos : end - start);
+    }
+    std::string token;
+    for (char ch : raw) {
+        if (ch == '\n' || ch == '\r' || ch == '\t' || ch == ' ' || ch == ',') {
+            token = stripGraphNodeToken(std::move(token));
+            if (!token.empty()) {
+                nodes.push_back(token);
+            }
+            token.clear();
+            continue;
+        }
+        token.push_back(ch);
+    }
+    token = stripGraphNodeToken(std::move(token));
+    if (!token.empty()) {
+        nodes.push_back(token);
+    }
+    return nodes;
+}
+
 std::string portNetNameForGraph(const Instance &inst)
 {
     if (const std::string *lab = findProperty(inst.properties(), "lab"); lab && !lab->empty()) {
-        return *lab;
+        return stripGraphNodeToken(*lab);
     }
     if (const std::string *num = findProperty(inst.properties(), "param.0"); num && !num->empty()) {
-        return *num;
+        return stripGraphNodeToken(*num);
     }
     return {};
 }
 
 bool isPortInstance(const Instance &inst)
 {
-    if (cellStem(inst.cellName()) == "Port") {
+    const std::string stem = cellStem(inst.cellName());
+    if (stem == "Port" || stem == "lab_pin" || stem == "iopin" || stem == "ipin" || stem == "opin") {
         return true;
     }
     if (const std::string *qt = findProperty(inst.properties(), "qucs.type"); qt && *qt == "Port") {
         return true;
     }
     return false;
+}
+
+void pickVinVoutFromNodes(const std::vector<std::string> &nodes, std::string &vin, std::string &vout)
+{
+    for (const std::string &net : nodes) {
+        const std::string lower = toLowerAscii(net);
+        if (lower.empty()) {
+            continue;
+        }
+        if (lower.find("in") != std::string::npos && lower.find("out") == std::string::npos) {
+            vin = lower;
+        } else if (lower.find("out") != std::string::npos) {
+            vout = lower;
+        } else if (vout == "vout" || vout.empty()) {
+            vout = lower;
+        }
+    }
 }
 
 std::vector<std::string> graphRecordToDiagramLines(const std::string &graphRecord, const Block &block)
@@ -2237,16 +2312,9 @@ std::vector<std::string> graphRecordToDiagramLines(const std::string &graphRecor
     const int x = std::min(gx1, gx2);
     const int bottomY = std::max(gy1, gy2);
 
-    std::string probe = "vout";
-    if (const std::size_t nodePos = graphRecord.find("node="); nodePos != std::string::npos) {
-        const std::size_t start = nodePos + 5;
-        const std::size_t end = graphRecord.find_first_of(" \t}\n", start);
-        if (end != std::string::npos) {
-            probe = graphRecord.substr(start, end - start);
-        }
-    }
     std::string vin = "vin";
-    std::string vout = probe;
+    std::string vout = "vout";
+    pickVinVoutFromNodes(parseGraphNodeNames(graphRecord), vin, vout);
     for (const Instance &inst : block.instances()) {
         if (!isPortInstance(inst)) {
             continue;
@@ -2261,6 +2329,14 @@ std::vector<std::string> graphRecordToDiagramLines(const std::string &graphRecor
         } else if (lower.find("out") != std::string::npos) {
             vout = lower;
         }
+    }
+    vin = stripGraphNodeToken(vin);
+    vout = stripGraphNodeToken(vout);
+    if (vin.empty()) {
+        vin = "vin";
+    }
+    if (vout.empty()) {
+        vout = "vout";
     }
 
     std::ostringstream rect;
