@@ -423,7 +423,9 @@ Instance instanceForQucsExport(const Instance &src)
     }
 
     Transform xf = src.transform();
-    if (hasQucsHistoricalSourceRotate(resolvedModel)) {
+    const bool hasQucsPlacement = findProperty(src.properties(), "rotate") != nullptr
+        || findProperty(src.properties(), "mirror") != nullptr;
+    if (hasQucsHistoricalSourceRotate(resolvedModel) && hasQucsPlacement) {
         const int mirror = findProperty(src.properties(), "mirror")
             ? std::stoi(*findProperty(src.properties(), "mirror"))
             : 0;
@@ -431,9 +433,11 @@ Instance instanceForQucsExport(const Instance &src)
             ? std::stoi(*findProperty(src.properties(), "rotate"))
             : 1;
         xf.orient = orientFromQucsSourcePlacement(mirror, rotateField);
-    } else if (remappedToNativePdk && qucsLibNeedsEwToNsCompensate(resolvedModel)) {
+    } else if (remappedToNativePdk && qucsLibNeedsEwToNsCompensate(resolvedModel) && hasQucsPlacement) {
         // Qucs IHP LibComp artwork is east–west; native Xschem/ROOM PDK symbols are north–south.
-        // Keep ROOM rotate props for Qucs round-trip; only adjust the Xschem placement orient.
+        // Only apply when Qucs rotate/mirror props are present. Xschem-origin ROOM already stores
+        // native Orient — defaulting missing rotate to 0 was forcing R90 and breaking round-trip
+        // (e.g. dantenna rot 2 → 1) whenever fromQucs was inferred from GND/Vdc on the same sheet.
         const int mirror = findProperty(src.properties(), "mirror")
             ? std::stoi(*findProperty(src.properties(), "mirror"))
             : 0;

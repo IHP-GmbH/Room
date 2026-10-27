@@ -509,11 +509,19 @@ std::optional<std::string> formatLibPrimitiveLine(const Instance &inst, double d
     // Prefer ROOM transform over possibly stale Qucs mirror/rotate props so LibComp pins
     // align with retargeted wire endpoints (Xschem-origin schematics).
     const int mirror = orientToQucsMirror(inst.transform().orient);
-    const int rotate = orientToQucsRotate(inst.transform().orient);
+    int rotate = orientToQucsRotate(inst.transform().orient);
 
     std::string compName = resolved.cellName;
     if (const std::string *model = findProperty(inst.properties(), "model")) {
         compName = *model;
+    }
+    // Xschem-origin ROOM stores native N–S Orient. Qucs IHP LibComp artwork for these cells is
+    // E–W, so undo the +1 used on Qucs→Xschem remap. Qucs-origin instances keep rotate/mirror
+    // props and already store Orient matching the LibComp field — leave those alone.
+    if (qucsLibNeedsEwToNsCompensate(compName)
+        && findProperty(inst.properties(), "rotate") == nullptr
+        && findProperty(inst.properties(), "mirror") == nullptr) {
+        rotate = (rotate + 3) & 3;
     }
 
     // PDK symbols netlist via QUCS_PRIMITIVE_LIB (.lib). Design hierarchies keep techLibrary.
@@ -637,6 +645,12 @@ std::string formatComponentLine(const Instance &inst, double dbuPerEditorUnit, c
                                                            : orientToQucsMirror(inst.transform().orient);
         rotate = findProperty(inst.properties(), "rotate") ? std::stoi(*findProperty(inst.properties(), "rotate"))
                                                            : orientToQucsRotate(inst.transform().orient);
+        // Same E–W LibComp vs N–S native remap as formatLibPrimitiveLine (fallback when not exported as <Lib>).
+        if (qucsLibNeedsEwToNsCompensate(type)
+            && findProperty(inst.properties(), "rotate") == nullptr
+            && findProperty(inst.properties(), "mirror") == nullptr) {
+            rotate = (rotate + 3) & 3;
+        }
     }
 
     if (type == "Port") {
