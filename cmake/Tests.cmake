@@ -20,6 +20,9 @@ if(ROOM_BUILD_TESTS)
     add_executable(xschem_api_roundtrip tests/xschem_api_roundtrip.cpp)
     target_link_libraries(xschem_api_roundtrip PRIVATE room_utils)
 
+    add_executable(xschem_pin_center tests/xschem_pin_center.cpp)
+    target_link_libraries(xschem_pin_center PRIVATE room_utils)
+
     add_executable(room_file_sniff tests/room_file_sniff.cpp)
     target_link_libraries(room_file_sniff PRIVATE room_utils)
 
@@ -141,6 +144,16 @@ if(ROOM_BUILD_TESTS)
     set_tests_properties(xschem_api_roundtrip PROPERTIES
         LABELS "room;xschem;api"
         TIMEOUT 60
+    )
+
+    add_test(
+        NAME xschem_pin_center
+        COMMAND xschem_pin_center
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(xschem_pin_center PROPERTIES
+        LABELS "room;xschem"
+        TIMEOUT 30
     )
 
     add_test(

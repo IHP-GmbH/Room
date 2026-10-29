@@ -1561,19 +1561,23 @@ void writePinRecord(std::ostream &out, const Shape::RectData &rect, const std::v
         }
         pinProps.push_back(prop);
     }
-    // Snap pin box to integer editor-unit grid (xschem touch() is exact FP on pin center).
-    auto snapEd = [](std::int64_t dbu) -> std::int64_t {
-        const double eu = dbuToEditorUnits(dbu, g_dbuPerEditorUnit);
-        return editorUnitsToDbu(std::round(eu), g_dbuPerEditorUnit);
+    // Snap the pin center to the integer editor-unit grid (xschem touch() is exact FP on
+    // pin center) and keep the box size.
+    auto snapOffset = [](std::int64_t low, std::int64_t high) -> std::int64_t {
+        const std::int64_t center = low + (high - low) / 2;
+        const double eu = dbuToEditorUnits(center, g_dbuPerEditorUnit);
+        return editorUnitsToDbu(std::round(eu), g_dbuPerEditorUnit) - center;
     };
+    const std::int64_t dx = snapOffset(rect.box.llx, rect.box.urx);
+    const std::int64_t dy = snapOffset(rect.box.lly, rect.box.ury);
     out << 'B' << ' ' << width << ' ';
-    writeCoord(out, snapEd(rect.box.llx));
+    writeCoord(out, rect.box.llx + dx);
     out << ' ';
-    writeCoord(out, snapEd(rect.box.lly));
+    writeCoord(out, rect.box.lly + dy);
     out << ' ';
-    writeCoord(out, snapEd(rect.box.urx));
+    writeCoord(out, rect.box.urx + dx);
     out << ' ';
-    writeCoord(out, snapEd(rect.box.ury));
+    writeCoord(out, rect.box.ury + dy);
     out << ' ' << formatAttrBlock(pinProps) << '\n';
 }
 
