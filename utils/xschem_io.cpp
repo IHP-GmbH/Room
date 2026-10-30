@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <optional>
 #include <sstream>
 #include <unordered_map>
@@ -174,23 +175,23 @@ bool readDoubleToken(const std::string &text, std::size_t &pos, double &value)
     while (pos < text.size() && std::isspace(static_cast<unsigned char>(text[pos]))) {
         ++pos;
     }
-    const std::size_t start = pos;
-    while (pos < text.size() &&
-           (std::isdigit(static_cast<unsigned char>(text[pos])) || text[pos] == '-' || text[pos] == '+' ||
-            text[pos] == '.')) {
-        ++pos;
-    }
-    if (start == pos) {
+    // Same number syntax as Xschem's %lf reads, including exponents (2e1).
+    const char *start = text.c_str() + pos;
+    char *end = nullptr;
+    const double parsed = std::strtod(start, &end);
+    if (end == start || !std::isfinite(parsed)) {
         return false;
     }
-    value = std::stod(text.substr(start, pos - start));
+    pos += static_cast<std::size_t>(end - start);
+    value = parsed;
     return true;
 }
 
 bool readIntToken(const std::string &text, std::size_t &pos, int &value)
 {
     double tmp = 0.0;
-    if (!readDoubleToken(text, pos, tmp)) {
+    if (!readDoubleToken(text, pos, tmp) || tmp < std::numeric_limits<int>::min() ||
+        tmp > std::numeric_limits<int>::max()) {
         return false;
     }
     value = static_cast<int>(tmp);
@@ -201,6 +202,11 @@ bool readCoordToken(const std::string &text, std::size_t &pos, std::int64_t &val
 {
     double coord = 0.0;
     if (!readDoubleToken(text, pos, coord)) {
+        return false;
+    }
+    // Reject values whose database units do not fit in 64 bits.
+    const double scale = g_dbuPerEditorUnit > 0.0 ? g_dbuPerEditorUnit : 1.0;
+    if (std::fabs(coord * scale) >= 9.0e18) {
         return false;
     }
     value = editorUnitsToDbu(coord, g_dbuPerEditorUnit);

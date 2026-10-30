@@ -10,10 +10,6 @@ bus.sch lost: C {lab_pin.sym} 0 0 0 0 {lab=DATA[3:0];name=p1;}
 bus.sch lost: N 0 0 200 0 {bus=true;lab=DATA[3:0];}
 bus.sch lost: N 200 0 200 100 {bus=true;lab=DATA[3:0];}
 
-# Records with exponent coordinates (2e1) are dropped without a warning, here the line and pin A.
-exponent_coords.sym lost: B 5 -2.5 -32.5 2.5 -27.5 {dir=in;name=A;}
-exponent_coords.sym lost: L 4 0 -20 0 20 {}
-
 # m is dropped; ROOM's core.primitive and qucs.type properties are written to the file;
 # escaped braces lose their backslashes.
 expressions.sch added: C {capa.sym} 100 0 0 0 {core.primitive=analogLib/C.symbol.room;name=C1;qucs.type=C;value={cload};}
