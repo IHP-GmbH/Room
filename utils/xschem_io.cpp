@@ -135,10 +135,12 @@ std::string normalizeSpiceDeviceValue(const std::string &raw)
 int countBraceDelta(const std::string &line)
 {
     int delta = 0;
-    for (char ch : line) {
-        if (ch == '{') {
+    for (std::size_t i = 0; i < line.size(); ++i) {
+        if (line[i] == '\\') {
+            ++i; // Escaped character, as in Xschem's load_ascii_string.
+        } else if (line[i] == '{') {
             ++delta;
-        } else if (ch == '}') {
+        } else if (line[i] == '}') {
             --delta;
         }
     }
@@ -156,7 +158,9 @@ bool extractBracedToken(const std::string &text, std::size_t &pos, std::string &
     const std::size_t start = pos;
     int depth = 0;
     for (; pos < text.size(); ++pos) {
-        if (text[pos] == '{') {
+        if (text[pos] == '\\') {
+            ++pos; // Escaped character, as in Xschem's load_ascii_string.
+        } else if (text[pos] == '{') {
             ++depth;
         } else if (text[pos] == '}') {
             --depth;
@@ -756,11 +760,15 @@ std::string readAttrValue(const std::string &body, std::size_t &pos)
         }
         return value;
     }
-    const std::size_t start = pos;
+    std::string value;
     while (pos < body.size() && !std::isspace(static_cast<unsigned char>(body[pos]))) {
+        if (body[pos] == '\\' && pos + 1 < body.size()) {
+            ++pos;
+        }
+        value.push_back(body[pos]);
         ++pos;
     }
-    return body.substr(start, pos - start);
+    return value;
 }
 
 bool attrValueNeedsQuotes(const std::string &value)
@@ -769,23 +777,23 @@ bool attrValueNeedsQuotes(const std::string &value)
         return true;
     }
     for (const char ch : value) {
-        if (std::isspace(static_cast<unsigned char>(ch)) || ch == '{' || ch == '}') {
+        if (std::isspace(static_cast<unsigned char>(ch)) || ch == '{' || ch == '}' || ch == '"' || ch == '\\') {
             return true;
         }
     }
     return false;
 }
 
+// Escapes what readAttrValue unescapes; Xschem drops values with bare braces.
 std::string quoteAttrValue(const std::string &value)
 {
     std::ostringstream oss;
     oss << '"';
     for (const char ch : value) {
-        if (ch == '"') {
-            oss << '\\' << '"';
-        } else {
-            oss << ch;
+        if (ch == '"' || ch == '\\' || ch == '{' || ch == '}') {
+            oss << '\\';
         }
+        oss << ch;
     }
     oss << '"';
     return oss.str();
