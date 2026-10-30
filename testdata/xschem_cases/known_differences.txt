@@ -1,0 +1,80 @@
+# Differences the ROOM round trip produces today, one line per record.
+# A fix changes or removes the affected lines; the test fails until the list matches
+# its output again.
+
+# bus=true is dropped from bus wires; exported labels gain param.0.
+bus.sch added: C {lab_pin.sym} 0 0 0 0 {lab=DATA[3:0];name=p1;param.0=DATA[3:0];}
+bus.sch added: N 0 0 200 0 {lab=DATA[3:0];}
+bus.sch added: N 200 0 200 100 {lab=DATA[3:0];}
+bus.sch lost: C {lab_pin.sym} 0 0 0 0 {lab=DATA[3:0];name=p1;}
+bus.sch lost: N 0 0 200 0 {bus=true;lab=DATA[3:0];}
+bus.sch lost: N 200 0 200 100 {bus=true;lab=DATA[3:0];}
+
+# Records with exponent coordinates (2e1) are dropped without a warning, here the line and pin A.
+exponent_coords.sym lost: B 5 -2.5 -32.5 2.5 -27.5 {dir=in;name=A;}
+exponent_coords.sym lost: L 4 0 -20 0 20 {}
+
+# m is dropped; ROOM's core.primitive and qucs.type properties are written to the file;
+# escaped braces lose their backslashes.
+expressions.sch added: C {capa.sym} 100 0 0 0 {core.primitive=analogLib/C.symbol.room;name=C1;qucs.type=C;value={cload};}
+expressions.sch added: C {res.sym} 0 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R1;qucs.type=R;value='rload*2';}
+expressions.sch added: C {res.sym} 200 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R[3:0];qucs.type=R;value=1k;}
+expressions.sch lost: C {capa.sym} 100 0 0 0 {m=2;name=C1;value=\{cload\};}
+expressions.sch lost: C {res.sym} 0 0 0 0 {m=1;name=R1;value='rload*2';}
+expressions.sch lost: C {res.sym} 200 0 0 0 {name=R[3:0];value=1k;}
+
+# Pins and lines on half grid units keep their place. The vertical text size goes through
+# the Qucs size mapping (x0.7, at least 0.25).
+half_grid_pins.sym added: T {@name} 15 -18.75 0 0 0.2 0.25 {}
+half_grid_pins.sym lost: T {@name} 15 -18.75 0 0 0.2 0.2 {}
+
+# ROOM's core.primitive and qucs.type properties are written to the file.
+header_sections.sch added: C {res.sym} 0 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R1;qucs.type=R;value=1k;}
+header_sections.sch lost: C {res.sym} 0 0 0 0 {name=R1;value=1k;}
+
+# Bus, expression and empty labels keep their text; exported labels gain param.0.
+label_forms.sch added: C {lab_pin.sym} 0 0 0 0 {lab=A[1:0];name=p1;param.0=A[1:0];}
+label_forms.sch added: C {lab_pin.sym} 0 100 0 0 {lab=2*B[1:0];name=p2;param.0=2*B[1:0];}
+label_forms.sch added: C {lab_pin.sym} 0 200 0 0 {lab=C[0,4,2:1];name=p3;param.0=C[0,4,2:1];}
+label_forms.sch added: C {lab_pin.sym} 0 400 0 0 {lab=expr(1+2);name=p6;param.0=expr(1+2);}
+label_forms.sch added: C {lab_pin.sym} 200 200 0 1 {lab=C[1:0]*2;name=p4;param.0=C[1:0]*2;}
+label_forms.sch lost: C {lab_pin.sym} 0 0 0 0 {lab=A[1:0];name=p1;}
+label_forms.sch lost: C {lab_pin.sym} 0 100 0 0 {lab=2*B[1:0];name=p2;}
+label_forms.sch lost: C {lab_pin.sym} 0 200 0 0 {lab=C[0,4,2:1];name=p3;}
+label_forms.sch lost: C {lab_pin.sym} 0 400 0 0 {lab=expr(1+2);name=p6;}
+label_forms.sch lost: C {lab_pin.sym} 200 200 0 1 {lab=C[1:0]*2;name=p4;}
+
+# ROOM's core.primitive and qucs.type properties are written to the file.
+orientation.sch added: C {capa.sym} 200 0 3 1 {core.primitive=analogLib/C.symbol.room;name=C1;qucs.type=C;value=1p;}
+orientation.sch added: C {ind.sym} 300 0 0 1 {core.primitive=analogLib/L.symbol.room;name=L1;qucs.type=L;value=1n;}
+orientation.sch added: C {res.sym} 0 0 1 0 {core.primitive=analogLib/R.symbol.room;name=R1;qucs.type=R;value=1k;}
+orientation.sch added: C {res.sym} 100 0 2 1 {core.primitive=analogLib/R.symbol.room;name=R2;qucs.type=R;value=2k;}
+orientation.sch lost: C {capa.sym} 200 0 3 1 {name=C1;value=1p;}
+orientation.sch lost: C {ind.sym} 300 0 0 1 {name=L1;value=1n;}
+orientation.sch lost: C {res.sym} 0 0 1 0 {name=R1;value=1k;}
+orientation.sch lost: C {res.sym} 100 0 2 1 {name=R2;value=2k;}
+
+# The explicit @@pin order in format becomes @pinlist, so netlists connect IN and OUT swapped.
+pin_order.sym added: K {format=@name @pinlist @symname;template=name=x1;type=subcircuit;}
+pin_order.sym lost: K {format=@name @@OUT @@IN @@VDD @@VSS @symname;template=name=x1;type=subcircuit;}
+
+# Escaped braces in attribute values lose their backslashes.
+spice_code.sch added: C {vsource.sym} 200 0 0 0 {name=V1;savecurrent=false;value=dc {vdd};}
+spice_code.sch lost: C {vsource.sym} 200 0 0 0 {name=V1;savecurrent=false;value=dc \{vdd\};}
+
+# Polygon fill, text layer and the vertical text size change.
+text_and_graphics.sch added: P 4 5 0 0 50 0 50 50 0 50 0 0 {}
+text_and_graphics.sch added: T {Bias network} 0 -100 0 0 0.4 0.28 {}
+text_and_graphics.sch added: T {Vth = 0.5 V, gain > 20 dB} 0 -150 0 0 0.25 0.25 {}
+text_and_graphics.sch lost: P 4 5 0 0 50 0 50 50 0 50 0 0 {fill=true;}
+text_and_graphics.sch lost: T {Bias network} 0 -100 0 0 0.4 0.4 {}
+text_and_graphics.sch lost: T {Vth = 0.5 V, gain > 20 dB} 0 -150 0 0 0.25 0.25 {layer=8;}
+
+# m, device and footprint are dropped; ROOM's core.primitive and qucs.type properties are
+# written to the file; labels gain param.0.
+wires_and_labels.sch added: C {lab_pin.sym} 0 -60 0 0 {lab=IN;name=p1;param.0=IN;sig_type=std_logic;}
+wires_and_labels.sch added: C {lab_pin.sym} 80 60 0 1 {lab=OUT;name=p2;param.0=OUT;sig_type=std_logic;}
+wires_and_labels.sch added: C {res.sym} 0 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R1;qucs.type=R;value=10k;}
+wires_and_labels.sch lost: C {lab_pin.sym} 0 -60 0 0 {lab=IN;name=p1;sig_type=std_logic;}
+wires_and_labels.sch lost: C {lab_pin.sym} 80 60 0 1 {lab=OUT;name=p2;sig_type=std_logic;}
+wires_and_labels.sch lost: C {res.sym} 0 0 0 0 {device=resistor;footprint=1206;m=1;name=R1;value=10k;}
