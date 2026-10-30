@@ -54,10 +54,6 @@ orientation.sch lost: C {ind.sym} 300 0 0 1 {name=L1;value=1n;}
 orientation.sch lost: C {res.sym} 0 0 1 0 {name=R1;value=1k;}
 orientation.sch lost: C {res.sym} 100 0 2 1 {name=R2;value=2k;}
 
-# The explicit @@pin order in format becomes @pinlist, so netlists connect IN and OUT swapped.
-pin_order.sym added: K {format=@name @pinlist @symname;template=name=x1;type=subcircuit;}
-pin_order.sym lost: K {format=@name @@OUT @@IN @@VDD @@VSS @symname;template=name=x1;type=subcircuit;}
-
 # Escaped braces in attribute values lose their backslashes.
 spice_code.sch added: C {vsource.sym} 200 0 0 0 {name=V1;savecurrent=false;value=dc {vdd};}
 spice_code.sch lost: C {vsource.sym} 200 0 0 0 {name=V1;savecurrent=false;value=dc \{vdd\};}
