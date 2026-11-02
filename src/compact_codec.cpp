@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <set>
 #include <unordered_map>
@@ -113,9 +114,21 @@ struct PolygonRepeatSpec {
 struct PathRepeatSpec {
     std::uint32_t width = 0;
     std::uint32_t vertexCount = 0;
+    std::int32_t bgnExt = 0;
+    std::int32_t endExt = 0;
+    bool round = false;
     std::vector<std::int64_t> deltas;
     std::vector<std::int64_t> originX;
     std::vector<std::int64_t> originY;
+    std::vector<Property> properties;
+};
+
+struct PendingPath {
+    std::uint32_t width = 0;
+    std::int32_t bgnExt = 0;
+    std::int32_t endExt = 0;
+    bool round = false;
+    std::vector<Point> points;
     std::vector<Property> properties;
 };
 
@@ -127,6 +140,9 @@ struct LayerBucket {
     std::vector<std::uint32_t> pathWidths;
     std::vector<std::uint32_t> pathVertexCounts;
     std::vector<std::int64_t> pathDeltas;
+    std::vector<std::int32_t> pathBgnExt;
+    std::vector<std::int32_t> pathEndExt;
+    std::vector<std::uint8_t> pathRound;
     std::vector<std::int64_t> textX;
     std::vector<std::int64_t> textY;
     std::vector<std::uint32_t> textHeights;
@@ -405,11 +421,13 @@ void optimizePolygons(std::vector<std::pair<std::vector<Point>, std::vector<Prop
     }
 }
 
-void optimizePaths(std::vector<std::tuple<std::uint32_t, std::vector<Point>, std::vector<Property>>> &paths,
-                   LayerBucket &bucket)
+void optimizePaths(std::vector<PendingPath> &paths, LayerBucket &bucket)
 {
     struct Entry {
         std::uint32_t width = 0;
+        std::int32_t bgnExt = 0;
+        std::int32_t endExt = 0;
+        bool round = false;
         std::vector<Point> points;
         std::vector<Property> properties;
         std::vector<std::int64_t> deltas;
@@ -418,9 +436,12 @@ void optimizePaths(std::vector<std::tuple<std::uint32_t, std::vector<Point>, std
     std::unordered_map<DeltaKey, std::vector<Entry>, DeltaKeyHash> groups;
     for (auto &path : paths) {
         Entry entry;
-        entry.width = std::get<0>(path);
-        entry.points = std::move(std::get<1>(path));
-        entry.properties = std::move(std::get<2>(path));
+        entry.width = path.width;
+        entry.bgnExt = path.bgnExt;
+        entry.endExt = path.endExt;
+        entry.round = path.round;
+        entry.points = std::move(path.points);
+        entry.properties = std::move(path.properties);
         appendDeltaEncoded(entry.deltas, entry.points);
         DeltaKey key{entry.deltas};
         groups[key].push_back(std::move(entry));
@@ -431,18 +452,26 @@ void optimizePaths(std::vector<std::tuple<std::uint32_t, std::vector<Point>, std
         auto &items = entry.second;
         if (items.size() >= 2) {
             bool sameWidth = true;
+            bool sameEnds = true;
             bool sameProps = true;
             for (std::size_t i = 1; i < items.size(); ++i) {
                 if (items[i].width != items[0].width) {
                     sameWidth = false;
                 }
+                if (items[i].bgnExt != items[0].bgnExt || items[i].endExt != items[0].endExt ||
+                    items[i].round != items[0].round) {
+                    sameEnds = false;
+                }
                 if (!propertiesEqual(items[0].properties, items[i].properties)) {
                     sameProps = false;
                 }
             }
-            if (sameWidth && sameProps) {
+            if (sameWidth && sameEnds && sameProps) {
                 PathRepeatSpec repeat;
                 repeat.width = items[0].width;
+                repeat.bgnExt = items[0].bgnExt;
+                repeat.endExt = items[0].endExt;
+                repeat.round = items[0].round;
                 repeat.vertexCount = static_cast<std::uint32_t>(items[0].points.size());
                 repeat.deltas = entry.first.deltas;
                 repeat.properties = items[0].properties;
@@ -457,6 +486,9 @@ void optimizePaths(std::vector<std::tuple<std::uint32_t, std::vector<Point>, std
 
         for (Entry &item : items) {
             bucket.pathWidths.push_back(item.width);
+            bucket.pathBgnExt.push_back(item.bgnExt);
+            bucket.pathEndExt.push_back(item.endExt);
+            bucket.pathRound.push_back(item.round ? 1 : 0);
             bucket.pathVertexCounts.push_back(static_cast<std::uint32_t>(item.points.size()));
             bucket.pathDeltas.insert(bucket.pathDeltas.end(), item.deltas.begin(), item.deltas.end());
             appendShapeProperties(bucket, item.properties);
@@ -469,8 +501,7 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
     std::map<std::uint32_t, LayerBucket> buckets;
     std::map<std::uint32_t, std::vector<RawRect>> pendingRects;
     std::map<std::uint32_t, std::vector<std::pair<std::vector<Point>, std::vector<Property>>>> pendingPolygons;
-    std::map<std::uint32_t, std::vector<std::tuple<std::uint32_t, std::vector<Point>, std::vector<Property>>>>
-        pendingPaths;
+    std::map<std::uint32_t, std::vector<PendingPath>> pendingPaths;
 
     for (const Shape &shape : block.shapes()) {
         switch (shape.type()) {
@@ -493,7 +524,14 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
             const auto &path = *shape.path();
             LayerBucket &bucket = buckets[path.layerId];
             bucket.layerId = path.layerId;
-            pendingPaths[path.layerId].emplace_back(path.width, path.points, shape.properties());
+            PendingPath pending;
+            pending.width = path.width;
+            pending.bgnExt = path.bgnExt;
+            pending.endExt = path.endExt;
+            pending.round = path.round;
+            pending.points = path.points;
+            pending.properties = shape.properties();
+            pendingPaths[path.layerId].push_back(std::move(pending));
             break;
         }
         case Shape::Type::Text: {
@@ -532,7 +570,11 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
             props.push_back({"arc.radius", std::to_string(arc.radius)});
             props.push_back({"arc.startAngle", std::to_string(arc.startAngle)});
             props.push_back({"arc.endAngle", std::to_string(arc.endAngle)});
-            pendingPaths[arc.layerId].emplace_back(arc.width, points, props);
+            PendingPath pending;
+            pending.width = arc.width;
+            pending.points = std::move(points);
+            pending.properties = std::move(props);
+            pendingPaths[arc.layerId].push_back(std::move(pending));
             break;
         }
         }
@@ -684,12 +726,36 @@ void writeLayerBucket(schema::CompactLayerShapes::Builder builder, const LayerBu
     }
     writePackedDeltas(builder, bucket.pathDeltas, false);
 
+    bool customEnds = false;
+    for (std::size_t i = 0; i < bucket.pathWidths.size(); ++i) {
+        const std::int32_t bgn = i < bucket.pathBgnExt.size() ? bucket.pathBgnExt[i] : 0;
+        const std::int32_t end = i < bucket.pathEndExt.size() ? bucket.pathEndExt[i] : 0;
+        const bool round = i < bucket.pathRound.size() && bucket.pathRound[i] != 0;
+        if (bgn != 0 || end != 0 || round) {
+            customEnds = true;
+            break;
+        }
+    }
+    if (customEnds) {
+        auto bgnExt = builder.initPathBgnExt(bucket.pathWidths.size());
+        auto endExt = builder.initPathEndExt(bucket.pathWidths.size());
+        auto round = builder.initPathRound(bucket.pathWidths.size());
+        for (std::size_t i = 0; i < bucket.pathWidths.size(); ++i) {
+            bgnExt.set(i, i < bucket.pathBgnExt.size() ? bucket.pathBgnExt[i] : 0);
+            endExt.set(i, i < bucket.pathEndExt.size() ? bucket.pathEndExt[i] : 0);
+            round.set(i, i < bucket.pathRound.size() && bucket.pathRound[i] != 0);
+        }
+    }
+
     auto pathRepeats = builder.initPathRepeats(bucket.pathRepeats.size());
     for (std::size_t i = 0; i < bucket.pathRepeats.size(); ++i) {
         const PathRepeatSpec &spec = bucket.pathRepeats[i];
         auto pb = pathRepeats[i];
         pb.setWidth(spec.width);
         pb.setVertexCount(spec.vertexCount);
+        pb.setBgnExt(spec.bgnExt);
+        pb.setEndExt(spec.endExt);
+        pb.setRound(spec.round);
         auto deltas = pb.initDeltas(spec.deltas.size());
         for (std::size_t j = 0; j < spec.deltas.size(); ++j) {
             deltas.set(j, spec.deltas[j]);
@@ -724,7 +790,8 @@ void writeLayerBucket(schema::CompactLayerShapes::Builder builder, const LayerBu
     }
 }
 
-void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
+template <typename Emit>
+void readLayerBucket(schema::CompactLayerShapes::Reader reader, Emit &&emit)
 {
     const std::uint32_t layerId = reader.getLayerId();
     const auto propCounts = reader.getShapePropertyCounts();
@@ -748,7 +815,7 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
         data.box = Box{rectCoords[i], rectCoords[i + 1], rectCoords[i + 2], rectCoords[i + 3]};
         Shape shape(data);
         assignShapeProperties(shape);
-        block.shapes().push_back(std::move(shape));
+        emit(std::move(shape));
     }
 
     for (const auto array : reader.getRectArrays()) {
@@ -761,7 +828,7 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
                 data.box = Box{llx, lly, llx + array.getWidth(), lly + array.getHeight()};
                 Shape shape(data);
                 assignShapeProperties(shape);
-                block.shapes().push_back(std::move(shape));
+                emit(std::move(shape));
             }
         }
     }
@@ -776,7 +843,7 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
             data.box = Box{llxList[i], llyList[i], llxList[i] + group.getWidth(), llyList[i] + group.getHeight()};
             Shape shape(data);
             assignShapeProperties(shape);
-            block.shapes().push_back(std::move(shape));
+            emit(std::move(shape));
         }
     }
 
@@ -798,7 +865,7 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
         data.points = decodeDeltaEncoded(slice, count);
         Shape shape(data);
         assignShapeProperties(shape);
-        block.shapes().push_back(std::move(shape));
+        emit(std::move(shape));
         polygonCursor += needed;
     }
 
@@ -822,12 +889,15 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
             data.points = decodeDeltaEncoded(slice, repeat.getVertexCount());
             Shape shape(data);
             assignShapeProperties(shape);
-            block.shapes().push_back(std::move(shape));
+            emit(std::move(shape));
         }
     }
 
     const auto pathWidths = reader.getPathWidths();
     const auto pathCounts = reader.getPathVertexCounts();
+    const auto pathBgn = reader.getPathBgnExt();
+    const auto pathEnd = reader.getPathEndExt();
+    const auto pathRound = reader.getPathRound();
     std::vector<std::int64_t> pathStream = loadPackedOrList(reader.getPathDeltasPacked(), reader.getPathDeltas());
     std::size_t pathCursor = 0;
     for (std::size_t pathIndex = 0; pathIndex < pathCounts.size(); ++pathIndex) {
@@ -841,10 +911,13 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
         Shape::PathData data;
         data.layerId = layerId;
         data.width = pathIndex < pathWidths.size() ? pathWidths[pathIndex] : 0;
+        data.bgnExt = pathIndex < pathBgn.size() ? pathBgn[pathIndex] : 0;
+        data.endExt = pathIndex < pathEnd.size() ? pathEnd[pathIndex] : 0;
+        data.round = pathIndex < pathRound.size() && pathRound[pathIndex];
         data.points = decodeDeltaEncoded(slice, count);
         Shape shape(data);
         assignShapeProperties(shape);
-        block.shapes().push_back(std::move(shape));
+        emit(std::move(shape));
         pathCursor += needed;
     }
 
@@ -866,10 +939,13 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
             Shape::PathData data;
             data.layerId = layerId;
             data.width = repeat.getWidth();
+            data.bgnExt = repeat.getBgnExt();
+            data.endExt = repeat.getEndExt();
+            data.round = repeat.getRound();
             data.points = decodeDeltaEncoded(slice, repeat.getVertexCount());
             Shape shape(data);
             assignShapeProperties(shape);
-            block.shapes().push_back(std::move(shape));
+            emit(std::move(shape));
         }
     }
 
@@ -887,7 +963,7 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Block &block)
         data.text = texts[i].cStr();
         Shape shape(data);
         assignShapeProperties(shape);
-        block.shapes().push_back(std::move(shape));
+        emit(std::move(shape));
     }
 }
 
@@ -946,7 +1022,7 @@ Block readCompactBlock(schema::CompactBlock::Reader reader)
 {
     Block block;
     for (const auto layer : reader.getLayerShapes()) {
-        readLayerBucket(layer, block);
+        readLayerBucket(layer, [&](Shape shape) { block.shapes().push_back(std::move(shape)); });
     }
 
     for (const auto inst : reader.getInstances()) {
@@ -975,6 +1051,13 @@ Block readCompactBlock(schema::CompactBlock::Reader reader)
 
     block.recomputeBBox();
     return block;
+}
+
+void visitCompactShapes(schema::CompactBlock::Reader reader, const std::function<void(Shape)> &emit)
+{
+    for (const auto layer : reader.getLayerShapes()) {
+        readLayerBucket(layer, [&](Shape shape) { emit(std::move(shape)); });
+    }
 }
 
 bool compactBlockHasGeometry(schema::CompactBlock::Reader reader)

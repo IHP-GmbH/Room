@@ -15,7 +15,15 @@
 #include "layer_utils.h"
 #include "lib_index.h"
 
+#include <capnp/message.h>
+#include <capnp/serialize.h>
+#include <kj/io.h>
+
+#include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <stdexcept>
+#include <vector>
 
 #include <database.capnp.h>
 #include <design.capnp.h>
@@ -255,6 +263,16 @@ void writeShape(schema::Shape::Builder b, const Shape &shape)
         }
         pb.setWidth(p.width);
         pb.setLayerId(p.layerId);
+        pb.setBgnExt(p.bgnExt);
+        pb.setEndExt(p.endExt);
+        pb.setRound(p.round);
+        if (p.round) {
+            pb.setCap(schema::PathGeom::PathCap::ROUND);
+        } else if (p.bgnExt != 0 || p.endExt != 0) {
+            pb.setCap(schema::PathGeom::PathCap::SQUARE);
+        } else {
+            pb.setCap(schema::PathGeom::PathCap::FLUSH);
+        }
         break;
     }
     case Shape::Type::Text: {
@@ -316,6 +334,9 @@ Shape readShape(schema::Shape::Reader r)
         }
         data.width = pr.getWidth();
         data.layerId = pr.getLayerId();
+        data.bgnExt = pr.getBgnExt();
+        data.endExt = pr.getEndExt();
+        data.round = pr.getRound();
         shape = Shape(data);
         break;
     }
@@ -862,6 +883,122 @@ Database readDatabase(schema::Database::Reader root)
     }
 
     return db;
+}
+
+VisitedInstance readVisitedInstance(schema::Instance::Reader inst)
+{
+    VisitedInstance visited;
+    visited.cellName = inst.getCellName().cStr();
+    visited.transform = readTransform(inst.getTransform());
+    visited.columns = inst.getColumns();
+    visited.rows = inst.getRows();
+    visited.stepX = inst.getStepX();
+    visited.stepY = inst.getStepY();
+    visited.properties = readProperties(inst.getProperties());
+    return visited;
+}
+
+template <typename ViewReader>
+void emitViewTopology(const std::string &cellName, ViewReader view, const LayoutVisitHandlers &handlers)
+{
+    const auto block = view.getBlock();
+    if (blockHasTopology(block)) {
+        for (const auto shape : block.getShapes()) {
+            if (handlers.onShape) {
+                handlers.onShape(cellName, readShape(shape));
+            }
+        }
+        if (handlers.onInstance) {
+            for (const auto inst : block.getInstances()) {
+                handlers.onInstance(cellName, readVisitedInstance(inst));
+            }
+        }
+        return;
+    }
+
+    const auto compact = view.getCompact();
+    if (!compactBlockHasGeometry(compact)) {
+        return;
+    }
+    if (handlers.onShape) {
+        visitCompactShapes(compact, [&](Shape shape) { handlers.onShape(cellName, std::move(shape)); });
+    }
+    if (handlers.onInstance) {
+        for (const auto inst : compact.getInstances()) {
+            handlers.onInstance(cellName, readVisitedInstance(inst));
+        }
+    }
+}
+
+void visitOneCell(schema::Cell::Reader cell, const LayoutVisitHandlers &handlers, bool headersOnly)
+{
+    const std::string name = cell.getName().cStr();
+    for (const auto content : cell.getContents()) {
+        if (content.getPayload().which() != schema::ViewPayload::LAYOUT &&
+            content.getViewType() != schema::ViewType::LAYOUT) {
+            continue;
+        }
+        if (content.getPayload().which() != schema::ViewPayload::LAYOUT) {
+            continue;
+        }
+        const auto layout = content.getPayload().getLayout();
+        if (headersOnly) {
+            if (!handlers.onCell) {
+                return;
+            }
+            VisitedCell visited;
+            visited.name = name;
+            visited.dbuPerMicron = content.getDbuPerMicron();
+            visited.layers = readViewLayers(layout);
+            visited.cellProperties = readProperties(cell.getProperties());
+            visited.contentProperties = readProperties(content.getProperties());
+            handlers.onCell(visited);
+            return;
+        }
+        emitViewTopology(name, layout, handlers);
+        return;
+    }
+}
+
+void visitLayoutFile(const std::string &path, const LayoutVisitHandlers &handlers)
+{
+    std::ifstream in(path, std::ios::binary | std::ios::ate);
+    if (!in) {
+        throw std::runtime_error("Cannot open file for reading: " + path);
+    }
+    const std::streamsize fileSize = in.tellg();
+    if (fileSize <= 0) {
+        throw std::runtime_error("Cannot read file size: " + path);
+    }
+    in.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(static_cast<std::size_t>(fileSize));
+    constexpr std::size_t chunkBytes = 256ull << 20;
+    for (std::size_t offset = 0; offset < buffer.size(); offset += chunkBytes) {
+        const std::size_t count = std::min(chunkBytes, buffer.size() - offset);
+        if (!in.read(buffer.data() + offset, static_cast<std::streamsize>(count))) {
+            throw std::runtime_error("Failed to read file: " + path);
+        }
+    }
+
+    kj::ArrayInputStream inputStream(
+        kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
+    capnp::ReaderOptions readerOptions;
+    readerOptions.traversalLimitInWords = (buffer.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
+    capnp::InputStreamMessageReader reader(inputStream, readerOptions);
+    const auto root = reader.getRoot<schema::Database>();
+    const auto lib = root.getLib();
+    if (handlers.onFile) {
+        handlers.onFile(lib.getName().cStr(), readProperties(lib.getProperties()));
+    }
+
+    const auto cells = lib.getCells();
+    for (const auto cell : cells) {
+        visitOneCell(cell, handlers, true);
+    }
+    for (const auto cell : cells) {
+        visitOneCell(cell, handlers, false);
+    }
 }
 
 } // namespace room

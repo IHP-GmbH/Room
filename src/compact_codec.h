@@ -4,6 +4,8 @@
 
 #include <compact.capnp.h>
 
+#include <functional>
+
 namespace room {
 
 /*!****************************************************************************************
@@ -26,5 +28,12 @@ Block readCompactBlock(schema::CompactBlock::Reader reader);
  * \return         True when layer shapes, instances, or nets are present.
  *****************************************************************************************/
 bool compactBlockHasGeometry(schema::CompactBlock::Reader reader);
+
+/*!****************************************************************************************
+ * \brief Yields compact shapes one at a time, without storing the block.
+ * \param reader  CompactBlock reader from disk.
+ * \param emit    Called once per decoded shape. The shape is not retained.
+ *****************************************************************************************/
+void visitCompactShapes(schema::CompactBlock::Reader reader, const std::function<void(Shape)> &emit);
 
 } // namespace room

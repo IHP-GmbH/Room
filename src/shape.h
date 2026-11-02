@@ -27,6 +27,9 @@ public:
         std::vector<Point> points;
         std::uint32_t width = 0;
         std::uint32_t layerId = 0;
+        std::int32_t bgnExt = 0;
+        std::int32_t endExt = 0;
+        bool round = false;
     };
     struct TextData {
         Point position;

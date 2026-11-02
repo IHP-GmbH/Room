@@ -9,6 +9,7 @@
 #include "gds_property_codec.h"
 #include "layer_utils.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <fstream>
@@ -39,6 +40,9 @@ constexpr std::uint16_t GDS_SNAME    = 0x1206;
 constexpr std::uint16_t GDS_STRANS   = 0x1A01;
 constexpr std::uint16_t GDS_MAG      = 0x1B05;
 constexpr std::uint16_t GDS_STRING   = 0x1906;
+constexpr std::uint16_t GDS_PATHTYPE = 0x2102;
+constexpr std::uint16_t GDS_BGNEXTN  = 0x3003;
+constexpr std::uint16_t GDS_ENDEXTN  = 0x3103;
 constexpr std::uint16_t GDS_PROPATTR = 0x2B02;
 constexpr std::uint16_t GDS_PROPVALUE_I2 = 0x2C02;
 constexpr std::uint16_t GDS_PROPVALUE_I4 = 0x2C03;
@@ -172,6 +176,12 @@ struct ElementDraft {
     std::uint16_t layer = 0;
     std::uint16_t dataType = 0;
     std::uint32_t width = 0;
+    std::int32_t signedWidth = 0;
+    std::int32_t bgnExt = 0;
+    std::int32_t endExt = 0;
+    bool hasBgnExt = false;
+    bool hasEndExt = false;
+    std::uint16_t pathType = 0;
     std::vector<Point> points;
     std::string text;
     std::string sname;
@@ -308,6 +318,15 @@ public:
                     path.layerId = ensureViewLayer(content, draft.layer, draft.dataType, LayerPurpose::Wire);
                     path.points = draft.points;
                     path.width = draft.width;
+                    std::uint16_t type = draft.pathType;
+                    if (type != 0 && type != 1 && type != 2 && type != 4) {
+                        type = 0;
+                    }
+                    path.bgnExt = draft.hasBgnExt ? draft.bgnExt
+                                                  : ((type == 1 || type == 2) ? draft.signedWidth / 2 : 0);
+                    path.endExt = draft.hasEndExt ? draft.endExt
+                                                  : ((type == 1 || type == 2) ? draft.signedWidth / 2 : 0);
+                    path.round = type == 1;
                     Shape shape(path);
                     applyProperties(shape.properties(), draft.properties);
                     block.shapes().push_back(std::move(shape));
@@ -418,9 +437,28 @@ public:
                 break;
             case GDS_WIDTH:
                 if (payloadLen >= 4) {
-                    draft.width = static_cast<std::uint32_t>(be32(payload));
+                    draft.signedWidth = be32(payload);
+                    draft.width = static_cast<std::uint32_t>(draft.signedWidth);
                 } else if (payloadLen >= 2) {
-                    draft.width = be16(payload);
+                    draft.signedWidth = static_cast<std::int32_t>(be16(payload));
+                    draft.width = static_cast<std::uint32_t>(draft.signedWidth);
+                }
+                break;
+            case GDS_PATHTYPE:
+                if (payloadLen >= 2) {
+                    draft.pathType = be16(payload);
+                }
+                break;
+            case GDS_BGNEXTN:
+                if (payloadLen >= 4) {
+                    draft.bgnExt = be32(payload);
+                    draft.hasBgnExt = true;
+                }
+                break;
+            case GDS_ENDEXTN:
+                if (payloadLen >= 4) {
+                    draft.endExt = be32(payload);
+                    draft.hasEndExt = true;
                 }
                 break;
             case GDS_SNAME:

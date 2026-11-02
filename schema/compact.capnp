@@ -38,13 +38,16 @@ struct CompactPolygonRepeat {
   originY     @3 :List(Int64);
 }
 
-# Identical path geometry (width + centerline) at different origins.
+# Identical path geometry (width, ends, centerline) at different origins.
 struct CompactPathRepeat {
   width       @0 :UInt32;
   vertexCount @1 :UInt32;
   deltas      @2 :List(Int64);
   originX     @3 :List(Int64);
   originY     @4 :List(Int64);
+  bgnExt      @5 :Int32 = 0;
+  endExt      @6 :Int32 = 0;
+  round       @7 :Bool = false;
 }
 
 struct CompactLayerShapes {
@@ -75,6 +78,11 @@ struct CompactLayerShapes {
   # Zigzag-varint packed Int64 streams (polygon/path). When non-empty, preferred over list @3/@6.
   polygonDeltasPacked @17 :Data;
   pathDeltasPacked @18 :Data;
+
+  # Parallel to pathWidths. Empty means every path is flush (zero extension, square ends).
+  pathBgnExt @19 :List(Int32);
+  pathEndExt @20 :List(Int32);
+  pathRound @21 :List(Bool);
 }
 
 struct CompactBlock {

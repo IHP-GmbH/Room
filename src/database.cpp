@@ -6,6 +6,7 @@
 #include <kj/io.h>
 #include <kj/std/iostream.h>
 
+#include <algorithm>
 #include <fstream>
 #include <stdexcept>
 #include <vector>

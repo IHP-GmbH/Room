@@ -40,6 +40,22 @@ int main()
         block.shapes().emplace_back(polygon);
     }
 
+    room::Shape::PathData flush;
+    flush.layerId = 3;
+    flush.width = 100;
+    flush.points = {{0, 0}, {1000, 0}};
+    block.shapes().emplace_back(flush);
+
+    room::Shape::PathData extended;
+    extended.layerId = 3;
+    extended.width = 200;
+    extended.bgnExt = 40;
+    extended.endExt = 80;
+    extended.round = true;
+    extended.points = {{0, 500}, {2000, 500}, {2000, 1500}};
+    block.shapes().emplace_back(extended);
+    block.shapes().emplace_back(extended);
+
     capnp::MallocMessageBuilder message;
     room::writeCompactBlock(message.initRoot<room::schema::CompactBlock>(), block);
     const room::Block rebuilt = room::readCompactBlock(message.getRoot<room::schema::CompactBlock>());
@@ -47,6 +63,25 @@ int main()
     if (rebuilt.shapes().size() != block.shapes().size()) {
         std::cerr << "shape count mismatch: " << rebuilt.shapes().size() << " vs " << block.shapes().size() << '\n';
         return 1;
+    }
+    int roundPaths = 0;
+    for (const room::Shape &shape : rebuilt.shapes()) {
+        if (const room::Shape::PathData *path = shape.path()) {
+            if (path->round) {
+                ++roundPaths;
+                if (path->width != 200 || path->bgnExt != 40 || path->endExt != 80 || path->points.size() != 3) {
+                    std::cerr << "round path ends were not restored\n";
+                    return 2;
+                }
+            } else if (path->bgnExt != 0 || path->endExt != 0) {
+                std::cerr << "flush path gained an extension\n";
+                return 3;
+            }
+        }
+    }
+    if (roundPaths != 2) {
+        std::cerr << "expected 2 round paths, got " << roundPaths << '\n';
+        return 4;
     }
 
     std::cout << "compact repetition unit OK (" << rebuilt.shapes().size() << " shapes)\n";

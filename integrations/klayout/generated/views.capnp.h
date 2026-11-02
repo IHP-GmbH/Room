@@ -26,6 +26,10 @@ CAPNP_DECLARE_SCHEMA(fbe3a9f84da44d16);
 CAPNP_DECLARE_SCHEMA(e4c854f289f7c74f);
 CAPNP_DECLARE_SCHEMA(a1040bf135e46ea9);
 CAPNP_DECLARE_SCHEMA(c35c32d1b9ed791d);
+CAPNP_DECLARE_SCHEMA(dc965b4dc6b8ef36);
+CAPNP_DECLARE_SCHEMA(830baadcb80ba29b);
+CAPNP_DECLARE_SCHEMA(f94f7e273dc961d8);
+CAPNP_DECLARE_SCHEMA(ff1e8de90110e874);
 CAPNP_DECLARE_SCHEMA(8aadf8ce124f62f4);
 
 }  // namespace schemas
@@ -109,6 +113,66 @@ struct OpaqueViewData {
   };
 };
 
+struct EmPort {
+  EmPort() = delete;
+
+  class Reader;
+  class Builder;
+  class Pipeline;
+
+  struct _capnpPrivate {
+    CAPNP_DECLARE_STRUCT_HEADER(dc965b4dc6b8ef36, 1, 1)
+    #if !CAPNP_LITE
+    static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
+    #endif  // !CAPNP_LITE
+  };
+};
+
+struct EmTopologySnapshot {
+  EmTopologySnapshot() = delete;
+
+  class Reader;
+  class Builder;
+  class Pipeline;
+
+  struct _capnpPrivate {
+    CAPNP_DECLARE_STRUCT_HEADER(830baadcb80ba29b, 0, 3)
+    #if !CAPNP_LITE
+    static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
+    #endif  // !CAPNP_LITE
+  };
+};
+
+struct EmSetupSnapshot {
+  EmSetupSnapshot() = delete;
+
+  class Reader;
+  class Builder;
+  class Pipeline;
+
+  struct _capnpPrivate {
+    CAPNP_DECLARE_STRUCT_HEADER(f94f7e273dc961d8, 0, 6)
+    #if !CAPNP_LITE
+    static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
+    #endif  // !CAPNP_LITE
+  };
+};
+
+struct EmModelViewData {
+  EmModelViewData() = delete;
+
+  class Reader;
+  class Builder;
+  class Pipeline;
+
+  struct _capnpPrivate {
+    CAPNP_DECLARE_STRUCT_HEADER(ff1e8de90110e874, 1, 9)
+    #if !CAPNP_LITE
+    static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
+    #endif  // !CAPNP_LITE
+  };
+};
+
 struct ViewPayload {
   ViewPayload() = delete;
 
@@ -121,6 +185,7 @@ struct ViewPayload {
     SYMBOL,
     ABSTRACT,
     OPAQUE,
+    EM_MODEL,
   };
 
   struct _capnpPrivate {
@@ -636,6 +701,492 @@ private:
 };
 #endif  // !CAPNP_LITE
 
+class EmPort::Reader {
+public:
+  typedef EmPort Reads;
+
+  Reader() = default;
+  inline explicit Reader(::capnp::_::StructReader base): _reader(base) {}
+
+  inline ::capnp::MessageSize totalSize() const {
+    return _reader.totalSize().asPublic();
+  }
+
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const {
+    return ::capnp::_::structString(_reader, *_capnpPrivate::brand());
+  }
+#endif  // !CAPNP_LITE
+
+  inline bool hasName() const;
+  inline  ::capnp::Text::Reader getName() const;
+
+  inline  ::uint16_t getIndex() const;
+
+private:
+  ::capnp::_::StructReader _reader;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::List;
+  friend class ::capnp::MessageBuilder;
+  friend class ::capnp::Orphanage;
+};
+
+class EmPort::Builder {
+public:
+  typedef EmPort Builds;
+
+  Builder() = delete;  // Deleted to discourage incorrect usage.
+                       // You can explicitly initialize to nullptr instead.
+  inline Builder(decltype(nullptr)) {}
+  inline explicit Builder(::capnp::_::StructBuilder base): _builder(base) {}
+  inline operator Reader() const { return Reader(_builder.asReader()); }
+  inline Reader asReader() const { return *this; }
+
+  inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const { return asReader().toString(); }
+#endif  // !CAPNP_LITE
+
+  inline bool hasName();
+  inline  ::capnp::Text::Builder getName();
+  inline void setName( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initName(unsigned int size);
+  inline void adoptName(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownName();
+
+  inline  ::uint16_t getIndex();
+  inline void setIndex( ::uint16_t value);
+
+private:
+  ::capnp::_::StructBuilder _builder;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  friend class ::capnp::Orphanage;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+};
+
+#if !CAPNP_LITE
+class EmPort::Pipeline {
+public:
+  typedef EmPort Pipelines;
+
+  inline Pipeline(decltype(nullptr)): _typeless(nullptr) {}
+  inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
+      : _typeless(kj::mv(typeless)) {}
+
+private:
+  ::capnp::AnyPointer::Pipeline _typeless;
+  friend class ::capnp::PipelineHook;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+};
+#endif  // !CAPNP_LITE
+
+class EmTopologySnapshot::Reader {
+public:
+  typedef EmTopologySnapshot Reads;
+
+  Reader() = default;
+  inline explicit Reader(::capnp::_::StructReader base): _reader(base) {}
+
+  inline ::capnp::MessageSize totalSize() const {
+    return _reader.totalSize().asPublic();
+  }
+
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const {
+    return ::capnp::_::structString(_reader, *_capnpPrivate::brand());
+  }
+#endif  // !CAPNP_LITE
+
+  inline bool hasLayoutPath() const;
+  inline  ::capnp::Text::Reader getLayoutPath() const;
+
+  inline bool hasLayoutHash() const;
+  inline  ::capnp::Text::Reader getLayoutHash() const;
+
+  inline bool hasTopCell() const;
+  inline  ::capnp::Text::Reader getTopCell() const;
+
+private:
+  ::capnp::_::StructReader _reader;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::List;
+  friend class ::capnp::MessageBuilder;
+  friend class ::capnp::Orphanage;
+};
+
+class EmTopologySnapshot::Builder {
+public:
+  typedef EmTopologySnapshot Builds;
+
+  Builder() = delete;  // Deleted to discourage incorrect usage.
+                       // You can explicitly initialize to nullptr instead.
+  inline Builder(decltype(nullptr)) {}
+  inline explicit Builder(::capnp::_::StructBuilder base): _builder(base) {}
+  inline operator Reader() const { return Reader(_builder.asReader()); }
+  inline Reader asReader() const { return *this; }
+
+  inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const { return asReader().toString(); }
+#endif  // !CAPNP_LITE
+
+  inline bool hasLayoutPath();
+  inline  ::capnp::Text::Builder getLayoutPath();
+  inline void setLayoutPath( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initLayoutPath(unsigned int size);
+  inline void adoptLayoutPath(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownLayoutPath();
+
+  inline bool hasLayoutHash();
+  inline  ::capnp::Text::Builder getLayoutHash();
+  inline void setLayoutHash( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initLayoutHash(unsigned int size);
+  inline void adoptLayoutHash(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownLayoutHash();
+
+  inline bool hasTopCell();
+  inline  ::capnp::Text::Builder getTopCell();
+  inline void setTopCell( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initTopCell(unsigned int size);
+  inline void adoptTopCell(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownTopCell();
+
+private:
+  ::capnp::_::StructBuilder _builder;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  friend class ::capnp::Orphanage;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+};
+
+#if !CAPNP_LITE
+class EmTopologySnapshot::Pipeline {
+public:
+  typedef EmTopologySnapshot Pipelines;
+
+  inline Pipeline(decltype(nullptr)): _typeless(nullptr) {}
+  inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
+      : _typeless(kj::mv(typeless)) {}
+
+private:
+  ::capnp::AnyPointer::Pipeline _typeless;
+  friend class ::capnp::PipelineHook;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+};
+#endif  // !CAPNP_LITE
+
+class EmSetupSnapshot::Reader {
+public:
+  typedef EmSetupSnapshot Reads;
+
+  Reader() = default;
+  inline explicit Reader(::capnp::_::StructReader base): _reader(base) {}
+
+  inline ::capnp::MessageSize totalSize() const {
+    return _reader.totalSize().asPublic();
+  }
+
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const {
+    return ::capnp::_::structString(_reader, *_capnpPrivate::brand());
+  }
+#endif  // !CAPNP_LITE
+
+  inline bool hasVariant() const;
+  inline  ::capnp::Text::Reader getVariant() const;
+
+  inline bool hasModelPath() const;
+  inline  ::capnp::Text::Reader getModelPath() const;
+
+  inline bool hasModelHash() const;
+  inline  ::capnp::Text::Reader getModelHash() const;
+
+  inline bool hasSubstratePath() const;
+  inline  ::capnp::Text::Reader getSubstratePath() const;
+
+  inline bool hasSubstrateHash() const;
+  inline  ::capnp::Text::Reader getSubstrateHash() const;
+
+  inline bool hasTool() const;
+  inline  ::capnp::Text::Reader getTool() const;
+
+private:
+  ::capnp::_::StructReader _reader;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::List;
+  friend class ::capnp::MessageBuilder;
+  friend class ::capnp::Orphanage;
+};
+
+class EmSetupSnapshot::Builder {
+public:
+  typedef EmSetupSnapshot Builds;
+
+  Builder() = delete;  // Deleted to discourage incorrect usage.
+                       // You can explicitly initialize to nullptr instead.
+  inline Builder(decltype(nullptr)) {}
+  inline explicit Builder(::capnp::_::StructBuilder base): _builder(base) {}
+  inline operator Reader() const { return Reader(_builder.asReader()); }
+  inline Reader asReader() const { return *this; }
+
+  inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const { return asReader().toString(); }
+#endif  // !CAPNP_LITE
+
+  inline bool hasVariant();
+  inline  ::capnp::Text::Builder getVariant();
+  inline void setVariant( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initVariant(unsigned int size);
+  inline void adoptVariant(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownVariant();
+
+  inline bool hasModelPath();
+  inline  ::capnp::Text::Builder getModelPath();
+  inline void setModelPath( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initModelPath(unsigned int size);
+  inline void adoptModelPath(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownModelPath();
+
+  inline bool hasModelHash();
+  inline  ::capnp::Text::Builder getModelHash();
+  inline void setModelHash( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initModelHash(unsigned int size);
+  inline void adoptModelHash(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownModelHash();
+
+  inline bool hasSubstratePath();
+  inline  ::capnp::Text::Builder getSubstratePath();
+  inline void setSubstratePath( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initSubstratePath(unsigned int size);
+  inline void adoptSubstratePath(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownSubstratePath();
+
+  inline bool hasSubstrateHash();
+  inline  ::capnp::Text::Builder getSubstrateHash();
+  inline void setSubstrateHash( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initSubstrateHash(unsigned int size);
+  inline void adoptSubstrateHash(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownSubstrateHash();
+
+  inline bool hasTool();
+  inline  ::capnp::Text::Builder getTool();
+  inline void setTool( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initTool(unsigned int size);
+  inline void adoptTool(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownTool();
+
+private:
+  ::capnp::_::StructBuilder _builder;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  friend class ::capnp::Orphanage;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+};
+
+#if !CAPNP_LITE
+class EmSetupSnapshot::Pipeline {
+public:
+  typedef EmSetupSnapshot Pipelines;
+
+  inline Pipeline(decltype(nullptr)): _typeless(nullptr) {}
+  inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
+      : _typeless(kj::mv(typeless)) {}
+
+private:
+  ::capnp::AnyPointer::Pipeline _typeless;
+  friend class ::capnp::PipelineHook;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+};
+#endif  // !CAPNP_LITE
+
+class EmModelViewData::Reader {
+public:
+  typedef EmModelViewData Reads;
+
+  Reader() = default;
+  inline explicit Reader(::capnp::_::StructReader base): _reader(base) {}
+
+  inline ::capnp::MessageSize totalSize() const {
+    return _reader.totalSize().asPublic();
+  }
+
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const {
+    return ::capnp::_::structString(_reader, *_capnpPrivate::brand());
+  }
+#endif  // !CAPNP_LITE
+
+  inline bool hasDefaultVariant() const;
+  inline  ::capnp::Text::Reader getDefaultVariant() const;
+
+  inline bool hasSnpPath() const;
+  inline  ::capnp::Text::Reader getSnpPath() const;
+
+  inline bool hasPorts() const;
+  inline  ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>::Reader getPorts() const;
+
+  inline bool hasTool() const;
+  inline  ::capnp::Text::Reader getTool() const;
+
+  inline bool hasEmstudioPath() const;
+  inline  ::capnp::Text::Reader getEmstudioPath() const;
+
+  inline double getZ0() const;
+
+  inline bool hasTopology() const;
+  inline  ::room::schema::EmTopologySnapshot::Reader getTopology() const;
+
+  inline bool hasSetup() const;
+  inline  ::room::schema::EmSetupSnapshot::Reader getSetup() const;
+
+  inline bool hasSnpHash() const;
+  inline  ::capnp::Text::Reader getSnpHash() const;
+
+  inline bool hasPublishedAt() const;
+  inline  ::capnp::Text::Reader getPublishedAt() const;
+
+private:
+  ::capnp::_::StructReader _reader;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::List;
+  friend class ::capnp::MessageBuilder;
+  friend class ::capnp::Orphanage;
+};
+
+class EmModelViewData::Builder {
+public:
+  typedef EmModelViewData Builds;
+
+  Builder() = delete;  // Deleted to discourage incorrect usage.
+                       // You can explicitly initialize to nullptr instead.
+  inline Builder(decltype(nullptr)) {}
+  inline explicit Builder(::capnp::_::StructBuilder base): _builder(base) {}
+  inline operator Reader() const { return Reader(_builder.asReader()); }
+  inline Reader asReader() const { return *this; }
+
+  inline ::capnp::MessageSize totalSize() const { return asReader().totalSize(); }
+#if !CAPNP_LITE
+  inline ::kj::StringTree toString() const { return asReader().toString(); }
+#endif  // !CAPNP_LITE
+
+  inline bool hasDefaultVariant();
+  inline  ::capnp::Text::Builder getDefaultVariant();
+  inline void setDefaultVariant( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initDefaultVariant(unsigned int size);
+  inline void adoptDefaultVariant(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownDefaultVariant();
+
+  inline bool hasSnpPath();
+  inline  ::capnp::Text::Builder getSnpPath();
+  inline void setSnpPath( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initSnpPath(unsigned int size);
+  inline void adoptSnpPath(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownSnpPath();
+
+  inline bool hasPorts();
+  inline  ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>::Builder getPorts();
+  inline void setPorts( ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>::Reader value);
+  inline  ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>::Builder initPorts(unsigned int size);
+  inline void adoptPorts(::capnp::Orphan< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>> disownPorts();
+
+  inline bool hasTool();
+  inline  ::capnp::Text::Builder getTool();
+  inline void setTool( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initTool(unsigned int size);
+  inline void adoptTool(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownTool();
+
+  inline bool hasEmstudioPath();
+  inline  ::capnp::Text::Builder getEmstudioPath();
+  inline void setEmstudioPath( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initEmstudioPath(unsigned int size);
+  inline void adoptEmstudioPath(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownEmstudioPath();
+
+  inline double getZ0();
+  inline void setZ0(double value);
+
+  inline bool hasTopology();
+  inline  ::room::schema::EmTopologySnapshot::Builder getTopology();
+  inline void setTopology( ::room::schema::EmTopologySnapshot::Reader value);
+  inline  ::room::schema::EmTopologySnapshot::Builder initTopology();
+  inline void adoptTopology(::capnp::Orphan< ::room::schema::EmTopologySnapshot>&& value);
+  inline ::capnp::Orphan< ::room::schema::EmTopologySnapshot> disownTopology();
+
+  inline bool hasSetup();
+  inline  ::room::schema::EmSetupSnapshot::Builder getSetup();
+  inline void setSetup( ::room::schema::EmSetupSnapshot::Reader value);
+  inline  ::room::schema::EmSetupSnapshot::Builder initSetup();
+  inline void adoptSetup(::capnp::Orphan< ::room::schema::EmSetupSnapshot>&& value);
+  inline ::capnp::Orphan< ::room::schema::EmSetupSnapshot> disownSetup();
+
+  inline bool hasSnpHash();
+  inline  ::capnp::Text::Builder getSnpHash();
+  inline void setSnpHash( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initSnpHash(unsigned int size);
+  inline void adoptSnpHash(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownSnpHash();
+
+  inline bool hasPublishedAt();
+  inline  ::capnp::Text::Builder getPublishedAt();
+  inline void setPublishedAt( ::capnp::Text::Reader value);
+  inline  ::capnp::Text::Builder initPublishedAt(unsigned int size);
+  inline void adoptPublishedAt(::capnp::Orphan< ::capnp::Text>&& value);
+  inline ::capnp::Orphan< ::capnp::Text> disownPublishedAt();
+
+private:
+  ::capnp::_::StructBuilder _builder;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+  friend class ::capnp::Orphanage;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::_::PointerHelpers;
+};
+
+#if !CAPNP_LITE
+class EmModelViewData::Pipeline {
+public:
+  typedef EmModelViewData Pipelines;
+
+  inline Pipeline(decltype(nullptr)): _typeless(nullptr) {}
+  inline explicit Pipeline(::capnp::AnyPointer::Pipeline&& typeless)
+      : _typeless(kj::mv(typeless)) {}
+
+  inline  ::room::schema::EmTopologySnapshot::Pipeline getTopology();
+  inline  ::room::schema::EmSetupSnapshot::Pipeline getSetup();
+private:
+  ::capnp::AnyPointer::Pipeline _typeless;
+  friend class ::capnp::PipelineHook;
+  template <typename, ::capnp::Kind>
+  friend struct ::capnp::ToDynamic_;
+};
+#endif  // !CAPNP_LITE
+
 class ViewPayload::Reader {
 public:
   typedef ViewPayload Reads;
@@ -673,6 +1224,10 @@ public:
   inline bool isOpaque() const;
   inline bool hasOpaque() const;
   inline  ::room::schema::OpaqueViewData::Reader getOpaque() const;
+
+  inline bool isEmModel() const;
+  inline bool hasEmModel() const;
+  inline  ::room::schema::EmModelViewData::Reader getEmModel() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -742,6 +1297,14 @@ public:
   inline  ::room::schema::OpaqueViewData::Builder initOpaque();
   inline void adoptOpaque(::capnp::Orphan< ::room::schema::OpaqueViewData>&& value);
   inline ::capnp::Orphan< ::room::schema::OpaqueViewData> disownOpaque();
+
+  inline bool isEmModel();
+  inline bool hasEmModel();
+  inline  ::room::schema::EmModelViewData::Builder getEmModel();
+  inline void setEmModel( ::room::schema::EmModelViewData::Reader value);
+  inline  ::room::schema::EmModelViewData::Builder initEmModel();
+  inline void adoptEmModel(::capnp::Orphan< ::room::schema::EmModelViewData>&& value);
+  inline ::capnp::Orphan< ::room::schema::EmModelViewData> disownEmModel();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -1287,6 +1850,690 @@ inline ::capnp::Orphan< ::capnp::Data> OpaqueViewData::Builder::disownData() {
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
+inline bool EmPort::Reader::hasName() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmPort::Builder::hasName() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmPort::Reader::getName() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmPort::Builder::getName() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void EmPort::Builder::setName( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmPort::Builder::initName(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), size);
+}
+inline void EmPort::Builder::adoptName(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmPort::Builder::disownName() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+
+inline  ::uint16_t EmPort::Reader::getIndex() const {
+  return _reader.getDataField< ::uint16_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint16_t EmPort::Builder::getIndex() {
+  return _builder.getDataField< ::uint16_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+inline void EmPort::Builder::setIndex( ::uint16_t value) {
+  _builder.setDataField< ::uint16_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool EmTopologySnapshot::Reader::hasLayoutPath() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmTopologySnapshot::Builder::hasLayoutPath() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmTopologySnapshot::Reader::getLayoutPath() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmTopologySnapshot::Builder::getLayoutPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void EmTopologySnapshot::Builder::setLayoutPath( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmTopologySnapshot::Builder::initLayoutPath(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), size);
+}
+inline void EmTopologySnapshot::Builder::adoptLayoutPath(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmTopologySnapshot::Builder::disownLayoutPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+
+inline bool EmTopologySnapshot::Reader::hasLayoutHash() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmTopologySnapshot::Builder::hasLayoutHash() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmTopologySnapshot::Reader::getLayoutHash() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmTopologySnapshot::Builder::getLayoutHash() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+inline void EmTopologySnapshot::Builder::setLayoutHash( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmTopologySnapshot::Builder::initLayoutHash(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), size);
+}
+inline void EmTopologySnapshot::Builder::adoptLayoutHash(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmTopologySnapshot::Builder::disownLayoutHash() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+
+inline bool EmTopologySnapshot::Reader::hasTopCell() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmTopologySnapshot::Builder::hasTopCell() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmTopologySnapshot::Reader::getTopCell() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmTopologySnapshot::Builder::getTopCell() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+inline void EmTopologySnapshot::Builder::setTopCell( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmTopologySnapshot::Builder::initTopCell(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), size);
+}
+inline void EmTopologySnapshot::Builder::adoptTopCell(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmTopologySnapshot::Builder::disownTopCell() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+
+inline bool EmSetupSnapshot::Reader::hasVariant() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmSetupSnapshot::Builder::hasVariant() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmSetupSnapshot::Reader::getVariant() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::getVariant() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void EmSetupSnapshot::Builder::setVariant( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::initVariant(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), size);
+}
+inline void EmSetupSnapshot::Builder::adoptVariant(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmSetupSnapshot::Builder::disownVariant() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+
+inline bool EmSetupSnapshot::Reader::hasModelPath() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmSetupSnapshot::Builder::hasModelPath() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmSetupSnapshot::Reader::getModelPath() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::getModelPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+inline void EmSetupSnapshot::Builder::setModelPath( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::initModelPath(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), size);
+}
+inline void EmSetupSnapshot::Builder::adoptModelPath(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmSetupSnapshot::Builder::disownModelPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+
+inline bool EmSetupSnapshot::Reader::hasModelHash() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmSetupSnapshot::Builder::hasModelHash() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmSetupSnapshot::Reader::getModelHash() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::getModelHash() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+inline void EmSetupSnapshot::Builder::setModelHash( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::initModelHash(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), size);
+}
+inline void EmSetupSnapshot::Builder::adoptModelHash(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmSetupSnapshot::Builder::disownModelHash() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+
+inline bool EmSetupSnapshot::Reader::hasSubstratePath() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmSetupSnapshot::Builder::hasSubstratePath() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmSetupSnapshot::Reader::getSubstratePath() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::getSubstratePath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline void EmSetupSnapshot::Builder::setSubstratePath( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::initSubstratePath(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), size);
+}
+inline void EmSetupSnapshot::Builder::adoptSubstratePath(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmSetupSnapshot::Builder::disownSubstratePath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+
+inline bool EmSetupSnapshot::Reader::hasSubstrateHash() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmSetupSnapshot::Builder::hasSubstrateHash() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmSetupSnapshot::Reader::getSubstrateHash() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::getSubstrateHash() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline void EmSetupSnapshot::Builder::setSubstrateHash( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::initSubstrateHash(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), size);
+}
+inline void EmSetupSnapshot::Builder::adoptSubstrateHash(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmSetupSnapshot::Builder::disownSubstrateHash() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+
+inline bool EmSetupSnapshot::Reader::hasTool() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmSetupSnapshot::Builder::hasTool() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmSetupSnapshot::Reader::getTool() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::getTool() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+inline void EmSetupSnapshot::Builder::setTool( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmSetupSnapshot::Builder::initTool(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS), size);
+}
+inline void EmSetupSnapshot::Builder::adoptTool(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmSetupSnapshot::Builder::disownTool() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+
+inline bool EmModelViewData::Reader::hasDefaultVariant() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasDefaultVariant() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmModelViewData::Reader::getDefaultVariant() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::getDefaultVariant() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::setDefaultVariant( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::initDefaultVariant(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), size);
+}
+inline void EmModelViewData::Builder::adoptDefaultVariant(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmModelViewData::Builder::disownDefaultVariant() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+
+inline bool EmModelViewData::Reader::hasSnpPath() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasSnpPath() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmModelViewData::Reader::getSnpPath() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::getSnpPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::setSnpPath( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::initSnpPath(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), size);
+}
+inline void EmModelViewData::Builder::adoptSnpPath(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmModelViewData::Builder::disownSnpPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+
+inline bool EmModelViewData::Reader::hasPorts() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasPorts() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>::Reader EmModelViewData::Reader::getPorts() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>>::get(_reader.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+inline  ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>::Builder EmModelViewData::Builder::getPorts() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>>::get(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::setPorts( ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>>::set(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>::Builder EmModelViewData::Builder::initPorts(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>>::init(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), size);
+}
+inline void EmModelViewData::Builder::adoptPorts(
+    ::capnp::Orphan< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>>::adopt(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>> EmModelViewData::Builder::disownPorts() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::EmPort,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+
+inline bool EmModelViewData::Reader::hasTool() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasTool() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmModelViewData::Reader::getTool() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::getTool() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::setTool( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::initTool(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), size);
+}
+inline void EmModelViewData::Builder::adoptTool(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmModelViewData::Builder::disownTool() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+
+inline bool EmModelViewData::Reader::hasEmstudioPath() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasEmstudioPath() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmModelViewData::Reader::getEmstudioPath() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::getEmstudioPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::setEmstudioPath( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::initEmstudioPath(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), size);
+}
+inline void EmModelViewData::Builder::adoptEmstudioPath(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmModelViewData::Builder::disownEmstudioPath() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+
+inline double EmModelViewData::Reader::getZ0() const {
+  return _reader.getDataField<double>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+
+inline double EmModelViewData::Builder::getZ0() {
+  return _builder.getDataField<double>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+inline void EmModelViewData::Builder::setZ0(double value) {
+  _builder.setDataField<double>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool EmModelViewData::Reader::hasTopology() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasTopology() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
+}
+inline  ::room::schema::EmTopologySnapshot::Reader EmModelViewData::Reader::getTopology() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::EmTopologySnapshot>::get(_reader.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+inline  ::room::schema::EmTopologySnapshot::Builder EmModelViewData::Builder::getTopology() {
+  return ::capnp::_::PointerHelpers< ::room::schema::EmTopologySnapshot>::get(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+#if !CAPNP_LITE
+inline  ::room::schema::EmTopologySnapshot::Pipeline EmModelViewData::Pipeline::getTopology() {
+  return  ::room::schema::EmTopologySnapshot::Pipeline(_typeless.getPointerField(5));
+}
+#endif  // !CAPNP_LITE
+inline void EmModelViewData::Builder::setTopology( ::room::schema::EmTopologySnapshot::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::EmTopologySnapshot>::set(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS), value);
+}
+inline  ::room::schema::EmTopologySnapshot::Builder EmModelViewData::Builder::initTopology() {
+  return ::capnp::_::PointerHelpers< ::room::schema::EmTopologySnapshot>::init(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::adoptTopology(
+    ::capnp::Orphan< ::room::schema::EmTopologySnapshot>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::EmTopologySnapshot>::adopt(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::room::schema::EmTopologySnapshot> EmModelViewData::Builder::disownTopology() {
+  return ::capnp::_::PointerHelpers< ::room::schema::EmTopologySnapshot>::disown(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+
+inline bool EmModelViewData::Reader::hasSetup() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasSetup() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS).isNull();
+}
+inline  ::room::schema::EmSetupSnapshot::Reader EmModelViewData::Reader::getSetup() const {
+  return ::capnp::_::PointerHelpers< ::room::schema::EmSetupSnapshot>::get(_reader.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS));
+}
+inline  ::room::schema::EmSetupSnapshot::Builder EmModelViewData::Builder::getSetup() {
+  return ::capnp::_::PointerHelpers< ::room::schema::EmSetupSnapshot>::get(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS));
+}
+#if !CAPNP_LITE
+inline  ::room::schema::EmSetupSnapshot::Pipeline EmModelViewData::Pipeline::getSetup() {
+  return  ::room::schema::EmSetupSnapshot::Pipeline(_typeless.getPointerField(6));
+}
+#endif  // !CAPNP_LITE
+inline void EmModelViewData::Builder::setSetup( ::room::schema::EmSetupSnapshot::Reader value) {
+  ::capnp::_::PointerHelpers< ::room::schema::EmSetupSnapshot>::set(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS), value);
+}
+inline  ::room::schema::EmSetupSnapshot::Builder EmModelViewData::Builder::initSetup() {
+  return ::capnp::_::PointerHelpers< ::room::schema::EmSetupSnapshot>::init(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::adoptSetup(
+    ::capnp::Orphan< ::room::schema::EmSetupSnapshot>&& value) {
+  ::capnp::_::PointerHelpers< ::room::schema::EmSetupSnapshot>::adopt(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::room::schema::EmSetupSnapshot> EmModelViewData::Builder::disownSetup() {
+  return ::capnp::_::PointerHelpers< ::room::schema::EmSetupSnapshot>::disown(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS));
+}
+
+inline bool EmModelViewData::Reader::hasSnpHash() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<7>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasSnpHash() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<7>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmModelViewData::Reader::getSnpHash() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<7>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::getSnpHash() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<7>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::setSnpHash( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<7>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::initSnpHash(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<7>() * ::capnp::POINTERS), size);
+}
+inline void EmModelViewData::Builder::adoptSnpHash(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<7>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmModelViewData::Builder::disownSnpHash() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<7>() * ::capnp::POINTERS));
+}
+
+inline bool EmModelViewData::Reader::hasPublishedAt() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<8>() * ::capnp::POINTERS).isNull();
+}
+inline bool EmModelViewData::Builder::hasPublishedAt() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<8>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Text::Reader EmModelViewData::Reader::getPublishedAt() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_reader.getPointerField(
+      ::capnp::bounded<8>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::getPublishedAt() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::get(_builder.getPointerField(
+      ::capnp::bounded<8>() * ::capnp::POINTERS));
+}
+inline void EmModelViewData::Builder::setPublishedAt( ::capnp::Text::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::set(_builder.getPointerField(
+      ::capnp::bounded<8>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Text::Builder EmModelViewData::Builder::initPublishedAt(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::init(_builder.getPointerField(
+      ::capnp::bounded<8>() * ::capnp::POINTERS), size);
+}
+inline void EmModelViewData::Builder::adoptPublishedAt(
+    ::capnp::Orphan< ::capnp::Text>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Text>::adopt(_builder.getPointerField(
+      ::capnp::bounded<8>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Text> EmModelViewData::Builder::disownPublishedAt() {
+  return ::capnp::_::PointerHelpers< ::capnp::Text>::disown(_builder.getPointerField(
+      ::capnp::bounded<8>() * ::capnp::POINTERS));
+}
+
 inline  ::room::schema::ViewPayload::Which ViewPayload::Reader::which() const {
   return _reader.getDataField<Which>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS);
@@ -1563,6 +2810,60 @@ inline ::capnp::Orphan< ::room::schema::OpaqueViewData> ViewPayload::Builder::di
   KJ_IREQUIRE((which() == ViewPayload::OPAQUE),
               "Must check which() before get()ing a union member.");
   return ::capnp::_::PointerHelpers< ::room::schema::OpaqueViewData>::disown(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+
+inline bool ViewPayload::Reader::isEmModel() const {
+  return which() == ViewPayload::EM_MODEL;
+}
+inline bool ViewPayload::Builder::isEmModel() {
+  return which() == ViewPayload::EM_MODEL;
+}
+inline bool ViewPayload::Reader::hasEmModel() const {
+  if (which() != ViewPayload::EM_MODEL) return false;
+  return !_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline bool ViewPayload::Builder::hasEmModel() {
+  if (which() != ViewPayload::EM_MODEL) return false;
+  return !_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS).isNull();
+}
+inline  ::room::schema::EmModelViewData::Reader ViewPayload::Reader::getEmModel() const {
+  KJ_IREQUIRE((which() == ViewPayload::EM_MODEL),
+              "Must check which() before get()ing a union member.");
+  return ::capnp::_::PointerHelpers< ::room::schema::EmModelViewData>::get(_reader.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline  ::room::schema::EmModelViewData::Builder ViewPayload::Builder::getEmModel() {
+  KJ_IREQUIRE((which() == ViewPayload::EM_MODEL),
+              "Must check which() before get()ing a union member.");
+  return ::capnp::_::PointerHelpers< ::room::schema::EmModelViewData>::get(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void ViewPayload::Builder::setEmModel( ::room::schema::EmModelViewData::Reader value) {
+  _builder.setDataField<ViewPayload::Which>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::EM_MODEL);
+  ::capnp::_::PointerHelpers< ::room::schema::EmModelViewData>::set(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), value);
+}
+inline  ::room::schema::EmModelViewData::Builder ViewPayload::Builder::initEmModel() {
+  _builder.setDataField<ViewPayload::Which>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::EM_MODEL);
+  return ::capnp::_::PointerHelpers< ::room::schema::EmModelViewData>::init(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS));
+}
+inline void ViewPayload::Builder::adoptEmModel(
+    ::capnp::Orphan< ::room::schema::EmModelViewData>&& value) {
+  _builder.setDataField<ViewPayload::Which>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, ViewPayload::EM_MODEL);
+  ::capnp::_::PointerHelpers< ::room::schema::EmModelViewData>::adopt(_builder.getPointerField(
+      ::capnp::bounded<0>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::room::schema::EmModelViewData> ViewPayload::Builder::disownEmModel() {
+  KJ_IREQUIRE((which() == ViewPayload::EM_MODEL),
+              "Must check which() before get()ing a union member.");
+  return ::capnp::_::PointerHelpers< ::room::schema::EmModelViewData>::disown(_builder.getPointerField(
       ::capnp::bounded<0>() * ::capnp::POINTERS));
 }
 

@@ -40,6 +40,9 @@ constexpr std::uint16_t GDS_SNAME    = 0x1206;
 constexpr std::uint16_t GDS_STRANS   = 0x1A01;
 constexpr std::uint16_t GDS_MAG      = 0x1B05;
 constexpr std::uint16_t GDS_STRING   = 0x1906;
+constexpr std::uint16_t GDS_PATHTYPE = 0x2102;
+constexpr std::uint16_t GDS_BGNEXTN  = 0x3003;
+constexpr std::uint16_t GDS_ENDEXTN  = 0x3103;
 constexpr std::uint16_t GDS_PROPATTR = 0x2B02;
 constexpr std::uint16_t GDS_PROPVALUE_I2 = 0x2C02;
 constexpr std::uint16_t GDS_PROPVALUE_I4 = 0x2C03;
@@ -333,8 +336,28 @@ void writeShape(FILE *f, const std::vector<LayerSpec> &layers, const Shape &shap
             }
             writeEmptyRec(f, GDS_PATH);
             writeLayerDatatype(f, layers, path->layerId);
+            const std::int32_t width = static_cast<std::int32_t>(path->width);
+            const std::int32_t half = width / 2;
+            std::uint16_t pathType = 0;
+            bool writeExtensions = false;
+            if (path->round) {
+                pathType = 1;
+                writeExtensions = path->bgnExt != half || path->endExt != half;
+            } else if (path->bgnExt == half && path->endExt == half && half != 0) {
+                pathType = 2;
+            } else if (path->bgnExt != 0 || path->endExt != 0) {
+                pathType = 4;
+                writeExtensions = true;
+            }
+            if (pathType != 0) {
+                writeInt16(f, GDS_PATHTYPE, static_cast<std::int16_t>(pathType));
+            }
             if (path->width > 0) {
-                writeInt32(f, GDS_WIDTH, static_cast<std::int32_t>(path->width));
+                writeInt32(f, GDS_WIDTH, width);
+            }
+            if (writeExtensions) {
+                writeInt32(f, GDS_BGNEXTN, path->bgnExt);
+                writeInt32(f, GDS_ENDEXTN, path->endExt);
             }
             writeXY(f, path->points);
             writeGdsProperties(f, shape.properties());

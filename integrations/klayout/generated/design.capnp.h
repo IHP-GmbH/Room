@@ -91,7 +91,7 @@ struct PathGeom {
 
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(c1f9885b9bc9ae89, 2, 1)
+    CAPNP_DECLARE_STRUCT_HEADER(c1f9885b9bc9ae89, 3, 1)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -158,7 +158,7 @@ struct Instance {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(afeec16de4ecde8b, 0, 3)
+    CAPNP_DECLARE_STRUCT_HEADER(afeec16de4ecde8b, 3, 3)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -413,6 +413,12 @@ public:
 
   inline  ::room::schema::PathGeom::PathCap getCap() const;
 
+  inline  ::int32_t getBgnExt() const;
+
+  inline  ::int32_t getEndExt() const;
+
+  inline bool getRound() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -456,6 +462,15 @@ public:
 
   inline  ::room::schema::PathGeom::PathCap getCap();
   inline void setCap( ::room::schema::PathGeom::PathCap value);
+
+  inline  ::int32_t getBgnExt();
+  inline void setBgnExt( ::int32_t value);
+
+  inline  ::int32_t getEndExt();
+  inline void setEndExt( ::int32_t value);
+
+  inline bool getRound();
+  inline void setRound(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -860,6 +875,14 @@ public:
   inline bool hasProperties() const;
   inline  ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Reader getProperties() const;
 
+  inline  ::uint32_t getColumns() const;
+
+  inline  ::uint32_t getRows() const;
+
+  inline  ::int64_t getStepX() const;
+
+  inline  ::int64_t getStepY() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -908,6 +931,18 @@ public:
   inline  ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>::Builder initProperties(unsigned int size);
   inline void adoptProperties(::capnp::Orphan< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>&& value);
   inline ::capnp::Orphan< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>> disownProperties();
+
+  inline  ::uint32_t getColumns();
+  inline void setColumns( ::uint32_t value);
+
+  inline  ::uint32_t getRows();
+  inline void setRows( ::uint32_t value);
+
+  inline  ::int64_t getStepX();
+  inline void setStepX( ::int64_t value);
+
+  inline  ::int64_t getStepY();
+  inline void setStepY( ::int64_t value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -1418,6 +1453,48 @@ inline  ::room::schema::PathGeom::PathCap PathGeom::Builder::getCap() {
 inline void PathGeom::Builder::setCap( ::room::schema::PathGeom::PathCap value) {
   _builder.setDataField< ::room::schema::PathGeom::PathCap>(
       ::capnp::bounded<4>() * ::capnp::ELEMENTS, value, 1u);
+}
+
+inline  ::int32_t PathGeom::Reader::getBgnExt() const {
+  return _reader.getDataField< ::int32_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int32_t PathGeom::Builder::getBgnExt() {
+  return _builder.getDataField< ::int32_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+inline void PathGeom::Builder::setBgnExt( ::int32_t value) {
+  _builder.setDataField< ::int32_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int32_t PathGeom::Reader::getEndExt() const {
+  return _reader.getDataField< ::int32_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int32_t PathGeom::Builder::getEndExt() {
+  return _builder.getDataField< ::int32_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+inline void PathGeom::Builder::setEndExt( ::int32_t value) {
+  _builder.setDataField< ::int32_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool PathGeom::Reader::getRound() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<80>() * ::capnp::ELEMENTS);
+}
+
+inline bool PathGeom::Builder::getRound() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<80>() * ::capnp::ELEMENTS);
+}
+inline void PathGeom::Builder::setRound(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<80>() * ::capnp::ELEMENTS, value);
 }
 
 inline bool TextGeom::Reader::hasPosition() const {
@@ -2037,6 +2114,62 @@ inline void Instance::Builder::adoptProperties(
 inline ::capnp::Orphan< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>> Instance::Builder::disownProperties() {
   return ::capnp::_::PointerHelpers< ::capnp::List< ::room::schema::Property,  ::capnp::Kind::STRUCT>>::disown(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+
+inline  ::uint32_t Instance::Reader::getColumns() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t Instance::Builder::getColumns() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS);
+}
+inline void Instance::Builder::setColumns( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<0>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t Instance::Reader::getRows() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t Instance::Builder::getRows() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+inline void Instance::Builder::setRows( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t Instance::Reader::getStepX() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t Instance::Builder::getStepX() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+inline void Instance::Builder::setStepX( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t Instance::Reader::getStepY() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t Instance::Builder::getStepY() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+inline void Instance::Builder::setStepY( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
 }
 
 inline bool Term::Reader::hasName() const {

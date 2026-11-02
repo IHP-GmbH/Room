@@ -3,6 +3,7 @@
 
 #include "database.h"
 #include "layer_utils.h"
+#include "serialization.h"
 #include "types.h"
 
 #include "dbBox.h"
@@ -175,145 +176,155 @@ void Reader::do_read (db::Layout &layout)
     throw tl::Exception (tl::to_string (tr ("ROOM reader requires a file path")));
   }
 
-  room::Database database;
+  std::map<std::string, db::cell_index_type> cell_index_by_name;
+  std::map<std::string, std::vector<room::LayerSpec>> layers_by_cell;
+  LayerMapper layer_mapper (layout);
+  bool dbu_set = false;
+
+  auto layer_spec_by_id = [&layers_by_cell](const std::string &cell_name, std::uint32_t layerId) -> room::LayerSpec {
+    const auto it = layers_by_cell.find (cell_name);
+    if (it != layers_by_cell.end () && layerId < it->second.size ()) {
+      return it->second[layerId];
+    }
+    room::LayerSpec fallback;
+    fallback.layerNum = 0;
+    fallback.dataType = 0;
+    fallback.name = "unknown";
+    return fallback;
+  };
+
+  room::LayoutVisitHandlers handlers;
+  handlers.onFile = [&](const std::string &lib_name, const std::vector<room::Property> &lib_props) {
+    if (! lib_name.empty ()) {
+      layout.add_meta_info ("libname", db::MetaInfo (tl::to_string (tr ("Library name")), lib_name));
+    }
+    const db::properties_id_type lib_prop_id = properties_id_from_core (lib_props);
+    if (lib_prop_id != 0) {
+      layout.prop_id (lib_prop_id);
+    }
+  };
+  handlers.onCell = [&](const room::VisitedCell &cell) {
+    if (! dbu_set && cell.dbuPerMicron > 0.0) {
+      layout.dbu (1.0 / cell.dbuPerMicron);
+      dbu_set = true;
+    }
+    const db::cell_index_type index = layout.add_cell (cell.name.c_str ());
+    cell_index_by_name[cell.name] = index;
+    layers_by_cell[cell.name] = cell.layers;
+    apply_core_properties (layout.cell (index), cell.cellProperties, cell.contentProperties);
+  };
+  handlers.onShape = [&](const std::string &cell_name, room::Shape shape) {
+    const auto cell_it = cell_index_by_name.find (cell_name);
+    if (cell_it == cell_index_by_name.end ()) {
+      return;
+    }
+    db::Cell &target_cell = layout.cell (cell_it->second);
+    const db::properties_id_type prop_id = properties_id_from_core (shape.properties ());
+    switch (shape.type ()) {
+    case room::Shape::Type::Rect: {
+      if (const room::Shape::RectData *rect = shape.rect ()) {
+        const unsigned int li = layer_mapper.layer_index (layer_spec_by_id (cell_name, rect->layerId));
+        insert_shape (target_cell.shapes (li), make_box (rect->box), prop_id);
+      }
+      break;
+    }
+    case room::Shape::Type::Polygon: {
+      if (const room::Shape::PolygonData *polygon = shape.polygon ()) {
+        const unsigned int li = layer_mapper.layer_index (layer_spec_by_id (cell_name, polygon->layerId));
+        std::vector<db::Point> hull;
+        hull.reserve (polygon->points.size ());
+        for (const room::Point &point : polygon->points) {
+          hull.push_back (make_point (point));
+        }
+        if (! hull.empty ()) {
+          db::Polygon poly;
+          poly.assign_hull (hull.begin (), hull.end ());
+          insert_shape (target_cell.shapes (li), poly, prop_id);
+        }
+      }
+      break;
+    }
+    case room::Shape::Type::Path: {
+      if (const room::Shape::PathData *path = shape.path ()) {
+        if (path->points.empty ()) {
+          break;
+        }
+        const unsigned int li = layer_mapper.layer_index (layer_spec_by_id (cell_name, path->layerId));
+        std::vector<db::Point> path_points;
+        path_points.reserve (path->points.size ());
+        for (const room::Point &point : path->points) {
+          path_points.push_back (make_point (point));
+        }
+        db::Path db_path;
+        db_path.assign (path_points.begin (), path_points.end ());
+        if (path->width > 0) {
+          db_path.width (cast_coord (path->width));
+        }
+        db_path.extensions (cast_coord (path->bgnExt), cast_coord (path->endExt));
+        if (path->round) {
+          db_path.round (true);
+        }
+        insert_shape (target_cell.shapes (li), db_path, prop_id);
+      }
+      break;
+    }
+    case room::Shape::Type::Text: {
+      if (const room::Shape::TextData *text = shape.text ()) {
+        const unsigned int li = layer_mapper.layer_index (layer_spec_by_id (cell_name, text->layerId));
+        const db::Point position = make_point (text->position);
+        db::Text label (text->text, db::Trans (db::Vector (position)));
+        if (text->height > 0) {
+          label.size (cast_coord (text->height));
+        }
+        insert_shape (target_cell.shapes (li), label, prop_id);
+      }
+      break;
+    }
+    case room::Shape::Type::Arc:
+      break;
+    }
+  };
+  handlers.onInstance = [&](const std::string &cell_name, room::VisitedInstance instance) {
+    const auto parent_it = cell_index_by_name.find (cell_name);
+    const auto child_it = cell_index_by_name.find (instance.cellName);
+    if (parent_it == cell_index_by_name.end ()) {
+      return;
+    }
+    if (child_it == cell_index_by_name.end ()) {
+      common_reader_warn (tl::to_string (tr ("Missing child cell: ")) + instance.cellName);
+      return;
+    }
+
+    const db::ICplxTrans trans = make_transform (instance.transform);
+    db::CellInstArray arr (db::CellInst (child_it->second), trans);
+    if (instance.columns > 1 || instance.rows > 1) {
+      const unsigned long columns = instance.columns == 0 ? 1 : instance.columns;
+      const unsigned long rows = instance.rows == 0 ? 1 : instance.rows;
+      arr = db::CellInstArray (
+        db::CellInst (child_it->second),
+        trans,
+        db::Vector (cast_coord (instance.stepX), 0),
+        db::Vector (0, cast_coord (instance.stepY)),
+        columns,
+        rows);
+    }
+    db::Cell &target_cell = layout.cell (parent_it->second);
+    const db::properties_id_type prop_id = properties_id_from_core (instance.properties);
+    if (prop_id == 0) {
+      target_cell.insert (arr);
+    } else {
+      target_cell.insert (db::object_with_properties<db::CellInstArray> (arr, prop_id));
+    }
+  };
+
   try {
-    database = room::Database::loadFromFile (path);
+    room::visitLayoutFile (path, handlers);
   } catch (const std::exception &ex) {
     throw tl::Exception (tl::to_string (tr ("Failed to load ROOM file: ")) + ex.what ());
   }
 
-  const room::Lib &lib = database.lib ();
-  if (lib.cells ().empty ()) {
-    return;
-  }
-
-  double dbu_per_micron = 1000.0;
-  for (const room::Cell &cell : lib.cells ()) {
-    if (const room::CellContent *content = cell.findContent (room::ViewType::Layout)) {
-      if (content->dbuPerMicron () > 0.0) {
-        dbu_per_micron = content->dbuPerMicron ();
-        break;
-      }
-    }
-  }
-  layout.dbu (1.0 / dbu_per_micron);
-
-  if (! lib.name ().empty ()) {
-    layout.add_meta_info ("libname", db::MetaInfo (tl::to_string (tr ("Library name")), lib.name ()));
-  }
-
-  const db::properties_id_type lib_prop_id = properties_id_from_core (lib.properties ());
-  if (lib_prop_id != 0) {
-    layout.prop_id (lib_prop_id);
-  }
-
-  std::map<std::string, db::cell_index_type> cell_index_by_name;
-  for (const room::Cell &cell : lib.cells ()) {
-    cell_index_by_name[cell.name ()] = layout.add_cell (cell.name ().c_str ());
-  }
-
-  LayerMapper layer_mapper (layout);
-
-  for (const room::Cell &cell : lib.cells ()) {
-    const room::CellContent *content = cell.findContent (room::ViewType::Layout);
-    if (content == nullptr) {
-      continue;
-    }
-
-    const std::vector<room::LayerSpec> view_layers = room::resolveViewLayers (*content, lib);
-    auto layer_spec_by_id = [&view_layers](std::uint32_t layerId) -> room::LayerSpec {
-      if (layerId < view_layers.size ()) {
-        return view_layers[layerId];
-      }
-      room::LayerSpec fallback;
-      fallback.layerNum = 0;
-      fallback.dataType = 0;
-      fallback.name = "unknown";
-      return fallback;
-    };
-
-    db::Cell &target_cell = layout.cell (cell_index_by_name.at (cell.name ()));
-    apply_core_properties (target_cell, cell.properties (), content->properties ());
-    const room::Block &block = content->block ();
-
-    for (const room::Shape &shape : block.shapes ()) {
-      const db::properties_id_type prop_id = properties_id_from_core (shape.properties ());
-      switch (shape.type ()) {
-      case room::Shape::Type::Rect: {
-        if (const room::Shape::RectData *rect = shape.rect ()) {
-          const unsigned int li = layer_mapper.layer_index (layer_spec_by_id (rect->layerId));
-          insert_shape (target_cell.shapes (li), make_box (rect->box), prop_id);
-        }
-        break;
-      }
-      case room::Shape::Type::Polygon: {
-        if (const room::Shape::PolygonData *polygon = shape.polygon ()) {
-          const unsigned int li = layer_mapper.layer_index (layer_spec_by_id (polygon->layerId));
-          std::vector<db::Point> hull;
-          hull.reserve (polygon->points.size ());
-          for (const room::Point &point : polygon->points) {
-            hull.push_back (make_point (point));
-          }
-          if (! hull.empty ()) {
-            db::Polygon poly;
-            poly.assign_hull (hull.begin (), hull.end ());
-            insert_shape (target_cell.shapes (li), poly, prop_id);
-          }
-        }
-        break;
-      }
-      case room::Shape::Type::Path: {
-        if (const room::Shape::PathData *path = shape.path ()) {
-          if (path->points.empty ()) {
-            break;
-          }
-          const unsigned int li = layer_mapper.layer_index (layer_spec_by_id (path->layerId));
-          std::vector<db::Point> path_points;
-          path_points.reserve (path->points.size ());
-          for (const room::Point &point : path->points) {
-            path_points.push_back (make_point (point));
-          }
-          db::Path db_path;
-          db_path.assign (path_points.begin (), path_points.end ());
-          if (path->width > 0) {
-            db_path.width (cast_coord (path->width));
-          }
-          insert_shape (target_cell.shapes (li), db_path, prop_id);
-        }
-        break;
-      }
-      case room::Shape::Type::Text: {
-        if (const room::Shape::TextData *text = shape.text ()) {
-          const unsigned int li = layer_mapper.layer_index (layer_spec_by_id (text->layerId));
-          const db::Point position = make_point (text->position);
-          db::Text label (text->text, db::Trans (db::Vector (position)));
-          if (text->height > 0) {
-            label.size (cast_coord (text->height));
-          }
-          insert_shape (target_cell.shapes (li), label, prop_id);
-        }
-        break;
-      }
-      }
-    }
-
-    for (const room::Instance &instance : block.instances ()) {
-      const auto child_it = cell_index_by_name.find (instance.cellName ());
-      if (child_it == cell_index_by_name.end ()) {
-        common_reader_warn (tl::to_string (tr ("Missing child cell: ")) + instance.cellName ());
-        continue;
-      }
-
-      const db::CellInstArray arr (
-        db::CellInst (child_it->second),
-        make_transform (instance.transform ()));
-      const db::properties_id_type prop_id = properties_id_from_core (instance.properties ());
-      if (prop_id == 0) {
-        target_cell.insert (arr);
-      } else {
-        target_cell.insert (db::object_with_properties<db::CellInstArray> (arr, prop_id));
-      }
-    }
+  if (! dbu_set) {
+    layout.dbu (0.001);
   }
 }
 

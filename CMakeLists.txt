@@ -118,6 +118,7 @@ target_link_libraries(room PUBLIC ${CAPNP_LIBRARY} ${KJ_LIBRARY})
 add_library(room_utils STATIC
     utils/gds_importer.cpp
     utils/gds_exporter.cpp
+    utils/gds_stream_import.cpp
     utils/qucs_importer.cpp
     utils/qucs_exporter.cpp
     utils/pulse_params.cpp

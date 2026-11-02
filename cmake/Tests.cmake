@@ -11,6 +11,18 @@ if(ROOM_BUILD_TESTS)
     add_executable(gds_room_roundtrip tests/gds_room_roundtrip.cpp)
     target_link_libraries(gds_room_roundtrip PRIVATE room_utils)
 
+    add_executable(gds_stream_roundtrip tests/gds_stream_roundtrip.cpp)
+    target_link_libraries(gds_stream_roundtrip PRIVATE room_utils)
+    add_test(
+        NAME gds_stream_roundtrip
+        COMMAND gds_stream_roundtrip "${_sample_gds}" "${CMAKE_BINARY_DIR}/gds_stream_roundtrip.room"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(gds_stream_roundtrip PROPERTIES
+        LABELS "gds;compact"
+        TIMEOUT 60
+    )
+
     add_executable(lib_index tests/lib_index.cpp)
     target_link_libraries(lib_index PRIVATE room_utils)
 
@@ -324,8 +336,14 @@ if(ROOM_BUILD_TESTS)
             add_executable(oas_room_roundtrip tests/oas_room_roundtrip.cpp)
             target_link_libraries(oas_room_roundtrip PRIVATE room_oas)
 
+            add_executable(layout_exchange_bench tests/layout_exchange_bench.cpp)
+            target_link_libraries(layout_exchange_bench PRIVATE room_oas)
+            if(WIN32)
+                target_link_libraries(layout_exchange_bench PRIVATE psapi)
+            endif()
+
             if(WIN32 AND EXISTS "${_zlib_bin_dir}/zlib1.dll")
-                foreach(_oas_tool oas_hierarchy oas_room_roundtrip)
+                foreach(_oas_tool oas_hierarchy oas_room_roundtrip layout_exchange_bench)
                     add_custom_command(TARGET ${_oas_tool} POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                                 "${_zlib_bin_dir}/zlib1.dll"

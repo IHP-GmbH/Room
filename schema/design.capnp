@@ -24,6 +24,10 @@ struct PathGeom {
   layerId @2 :UInt32;
   cap     @3 :PathCap = round;
   enum PathCap { flush @0; round @1; square @2; }
+  # Resolved GDS end style. These fields are the geometry; cap is kept for older readers.
+  bgnExt  @4 :Int32 = 0;
+  endExt  @5 :Int32 = 0;
+  round   @6 :Bool = false;
 }
 
 struct TextGeom {
@@ -58,6 +62,11 @@ struct Instance {
   cellName   @0 :Text;
   transform  @1 :Transform;
   properties @2 :List(Property);
+  # GDS AREF. 0 means a single placement (SREF).
+  columns    @3 :UInt32 = 0;
+  rows       @4 :UInt32 = 0;
+  stepX      @5 :Int64 = 0;
+  stepY      @6 :Int64 = 0;
 }
 
 struct Term {
