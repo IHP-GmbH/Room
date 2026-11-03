@@ -14,8 +14,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include <unordered_map>
 #include <utility>
 
@@ -388,6 +390,8 @@ void commitElem(LibAcc &lib, CellAcc &cell, Elem &elem)
             inst.stepX = colDx != 0 ? colDx : rowDx;
             inst.stepY = rowDy != 0 ? rowDy : colDy;
             ++lib.stats.arefs;
+            lib.stats.arefMembers += static_cast<std::uint64_t>(inst.columns) *
+                                     static_cast<std::uint64_t>(inst.rows);
         } else {
             ++lib.stats.srefs;
         }
@@ -410,7 +414,475 @@ struct WhHash {
     }
 };
 
-void writeLayer(schema::CompactLayerShapes::Builder builder, LayerAcc &layer, std::uint32_t layerId)
+struct OrthoGrid {
+    std::int64_t x0 = 0;
+    std::int64_t y0 = 0;
+    std::int64_t dx = 0;
+    std::int64_t dy = 0;
+    std::uint32_t columns = 1;
+    std::uint32_t rows = 1;
+};
+
+struct WrittenGrids {
+    std::uint64_t rectArrays = 0;
+    std::uint64_t rectArrayMembers = 0;
+    std::uint64_t polygonRepeats = 0;
+    std::uint64_t polygonRepeatMembers = 0;
+    std::uint64_t pathRepeats = 0;
+    std::uint64_t pathRepeatMembers = 0;
+};
+
+using PointList = std::vector<std::pair<std::int64_t, std::int64_t>>;
+
+void extractOrthogonalGrids(PointList points, std::vector<OrthoGrid> &grids, PointList &rest)
+{
+    grids.clear();
+    rest.clear();
+    if (points.empty()) {
+        return;
+    }
+    std::sort(points.begin(), points.end(), [](const auto &a, const auto &b) {
+        if (a.second != b.second) {
+            return a.second < b.second;
+        }
+        return a.first < b.first;
+    });
+
+    struct Run {
+        std::int64_t x0 = 0;
+        std::int64_t y = 0;
+        std::int64_t dx = 0;
+        std::uint32_t n = 1;
+    };
+    std::vector<Run> runs;
+    std::size_t row = 0;
+    while (row < points.size()) {
+        std::size_t rowEnd = row + 1;
+        while (rowEnd < points.size() && points[rowEnd].second == points[row].second) {
+            ++rowEnd;
+        }
+        std::size_t cursor = row;
+        while (cursor < rowEnd) {
+            std::size_t end = cursor + 1;
+            std::int64_t step = 0;
+            if (end < rowEnd && points[end].first != points[cursor].first) {
+                step = points[end].first - points[cursor].first;
+                ++end;
+                while (end < rowEnd && points[end].first - points[end - 1].first == step) {
+                    ++end;
+                }
+            }
+            const std::uint64_t count = static_cast<std::uint64_t>(end - cursor);
+            runs.push_back(Run{points[cursor].first, points[cursor].second, count > 1 ? step : 0,
+                               static_cast<std::uint32_t>(count)});
+            cursor = end;
+        }
+        row = rowEnd;
+    }
+
+    std::sort(runs.begin(), runs.end(), [](const Run &a, const Run &b) {
+        if (a.x0 != b.x0) {
+            return a.x0 < b.x0;
+        }
+        if (a.dx != b.dx) {
+            return a.dx < b.dx;
+        }
+        if (a.n != b.n) {
+            return a.n < b.n;
+        }
+        return a.y < b.y;
+    });
+
+    std::size_t band = 0;
+    while (band < runs.size()) {
+        std::size_t bandEnd = band + 1;
+        while (bandEnd < runs.size() && runs[bandEnd].x0 == runs[band].x0 && runs[bandEnd].dx == runs[band].dx &&
+               runs[bandEnd].n == runs[band].n) {
+            ++bandEnd;
+        }
+        std::size_t cursor = band;
+        while (cursor < bandEnd) {
+            std::size_t end = cursor + 1;
+            std::int64_t dy = 0;
+            if (end < bandEnd && runs[end].y != runs[cursor].y) {
+                dy = runs[end].y - runs[cursor].y;
+                ++end;
+                while (end < bandEnd && runs[end].y - runs[end - 1].y == dy) {
+                    ++end;
+                }
+            }
+            const std::uint32_t rows = static_cast<std::uint32_t>(end - cursor);
+            const std::uint32_t columns = runs[cursor].n;
+            if (columns > 1 || rows > 1) {
+                grids.push_back(OrthoGrid{runs[cursor].x0, runs[cursor].y, columns > 1 ? runs[cursor].dx : 0,
+                                          rows > 1 ? dy : 0, columns, rows});
+            } else {
+                rest.emplace_back(runs[cursor].x0, runs[cursor].y);
+            }
+            cursor = end;
+        }
+        band = bandEnd;
+    }
+
+    PointList rebuilt = rest;
+    rebuilt.reserve(points.size());
+    for (const OrthoGrid &grid : grids) {
+        for (std::uint32_t r = 0; r < grid.rows; ++r) {
+            for (std::uint32_t c = 0; c < grid.columns; ++c) {
+                rebuilt.emplace_back(grid.x0 + static_cast<std::int64_t>(c) * grid.dx,
+                                     grid.y0 + static_cast<std::int64_t>(r) * grid.dy);
+            }
+        }
+    }
+    std::sort(points.begin(), points.end());
+    std::sort(rebuilt.begin(), rebuilt.end());
+    if (points != rebuilt) {
+        throw std::runtime_error("ROOM grid pack did not preserve points");
+    }
+}
+
+PointList gridPoints(const OrthoGrid &grid)
+{
+    PointList points;
+    points.reserve(static_cast<std::size_t>(grid.columns) * grid.rows);
+    for (std::uint32_t r = 0; r < grid.rows; ++r) {
+        for (std::uint32_t c = 0; c < grid.columns; ++c) {
+            points.emplace_back(grid.x0 + static_cast<std::int64_t>(c) * grid.dx,
+                                grid.y0 + static_cast<std::int64_t>(r) * grid.dy);
+        }
+    }
+    return points;
+}
+
+struct InstKey {
+    std::uint32_t nameId = 0;
+    std::uint8_t orient = 0;
+    std::uint64_t magBits = 0;
+    bool operator==(const InstKey &other) const
+    {
+        return nameId == other.nameId && orient == other.orient && magBits == other.magBits;
+    }
+};
+
+struct InstKeyHash {
+    std::size_t operator()(const InstKey &key) const
+    {
+        std::size_t h = key.nameId;
+        h ^= static_cast<std::size_t>(key.orient) + 0x9e3779b9u + (h << 6) + (h >> 2);
+        h ^= static_cast<std::size_t>(key.magBits) + 0x9e3779b9u + (h << 6) + (h >> 2);
+        h ^= static_cast<std::size_t>(key.magBits >> 32) + 0x9e3779b9u + (h << 6) + (h >> 2);
+        return h;
+    }
+};
+
+std::uint64_t doubleBits(double value)
+{
+    std::uint64_t bits = 0;
+    std::memcpy(&bits, &value, sizeof(bits));
+    return bits;
+}
+
+void packSingleInstances(std::vector<InstAcc> &instances)
+{
+    std::unordered_map<InstKey, PointList, InstKeyHash> singles;
+    std::unordered_map<InstKey, InstAcc, InstKeyHash> prototype;
+    std::vector<InstAcc> kept;
+    kept.reserve(instances.size());
+    for (const InstAcc &inst : instances) {
+        if (inst.columns > 1 || inst.rows > 1) {
+            kept.push_back(inst);
+            continue;
+        }
+        const InstKey key{inst.nameId, static_cast<std::uint8_t>(inst.orient), doubleBits(inst.mag)};
+        if (prototype.find(key) == prototype.end()) {
+            prototype.emplace(key, inst);
+        }
+        singles[key].emplace_back(inst.x, inst.y);
+    }
+
+    for (auto &entry : singles) {
+        std::vector<OrthoGrid> grids;
+        PointList rest;
+        extractOrthogonalGrids(std::move(entry.second), grids, rest);
+        const InstAcc &base = prototype.at(entry.first);
+        for (const OrthoGrid &grid : grids) {
+            InstAcc inst = base;
+            inst.x = grid.x0;
+            inst.y = grid.y0;
+            inst.columns = grid.columns;
+            inst.rows = grid.rows;
+            inst.stepX = grid.dx;
+            inst.stepY = grid.dy;
+            kept.push_back(inst);
+        }
+        for (const auto &pt : rest) {
+            InstAcc inst = base;
+            inst.x = pt.first;
+            inst.y = pt.second;
+            inst.columns = 0;
+            inst.rows = 0;
+            inst.stepX = 0;
+            inst.stepY = 0;
+            kept.push_back(inst);
+        }
+    }
+    instances.swap(kept);
+}
+
+struct SpanRef {
+    std::size_t deltaBegin = 0;
+    std::uint32_t vertices = 0;
+    std::uint32_t width = 0;
+    std::int32_t bgnExt = 0;
+    std::int32_t endExt = 0;
+    std::uint8_t round = 0;
+};
+
+struct RepeatDraft {
+    std::uint32_t width = 0;
+    std::uint32_t vertices = 0;
+    std::int32_t bgnExt = 0;
+    std::int32_t endExt = 0;
+    bool round = false;
+    std::vector<std::int64_t> deltas;
+    std::vector<std::int64_t> originX;
+    std::vector<std::int64_t> originY;
+};
+
+std::uint64_t mixHash(std::uint64_t hash, std::uint64_t value)
+{
+    hash ^= value;
+    hash *= 1099511628211ull;
+    return hash;
+}
+
+std::uint64_t spanHash(const std::vector<std::int64_t> &deltas, const SpanRef &span)
+{
+    std::uint64_t hash = 14695981039346656037ull;
+    hash = mixHash(hash, span.width);
+    hash = mixHash(hash, span.vertices);
+    hash = mixHash(hash, static_cast<std::uint32_t>(span.bgnExt));
+    hash = mixHash(hash, static_cast<std::uint32_t>(span.endExt));
+    hash = mixHash(hash, span.round);
+    const std::size_t n = static_cast<std::size_t>(span.vertices) * 2;
+    for (std::size_t i = 2; i < n; ++i) {
+        hash = mixHash(hash, static_cast<std::uint64_t>(deltas[span.deltaBegin + i]));
+    }
+    return hash;
+}
+
+bool sameRelative(const std::vector<std::int64_t> &deltas, const SpanRef &a, const SpanRef &b)
+{
+    if (a.vertices != b.vertices || a.width != b.width || a.bgnExt != b.bgnExt || a.endExt != b.endExt ||
+        a.round != b.round) {
+        return false;
+    }
+    const std::size_t n = static_cast<std::size_t>(a.vertices) * 2;
+    for (std::size_t i = 2; i < n; ++i) {
+        if (deltas[a.deltaBegin + i] != deltas[b.deltaBegin + i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void pushRepeat(std::vector<RepeatDraft> &repeats, const std::vector<std::int64_t> &deltas, const SpanRef &proto,
+                const PointList &origins)
+{
+    if (origins.size() < 2) {
+        return;
+    }
+    RepeatDraft repeat;
+    repeat.width = proto.width;
+    repeat.vertices = proto.vertices;
+    repeat.bgnExt = proto.bgnExt;
+    repeat.endExt = proto.endExt;
+    repeat.round = proto.round != 0;
+    const std::size_t n = static_cast<std::size_t>(proto.vertices) * 2;
+    repeat.deltas.assign(deltas.begin() + static_cast<std::ptrdiff_t>(proto.deltaBegin),
+                         deltas.begin() + static_cast<std::ptrdiff_t>(proto.deltaBegin + n));
+    repeat.originX.reserve(origins.size());
+    repeat.originY.reserve(origins.size());
+    for (const auto &pt : origins) {
+        repeat.originX.push_back(pt.first);
+        repeat.originY.push_back(pt.second);
+    }
+    repeats.push_back(std::move(repeat));
+}
+
+bool compactTranslatedCopies(std::vector<std::int64_t> &deltaStream, std::vector<std::uint32_t> *widths,
+                             std::vector<std::uint32_t> &counts, std::vector<std::int32_t> *bgn,
+                             std::vector<std::int32_t> *endExt, std::vector<std::uint8_t> *round,
+                             std::vector<RepeatDraft> &repeats)
+{
+    if (counts.empty()) {
+        return true;
+    }
+    std::vector<SpanRef> spans;
+    spans.reserve(counts.size());
+    std::size_t cursor = 0;
+    for (std::size_t i = 0; i < counts.size(); ++i) {
+        const std::uint32_t vertices = counts[i];
+        const std::size_t needed = static_cast<std::size_t>(vertices) * 2;
+        if (cursor + needed > deltaStream.size()) {
+            return false;
+        }
+        SpanRef span;
+        span.deltaBegin = cursor;
+        span.vertices = vertices;
+        span.width = widths != nullptr && i < widths->size() ? (*widths)[i] : 0;
+        span.bgnExt = bgn != nullptr && i < bgn->size() ? (*bgn)[i] : 0;
+        span.endExt = endExt != nullptr && i < endExt->size() ? (*endExt)[i] : 0;
+        span.round = round != nullptr && i < round->size() ? (*round)[i] : 0;
+        spans.push_back(span);
+        cursor += needed;
+    }
+    if (cursor != deltaStream.size()) {
+        return false;
+    }
+
+    struct HashIx {
+        std::uint64_t hash = 0;
+        std::uint32_t index = 0;
+    };
+    std::vector<HashIx> order;
+    std::vector<std::size_t> singles;
+    order.reserve(spans.size());
+    for (std::size_t i = 0; i < spans.size(); ++i) {
+        if (spans[i].vertices < 1) {
+            singles.push_back(i);
+            continue;
+        }
+        order.push_back(HashIx{spanHash(deltaStream, spans[i]), static_cast<std::uint32_t>(i)});
+    }
+    std::sort(order.begin(), order.end(), [](const HashIx &a, const HashIx &b) {
+        if (a.hash != b.hash) {
+            return a.hash < b.hash;
+        }
+        return a.index < b.index;
+    });
+
+    std::vector<RepeatDraft> found;
+    std::vector<std::size_t> synthesized;
+    std::vector<std::int64_t> synthesizedX;
+    std::vector<std::int64_t> synthesizedY;
+    std::vector<std::uint32_t> synthesizedProto;
+    std::size_t accounted = singles.size();
+    std::size_t band = 0;
+    while (band < order.size()) {
+        std::size_t bandEnd = band + 1;
+        while (bandEnd < order.size() && order[bandEnd].hash == order[band].hash) {
+            ++bandEnd;
+        }
+        std::vector<std::vector<std::uint32_t>> classes;
+        for (std::size_t i = band; i < bandEnd; ++i) {
+            const std::uint32_t spanIndex = order[i].index;
+            bool placed = false;
+            if (classes.size() < 32) {
+                for (auto &cls : classes) {
+                    if (sameRelative(deltaStream, spans[cls.front()], spans[spanIndex])) {
+                        cls.push_back(spanIndex);
+                        placed = true;
+                        break;
+                    }
+                }
+            }
+            if (!placed) {
+                if (classes.size() < 32) {
+                    classes.push_back({spanIndex});
+                } else {
+                    singles.push_back(spanIndex);
+                    ++accounted;
+                }
+            }
+        }
+        for (const auto &cls : classes) {
+            accounted += cls.size();
+            if (cls.size() < 2) {
+                singles.push_back(cls.front());
+                continue;
+            }
+            PointList origins;
+            origins.reserve(cls.size());
+            for (const std::uint32_t spanIndex : cls) {
+                const SpanRef &span = spans[spanIndex];
+                origins.emplace_back(deltaStream[span.deltaBegin], deltaStream[span.deltaBegin + 1]);
+            }
+            std::vector<OrthoGrid> grids;
+            PointList rest;
+            extractOrthogonalGrids(std::move(origins), grids, rest);
+            const SpanRef &proto = spans[cls.front()];
+            for (const OrthoGrid &grid : grids) {
+                pushRepeat(found, deltaStream, proto, gridPoints(grid));
+            }
+            if (rest.size() >= 2) {
+                pushRepeat(found, deltaStream, proto, rest);
+            } else if (rest.size() == 1) {
+                synthesized.push_back(cls.front());
+                synthesizedX.push_back(rest.front().first);
+                synthesizedY.push_back(rest.front().second);
+                synthesizedProto.push_back(cls.front());
+            }
+        }
+        band = bandEnd;
+    }
+    if (accounted != spans.size()) {
+        throw std::runtime_error("ROOM repeat pack dropped a shape");
+    }
+    if (found.empty()) {
+        return true;
+    }
+
+    std::vector<std::int64_t> newDeltas;
+    std::vector<std::uint32_t> newWidths;
+    std::vector<std::uint32_t> newCounts;
+    std::vector<std::int32_t> newBgn;
+    std::vector<std::int32_t> newEnd;
+    std::vector<std::uint8_t> newRound;
+    const bool keepWidth = widths != nullptr;
+    const bool keepEnds = bgn != nullptr;
+    auto appendStream = [&](const SpanRef &span, std::int64_t x, std::int64_t y, bool replaceOrigin) {
+        const std::size_t n = static_cast<std::size_t>(span.vertices) * 2;
+        const std::size_t at = newDeltas.size();
+        newDeltas.insert(newDeltas.end(), deltaStream.begin() + static_cast<std::ptrdiff_t>(span.deltaBegin),
+                         deltaStream.begin() + static_cast<std::ptrdiff_t>(span.deltaBegin + n));
+        if (replaceOrigin && n >= 2) {
+            newDeltas[at] = x;
+            newDeltas[at + 1] = y;
+        }
+        newCounts.push_back(span.vertices);
+        if (keepWidth) {
+            newWidths.push_back(span.width);
+        }
+        if (keepEnds) {
+            newBgn.push_back(span.bgnExt);
+            newEnd.push_back(span.endExt);
+            newRound.push_back(span.round);
+        }
+    };
+    for (const std::size_t index : singles) {
+        appendStream(spans[index], 0, 0, false);
+    }
+    for (std::size_t i = 0; i < synthesized.size(); ++i) {
+        appendStream(spans[synthesizedProto[i]], synthesizedX[i], synthesizedY[i], true);
+    }
+
+    deltaStream.swap(newDeltas);
+    counts.swap(newCounts);
+    if (keepWidth) {
+        widths->swap(newWidths);
+    }
+    if (keepEnds) {
+        bgn->swap(newBgn);
+        endExt->swap(newEnd);
+        round->swap(newRound);
+    }
+    repeats.swap(found);
+    return true;
+}
+
+void writeLayer(schema::CompactLayerShapes::Builder builder, LayerAcc &layer, std::uint32_t layerId,
+                WrittenGrids &written)
 {
     builder.setLayerId(layerId);
 
@@ -426,18 +898,38 @@ void writeLayer(schema::CompactLayerShapes::Builder builder, LayerAcc &layer, st
     layer.rects.clear();
     layer.rects.shrink_to_fit();
 
-    std::vector<std::pair<Wh, std::vector<std::pair<std::int64_t, std::int64_t>>>> grouped;
+    struct RectArrayAcc {
+        std::int64_t llx = 0;
+        std::int64_t lly = 0;
+        std::int64_t w = 0;
+        std::int64_t h = 0;
+        std::int64_t dx = 0;
+        std::int64_t dy = 0;
+        std::uint32_t columns = 1;
+        std::uint32_t rows = 1;
+    };
+    std::vector<RectArrayAcc> arrays;
+    std::vector<std::pair<Wh, PointList>> grouped;
     grouped.reserve(groups.size());
     for (auto &entry : groups) {
-        if (entry.second.size() < 2) {
-            for (const auto &pt : entry.second) {
+        std::vector<OrthoGrid> grids;
+        PointList rest;
+        extractOrthogonalGrids(std::move(entry.second), grids, rest);
+        for (const OrthoGrid &grid : grids) {
+            arrays.push_back(RectArrayAcc{grid.x0, grid.y0, entry.first.w, entry.first.h, grid.dx, grid.dy,
+                                          grid.columns, grid.rows});
+            written.rectArrays += 1;
+            written.rectArrayMembers += static_cast<std::uint64_t>(grid.columns) * grid.rows;
+        }
+        if (rest.size() >= 2) {
+            grouped.push_back({entry.first, std::move(rest)});
+        } else {
+            for (const auto &pt : rest) {
                 singles.push_back(pt.first);
                 singles.push_back(pt.second);
                 singles.push_back(pt.first + entry.first.w);
                 singles.push_back(pt.second + entry.first.h);
             }
-        } else {
-            grouped.push_back(std::move(entry));
         }
     }
     groups.clear();
@@ -445,6 +937,18 @@ void writeLayer(schema::CompactLayerShapes::Builder builder, LayerAcc &layer, st
     auto rects = builder.initRectCoords(singles.size());
     for (std::size_t i = 0; i < singles.size(); ++i) {
         rects.set(i, singles[i]);
+    }
+    auto arrayBuilders = builder.initRectArrays(arrays.size());
+    for (std::size_t i = 0; i < arrays.size(); ++i) {
+        auto ab = arrayBuilders[i];
+        ab.setOriginLlx(arrays[i].llx);
+        ab.setOriginLly(arrays[i].lly);
+        ab.setWidth(arrays[i].w);
+        ab.setHeight(arrays[i].h);
+        ab.setColumns(arrays[i].columns);
+        ab.setRows(arrays[i].rows);
+        ab.setStepX(arrays[i].dx);
+        ab.setStepY(arrays[i].dy);
     }
     auto groupBuilders = builder.initRectGroups(grouped.size());
     for (std::size_t i = 0; i < grouped.size(); ++i) {
@@ -459,6 +963,8 @@ void writeLayer(schema::CompactLayerShapes::Builder builder, LayerAcc &layer, st
         }
     }
 
+    std::vector<RepeatDraft> polygonRepeats;
+    compactTranslatedCopies(layer.polyDeltas, nullptr, layer.polyCounts, nullptr, nullptr, nullptr, polygonRepeats);
     auto polyCounts = builder.initPolygonVertexCounts(layer.polyCounts.size());
     for (std::size_t i = 0; i < layer.polyCounts.size(); ++i) {
         polyCounts.set(i, layer.polyCounts[i]);
@@ -470,7 +976,29 @@ void writeLayer(schema::CompactLayerShapes::Builder builder, LayerAcc &layer, st
         layer.polyDeltas.shrink_to_fit();
         builder.setPolygonDeltasPacked(capnp::Data::Reader(packed.data(), packed.size()));
     }
+    auto polyRepeatBuilders = builder.initPolygonRepeats(polygonRepeats.size());
+    for (std::size_t i = 0; i < polygonRepeats.size(); ++i) {
+        const RepeatDraft &repeat = polygonRepeats[i];
+        auto pb = polyRepeatBuilders[i];
+        pb.setVertexCount(repeat.vertices);
+        auto deltas = pb.initDeltas(repeat.deltas.size());
+        for (std::size_t j = 0; j < repeat.deltas.size(); ++j) {
+            deltas.set(j, repeat.deltas[j]);
+        }
+        auto ox = pb.initOriginX(repeat.originX.size());
+        auto oy = pb.initOriginY(repeat.originY.size());
+        for (std::size_t j = 0; j < repeat.originX.size(); ++j) {
+            ox.set(j, repeat.originX[j]);
+            oy.set(j, repeat.originY[j]);
+        }
+        written.polygonRepeats += 1;
+        written.polygonRepeatMembers += repeat.originX.size();
+    }
+    polygonRepeats.clear();
 
+    std::vector<RepeatDraft> pathRepeats;
+    compactTranslatedCopies(layer.pathDeltas, &layer.pathWidths, layer.pathCounts, &layer.pathBgnExt,
+                            &layer.pathEndExt, &layer.pathRound, pathRepeats);
     auto pathWidths = builder.initPathWidths(layer.pathWidths.size());
     for (std::size_t i = 0; i < layer.pathWidths.size(); ++i) {
         pathWidths.set(i, layer.pathWidths[i]);
@@ -507,6 +1035,28 @@ void writeLayer(schema::CompactLayerShapes::Builder builder, LayerAcc &layer, st
     layer.pathBgnExt.clear();
     layer.pathEndExt.clear();
     layer.pathRound.clear();
+    auto pathRepeatBuilders = builder.initPathRepeats(pathRepeats.size());
+    for (std::size_t i = 0; i < pathRepeats.size(); ++i) {
+        const RepeatDraft &repeat = pathRepeats[i];
+        auto pb = pathRepeatBuilders[i];
+        pb.setWidth(repeat.width);
+        pb.setVertexCount(repeat.vertices);
+        pb.setBgnExt(repeat.bgnExt);
+        pb.setEndExt(repeat.endExt);
+        pb.setRound(repeat.round);
+        auto deltas = pb.initDeltas(repeat.deltas.size());
+        for (std::size_t j = 0; j < repeat.deltas.size(); ++j) {
+            deltas.set(j, repeat.deltas[j]);
+        }
+        auto ox = pb.initOriginX(repeat.originX.size());
+        auto oy = pb.initOriginY(repeat.originY.size());
+        for (std::size_t j = 0; j < repeat.originX.size(); ++j) {
+            ox.set(j, repeat.originX[j]);
+            oy.set(j, repeat.originY[j]);
+        }
+        written.pathRepeats += 1;
+        written.pathRepeatMembers += repeat.originX.size();
+    }
 
     auto textX = builder.initTextX(layer.textX.size());
     auto textY = builder.initTextY(layer.textY.size());
@@ -558,6 +1108,7 @@ void writeRoom(const std::string &roomPath, const std::string &libName, LibAcc &
 
     auto cells = libBuilder.initCells(lib.cells.size());
     std::uint64_t placementCount = 0;
+    WrittenGrids written;
     for (std::size_t ci = 0; ci < lib.cells.size(); ++ci) {
         CellAcc &cell = lib.cells[ci];
         auto cellBuilder = cells[ci];
@@ -587,13 +1138,13 @@ void writeRoom(const std::string &roomPath, const std::string &libName, LibAcc &
         auto compact = layout.initCompact();
         auto layerBuilders = compact.initLayerShapes(cell.layers.size());
         for (std::size_t i = 0; i < cell.layers.size(); ++i) {
-            writeLayer(layerBuilders[i], cell.layers[i], static_cast<std::uint32_t>(i));
+            writeLayer(layerBuilders[i], cell.layers[i], static_cast<std::uint32_t>(i), written);
         }
         cell.layers.clear();
         cell.layers.shrink_to_fit();
 
+        packSingleInstances(cell.instances);
         auto instances = compact.initInstances(cell.instances.size());
-        placementCount += cell.instances.size();
         for (std::size_t i = 0; i < cell.instances.size(); ++i) {
             const InstAcc &inst = cell.instances[i];
             auto ib = instances[i];
@@ -607,13 +1158,21 @@ void writeRoom(const std::string &roomPath, const std::string &libName, LibAcc &
             ib.setRows(inst.rows);
             ib.setStepX(inst.stepX);
             ib.setStepY(inst.stepY);
+            std::uint64_t members = 1;
+            if (inst.columns > 1 || inst.rows > 1) {
+                const std::uint64_t columns = inst.columns == 0 ? 1 : inst.columns;
+                const std::uint64_t rows = inst.rows == 0 ? 1 : inst.rows;
+                members = columns * rows;
+            }
+            placementCount += members;
         }
         cell.instances.clear();
         cell.instances.shrink_to_fit();
-        if (cell.elements >= 1000000) {
-            std::cout << "wrote " << cell.name << " elements=" << cell.elements << std::endl;
-        }
     }
+    std::cout << "stored rect-arrays=" << written.rectArrays << " members=" << written.rectArrayMembers
+              << " polygon-repeats=" << written.polygonRepeats << " members=" << written.polygonRepeatMembers
+              << " path-repeats=" << written.pathRepeats << " members=" << written.pathRepeatMembers
+              << " placements=" << placementCount << std::endl;
 
     auto index = libBuilder.initIndex();
     index.setPlacementCount(placementCount);
@@ -897,13 +1456,27 @@ GdsStreamStats readCompactRoomStats(const std::string &roomPath)
                 for (const auto group : layer.getRectGroups()) {
                     stats.rects += group.getLlx().size();
                 }
+                for (const auto array : layer.getRectArrays()) {
+                    const std::uint64_t columns = array.getColumns() == 0 ? 1 : array.getColumns();
+                    const std::uint64_t rows = array.getRows() == 0 ? 1 : array.getRows();
+                    stats.rects += columns * rows;
+                }
                 stats.polygons += layer.getPolygonVertexCounts().size();
+                for (const auto repeat : layer.getPolygonRepeats()) {
+                    stats.polygons += repeat.getOriginX().size();
+                }
                 stats.paths += layer.getPathVertexCounts().size();
+                for (const auto repeat : layer.getPathRepeats()) {
+                    stats.paths += repeat.getOriginX().size();
+                }
                 stats.texts += layer.getTexts().size();
             }
             for (const auto inst : compact.getInstances()) {
                 if (inst.getColumns() > 1 || inst.getRows() > 1) {
                     ++stats.arefs;
+                    const std::uint64_t columns = inst.getColumns() == 0 ? 1 : inst.getColumns();
+                    const std::uint64_t rows = inst.getRows() == 0 ? 1 : inst.getRows();
+                    stats.arefMembers += columns * rows;
                 } else {
                     ++stats.srefs;
                 }

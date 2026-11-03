@@ -158,10 +158,13 @@ int runGds(const std::string &gdsPath, const std::string &workDir, std::uintmax_
               << " texts=" << stats.texts
               << " srefs=" << stats.srefs
               << " arefs=" << stats.arefs << std::endl;
+    const std::uint64_t inputPlaces = imported.stats.srefs + imported.stats.arefMembers;
+    const std::uint64_t filePlaces = stats.srefs + stats.arefMembers;
+    std::cout << "placements input=" << inputPlaces << " expanded=" << filePlaces
+              << " file-srefs=" << stats.srefs << " file-arefs=" << stats.arefs << std::endl;
     if (stats.cells != imported.stats.cells || stats.rects != imported.stats.rects ||
         stats.polygons != imported.stats.polygons || stats.paths != imported.stats.paths ||
-        stats.texts != imported.stats.texts || stats.srefs != imported.stats.srefs ||
-        stats.arefs != imported.stats.arefs) {
+        stats.texts != imported.stats.texts || inputPlaces != filePlaces) {
         std::cerr << "error: compact reread counts differ" << std::endl;
         return 3;
     }

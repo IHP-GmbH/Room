@@ -42,7 +42,7 @@ void appendSInt(std::vector<std::uint8_t> &buf, std::int64_t value)
 {
     std::uint64_t encoded = 0;
     if (value < 0) {
-        encoded = (static_cast<std::uint64_t>(-value) << 1) - 1ULL;
+        encoded = (static_cast<std::uint64_t>(-value) << 1) | 1ULL;
     } else {
         encoded = static_cast<std::uint64_t>(value) << 1;
     }
@@ -317,7 +317,7 @@ void appendPlacement(std::vector<std::uint8_t> &buf,
     }
     std::vector<std::uint8_t> rec;
     appendUInt(rec, 17);
-    rec.push_back(0x16); // C X Y explicit placement by reference-number
+    rec.push_back(0xF0); // C N X Y: cell by reference-number, explicit x and y
     appendUInt(rec, refIt->second);
     appendSInt(rec, inst.transform().x);
     appendSInt(rec, inst.transform().y);

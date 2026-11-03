@@ -15,41 +15,60 @@ Lib::Lib(std::string name) : m_name(std::move(name)) {}
  *****************************************************************************************/
 Cell *Lib::findCell(const std::string &name)
 {
-    for (auto &cell : m_cells) {
-        if (cell.name() == name) {
-            return &cell;
-        }
+    ensureCellIndex();
+    const auto found = m_cellIndex.find(name);
+    if (found == m_cellIndex.end() || found->second >= m_cells.size()) {
+        return nullptr;
     }
-    return nullptr;
+    return &m_cells[found->second];
 }
 
-/*!****************************************************************************************
- * \brief Finds a cell by name (const overload).
- * \param name     Cell name to look up.
- * \return         Pointer to the cell, or nullptr if not found.
- *****************************************************************************************/
 const Cell *Lib::findCell(const std::string &name) const
 {
-    for (const auto &cell : m_cells) {
-        if (cell.name() == name) {
-            return &cell;
-        }
+    ensureCellIndex();
+    const auto found = m_cellIndex.find(name);
+    if (found == m_cellIndex.end() || found->second >= m_cells.size()) {
+        return nullptr;
     }
-    return nullptr;
+    return &m_cells[found->second];
 }
 
-/*!****************************************************************************************
- * \brief Returns an existing cell or appends a new empty cell with the given name.
- * \param name     Cell name.
- * \return         Reference to the cell.
- *****************************************************************************************/
 Cell &Lib::getOrCreateCell(const std::string &name)
 {
     if (Cell *cell = findCell(name)) {
         return *cell;
     }
+    m_cellIndex.emplace(name, m_cells.size());
     m_cells.emplace_back(name);
     return m_cells.back();
+}
+
+void Lib::renameCell(Cell &cell, std::string name)
+{
+    if (cell.name() == name) {
+        return;
+    }
+    ensureCellIndex();
+    const auto found = m_cellIndex.find(cell.name());
+    const std::size_t index = found == m_cellIndex.end() ? m_cells.size() : found->second;
+    if (found != m_cellIndex.end()) {
+        m_cellIndex.erase(found);
+    }
+    cell.setName(std::move(name));
+    if (index < m_cells.size()) {
+        m_cellIndex[m_cells[index].name()] = index;
+    }
+}
+
+void Lib::ensureCellIndex() const
+{
+    if (m_cellIndex.size() == m_cells.size()) {
+        return;
+    }
+    m_cellIndex.clear();
+    for (std::size_t i = 0; i < m_cells.size(); ++i) {
+        m_cellIndex.emplace(m_cells[i].name(), i);
+    }
 }
 
 /*!****************************************************************************************

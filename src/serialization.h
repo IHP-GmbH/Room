@@ -1,6 +1,7 @@
 #pragma once
 
 #include "database.h"
+#include "compact_codec.h"
 
 #include <database.capnp.h>
 
@@ -47,6 +48,9 @@ struct VisitedInstance {
     std::uint32_t rows = 0;
     std::int64_t stepX = 0;
     std::int64_t stepY = 0;
+    std::int64_t colY = 0;
+    std::int64_t rowX = 0;
+    std::vector<Point> offsets;
     std::vector<Property> properties;
 };
 
@@ -61,6 +65,11 @@ struct LayoutVisitHandlers {
     std::function<void(const VisitedCell &cell)> onCell;
     std::function<void(const std::string &cellName, Shape shape)> onShape;
     std::function<void(const std::string &cellName, VisitedInstance instance)> onInstance;
+    /*! Receivers for compact repetitions. When set, identical members without properties stay one array. */
+    std::function<void(const std::string &cellName, const CompactRectArrayRef &array)> onRectArray;
+    std::function<void(const std::string &cellName, const CompactRectGroupRef &group)> onRectGroup;
+    std::function<void(const std::string &cellName, const CompactPolygonRepeatRef &repeat)> onPolygonRepeat;
+    std::function<void(const std::string &cellName, const CompactPathRepeatRef &repeat)> onPathRepeat;
 };
 
 /*!****************************************************************************************

@@ -67,6 +67,12 @@ struct Instance {
   rows       @4 :UInt32 = 0;
   stepX      @5 :Int64 = 0;
   stepY      @6 :Int64 = 0;
+  # Column vector is (stepX, colY). Row vector is (rowX, stepY).
+  colY       @7 :Int64 = 0;
+  rowX       @8 :Int64 = 0;
+  # Irregular placement offsets, including (0, 0). Empty means a single or a regular array.
+  offsetX    @9 :List(Int64);
+  offsetY    @10 :List(Int64);
 }
 
 struct Term {

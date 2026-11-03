@@ -158,7 +158,7 @@ struct Instance {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(afeec16de4ecde8b, 3, 3)
+    CAPNP_DECLARE_STRUCT_HEADER(afeec16de4ecde8b, 5, 5)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -883,6 +883,16 @@ public:
 
   inline  ::int64_t getStepY() const;
 
+  inline  ::int64_t getColY() const;
+
+  inline  ::int64_t getRowX() const;
+
+  inline bool hasOffsetX() const;
+  inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader getOffsetX() const;
+
+  inline bool hasOffsetY() const;
+  inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader getOffsetY() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -943,6 +953,28 @@ public:
 
   inline  ::int64_t getStepY();
   inline void setStepY( ::int64_t value);
+
+  inline  ::int64_t getColY();
+  inline void setColY( ::int64_t value);
+
+  inline  ::int64_t getRowX();
+  inline void setRowX( ::int64_t value);
+
+  inline bool hasOffsetX();
+  inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder getOffsetX();
+  inline void setOffsetX( ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader value);
+  inline void setOffsetX(::kj::ArrayPtr<const  ::int64_t> value);
+  inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder initOffsetX(unsigned int size);
+  inline void adoptOffsetX(::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> disownOffsetX();
+
+  inline bool hasOffsetY();
+  inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder getOffsetY();
+  inline void setOffsetY( ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader value);
+  inline void setOffsetY(::kj::ArrayPtr<const  ::int64_t> value);
+  inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder initOffsetY(unsigned int size);
+  inline void adoptOffsetY(::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>&& value);
+  inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> disownOffsetY();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -2170,6 +2202,110 @@ inline  ::int64_t Instance::Builder::getStepY() {
 inline void Instance::Builder::setStepY( ::int64_t value) {
   _builder.setDataField< ::int64_t>(
       ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t Instance::Reader::getColY() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t Instance::Builder::getColY() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+inline void Instance::Builder::setColY( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t Instance::Reader::getRowX() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t Instance::Builder::getRowX() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+inline void Instance::Builder::setRowX( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool Instance::Reader::hasOffsetX() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline bool Instance::Builder::hasOffsetX() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader Instance::Reader::getOffsetX() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::get(_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder Instance::Builder::getOffsetX() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::get(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline void Instance::Builder::setOffsetX( ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::set(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), value);
+}
+inline void Instance::Builder::setOffsetX(::kj::ArrayPtr<const  ::int64_t> value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::set(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder Instance::Builder::initOffsetX(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::init(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), size);
+}
+inline void Instance::Builder::adoptOffsetX(
+    ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::adopt(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> Instance::Builder::disownOffsetX() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::disown(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+
+inline bool Instance::Reader::hasOffsetY() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline bool Instance::Builder::hasOffsetY() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader Instance::Reader::getOffsetY() const {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::get(_reader.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder Instance::Builder::getOffsetY() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::get(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+inline void Instance::Builder::setOffsetY( ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::set(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), value);
+}
+inline void Instance::Builder::setOffsetY(::kj::ArrayPtr<const  ::int64_t> value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::set(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder Instance::Builder::initOffsetY(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::init(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), size);
+}
+inline void Instance::Builder::adoptOffsetY(
+    ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::adopt(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> Instance::Builder::disownOffsetY() {
+  return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::disown(_builder.getPointerField(
+      ::capnp::bounded<4>() * ::capnp::POINTERS));
 }
 
 inline bool Term::Reader::hasName() const {

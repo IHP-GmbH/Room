@@ -3,6 +3,8 @@
 #include "cell.h"
 #include "layer_utils.h"
 
+#include <cstdlib>
+
 namespace room {
 
 OasImportContext::OasImportContext(Database &db, std::string libName, double defaultDbuPerMicron)
@@ -61,6 +63,29 @@ void OasImportContext::beginCell(const std::string &name)
     syncCurrentCell();
 }
 
+void OasImportContext::renameCell(const std::string &from, const std::string &to)
+{
+    if (from.empty() || from == to) {
+        return;
+    }
+    if (Cell *cell = m_db.lib().findCell(from)) {
+        m_db.lib().renameCell(*cell, to);
+    }
+    for (Cell &cell : m_db.lib().cells()) {
+        if (CellContent *content = cell.findContent(ViewType::Layout)) {
+            for (Instance &inst : content->block().instances()) {
+                if (inst.cellName() == from) {
+                    inst.setCellName(to);
+                }
+            }
+        }
+    }
+    if (m_currentCellName == from) {
+        m_currentCellName = to;
+        syncCurrentCell();
+    }
+}
+
 std::uint32_t OasImportContext::ensureViewLayer(std::uint16_t layerNum,
                                                 std::uint16_t dataType,
                                                 LayerPurpose purpose)
@@ -98,7 +123,10 @@ LayerPurpose OasImportContext::rectanglePurpose() const
     return LayerPurpose::Boundary;
 }
 
-void OasImportContext::addPlacement(const std::string &cellName, std::int64_t x, std::int64_t y)
+void OasImportContext::addPlacement(const std::string &cellName, std::int64_t x, std::int64_t y,
+                                     std::uint32_t columns, std::uint32_t rows, std::int64_t stepX, std::int64_t stepY,
+                                     Orient orient, std::int64_t colY, std::int64_t rowX,
+                                     const std::vector<Point> *offsets)
 {
     if (m_currentCellName.empty() || cellName.empty()) {
         return;
@@ -108,10 +136,18 @@ void OasImportContext::addPlacement(const std::string &cellName, std::int64_t x,
     Transform transform;
     transform.x = x;
     transform.y = y;
-    m_currentBlock->instances().emplace_back(cellName, transform);
+    transform.orient = orient;
+    Instance &instance = m_currentBlock->instances().emplace_back(cellName, transform);
+    if (offsets != nullptr && offsets->size() > 1) {
+        instance.setOffsets(*offsets);
+        return;
+    }
+    instance.setArray(columns, rows, stepX, stepY, colY, rowX);
 }
 
-void OasImportContext::addRectangle(std::int64_t x, std::int64_t y, std::uint64_t w, std::uint64_t h)
+void OasImportContext::addRectangle(std::int64_t x, std::int64_t y, std::uint64_t w, std::uint64_t h,
+                                    std::uint32_t columns, std::uint32_t rows, std::int64_t stepX, std::int64_t stepY,
+                                    const std::vector<Point> *copies, std::int64_t colY, std::int64_t rowX)
 {
     syncCurrentCell();
     if (m_currentBlock == nullptr || w == 0 || h == 0) {
@@ -124,10 +160,22 @@ void OasImportContext::addRectangle(std::int64_t x, std::int64_t y, std::uint64_
     Shape::RectData rect;
     rect.layerId = layerId;
     rect.box = Box{x, y, x + static_cast<std::int64_t>(w), y + static_cast<std::int64_t>(h)};
+    if (copies != nullptr && copies->size() > 1) {
+        rect.copies = *copies;
+    } else if (columns > 1 || rows > 1) {
+        rect.columns = columns == 0 ? 1 : columns;
+        rect.rows = rows == 0 ? 1 : rows;
+        rect.stepX = stepX;
+        rect.stepY = stepY;
+        rect.colY = colY;
+        rect.rowX = rowX;
+    }
     m_currentBlock->shapes().emplace_back(rect);
 }
 
-void OasImportContext::addPolygon(const std::vector<Point> &points)
+void OasImportContext::addPolygon(const std::vector<Point> &points,
+                                  std::uint32_t columns, std::uint32_t rows, std::int64_t stepX, std::int64_t stepY,
+                                  const std::vector<Point> *copies, std::int64_t colY, std::int64_t rowX)
 {
     syncCurrentCell();
     if (m_currentBlock == nullptr || points.size() < 3) {
@@ -140,13 +188,26 @@ void OasImportContext::addPolygon(const std::vector<Point> &points)
     Shape::PolygonData poly;
     poly.layerId = layerId;
     poly.points = points;
+    if (copies != nullptr && copies->size() > 1) {
+        poly.copies = *copies;
+    } else if (columns > 1 || rows > 1) {
+        poly.columns = columns == 0 ? 1 : columns;
+        poly.rows = rows == 0 ? 1 : rows;
+        poly.stepX = stepX;
+        poly.stepY = stepY;
+        poly.colY = colY;
+        poly.rowX = rowX;
+    }
     m_currentBlock->shapes().emplace_back(poly);
 }
 
-void OasImportContext::addPath(const std::vector<Point> &points, std::uint32_t width)
+void OasImportContext::addPath(const std::vector<Point> &points, std::uint32_t width,
+                               std::uint32_t columns, std::uint32_t rows, std::int64_t stepX, std::int64_t stepY,
+                               std::int32_t bgnExt, std::int32_t endExt, bool round,
+                               const std::vector<Point> *copies, std::int64_t colY, std::int64_t rowX)
 {
     syncCurrentCell();
-    if (m_currentBlock == nullptr || points.size() < 2) {
+    if (m_currentBlock == nullptr || points.empty() || (!round && points.size() < 2)) {
         return;
     }
     const std::uint16_t layerNum = static_cast<std::uint16_t>(m_modalLayer);
@@ -157,6 +218,19 @@ void OasImportContext::addPath(const std::vector<Point> &points, std::uint32_t w
     path.layerId = layerId;
     path.points = points;
     path.width = width;
+    path.bgnExt = bgnExt;
+    path.endExt = endExt;
+    path.round = round;
+    if (copies != nullptr && copies->size() > 1) {
+        path.copies = *copies;
+    } else if (columns > 1 || rows > 1) {
+        path.columns = columns == 0 ? 1 : columns;
+        path.rows = rows == 0 ? 1 : rows;
+        path.stepX = stepX;
+        path.stepY = stepY;
+        path.colY = colY;
+        path.rowX = rowX;
+    }
     m_currentBlock->shapes().emplace_back(path);
 }
 
@@ -179,6 +253,31 @@ void OasImportContext::addText(const std::string &text,
     textData.position = Point{x, y};
     textData.height = height;
     m_currentBlock->shapes().emplace_back(textData);
+}
+
+void OasImportContext::resolveTextPlaceholders(const std::vector<std::string> &names)
+{
+    const std::string prefix = "\x01oastext:";
+    for (Cell &cell : m_db.lib().cells()) {
+        if (CellContent *content = cell.findContent(ViewType::Layout)) {
+            for (Shape &shape : content->block().shapes()) {
+                const Shape::TextData *text = shape.text();
+                if (text == nullptr || text->text.compare(0, prefix.size(), prefix) != 0) {
+                    continue;
+                }
+                const std::uint64_t rn = std::strtoull(text->text.c_str() + prefix.size(), nullptr, 10);
+                if (rn >= names.size() || names[static_cast<std::size_t>(rn)].empty() ||
+                    names[static_cast<std::size_t>(rn)] == text->text) {
+                    continue;
+                }
+                Shape::TextData updated = *text;
+                updated.text = names[static_cast<std::size_t>(rn)];
+                std::vector<Property> props = shape.properties();
+                shape = Shape(std::move(updated));
+                shape.properties() = std::move(props);
+            }
+        }
+    }
 }
 
 void OasImportContext::finalize()

@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
     const std::size_t loadedInstances = instanceCount(loaded);
     const std::uint64_t statShapes = stats.rects + stats.polygons + stats.paths + stats.texts;
     const std::uint64_t statInstances = stats.srefs + stats.arefs;
+    const std::uint64_t inputPlaces = streamed.stats.srefs + streamed.stats.arefMembers;
+    const std::uint64_t filePlaces = stats.srefs + stats.arefMembers;
 
     std::cout << "cells original " << original.lib().cells().size()
               << " loaded " << loaded.lib().cells().size()
@@ -83,9 +85,13 @@ int main(int argc, char *argv[])
         std::cerr << "error: shape count mismatch\n";
         return 4;
     }
-    if (originalInstances != loadedInstances || originalInstances != statInstances) {
+    if (originalInstances != streamed.stats.srefs + streamed.stats.arefs) {
         std::cerr << "error: instance count mismatch\n";
         return 5;
+    }
+    if (loadedInstances != statInstances || inputPlaces != filePlaces) {
+        std::cerr << "error: packed instance count mismatch\n";
+        return 6;
     }
     std::cout << "stream round-trip counts match\n";
     return 0;

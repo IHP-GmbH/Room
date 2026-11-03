@@ -1864,24 +1864,36 @@ std::string formatRectDiagramOpening(int x, int bottomY, int w, int h, const Dia
     return rect.str();
 }
 
+bool diagramSectionHasSmith(const CellContent &content)
+{
+    for (const Property &prop : content.properties()) {
+        if (prop.name == "section.Diagrams" && prop.value.find("<Smith ") != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::optional<std::array<int, 4>> qucsDiagramRectFromContent(const CellContent &content)
 {
     for (const Property &prop : content.properties()) {
         if (prop.name != "section.Diagrams") {
             continue;
         }
-        const std::string tag = "<Rect ";
-        const std::size_t pos = prop.value.find(tag);
-        if (pos == std::string::npos) {
-            continue;
-        }
-        int x = 0;
-        int y = 0;
-        int w = 0;
-        int h = 0;
-        if (std::sscanf(prop.value.c_str() + pos + tag.size(), "%d %d %d %d", &x, &y, &w, &h) == 4 && w > 0
-            && h > 0) {
-            return std::array<int, 4>{x, y, w, h};
+        // Prefer Smith geometry when present (EM/S-param TBs); else Cartesian <Rect>.
+        for (const char *tag : {"<Smith ", "<Rect "}) {
+            const std::size_t pos = prop.value.find(tag);
+            if (pos == std::string::npos) {
+                continue;
+            }
+            int x = 0;
+            int y = 0;
+            int w = 0;
+            int h = 0;
+            if (std::sscanf(prop.value.c_str() + pos + std::strlen(tag), "%d %d %d %d", &x, &y, &w, &h) == 4
+                && w > 0 && h > 0) {
+                return std::array<int, 4>{x, y, w, h};
+            }
         }
     }
     return std::nullopt;
@@ -1944,7 +1956,7 @@ bool blockHasSpAnalysis(const Block &block)
     return false;
 }
 
-/*! Map Qucs diagram wave names (ac.s11_db) to ngspice/NutmegEq lets (S11_dB). */
+/*! Map Qucs diagram wave names (ac.s11_db / ngspice/ac.s_2_1) to ngspice/Xschem names. */
 std::string mapDiagramWaveToNgspice(std::string wave)
 {
     while (!wave.empty() && (wave.front() == '"' || wave.front() == '\'' || wave.front() == '<')) {
@@ -1954,8 +1966,15 @@ std::string mapDiagramWaveToNgspice(std::string wave)
         wave.pop_back();
     }
     std::string lower = toLowerAscii(wave);
+    if (lower.rfind("ngspice/", 0) == 0) {
+        lower = lower.substr(8);
+    }
     if (lower.rfind("ac.", 0) == 0) {
         lower = lower.substr(3);
+    }
+    // Complex S-params for Smith: s_2_1 stays lowercase (raw vector name).
+    if (lower.size() >= 5 && lower[0] == 's' && lower[1] == '_' && std::isdigit(static_cast<unsigned char>(lower[2]))) {
+        return lower;
     }
     // s11_db / s21_db → S11_dB / S21_dB (matches NutmegEq let names).
     if (lower.size() >= 6 && lower[0] == 's' && std::isdigit(static_cast<unsigned char>(lower[1]))) {
@@ -2024,19 +2043,21 @@ std::optional<std::string> buildGraphRecordFromQucsDiagram(const Block &block, c
     const int gy1 = gy2 - (*rect)[3];
 
     const bool freqDomain = diagramLooksFrequencyDomain(content) || blockHasSpAnalysis(block);
-    if (freqDomain) {
+    const bool smith = diagramSectionHasSmith(content);
+    if (freqDomain || smith) {
         std::vector<std::string> waves = waveformsFromDiagramSection(content);
         if (waves.empty()) {
-            waves = {"S11_dB", "S21_dB", "S22_dB"};
+            waves = smith ? std::vector<std::string>{"s_2_1"}
+                          : std::vector<std::string>{"S11_dB", "S21_dB", "S22_dB"};
         }
-        // Default SP sweep if diagram axes missing.
+        // Default SP sweep if diagram axes missing (ignored visually in Smith mode).
         if (!(limits.xMax > limits.xMin) || limits.xMax < 1e3) {
             limits.xMin = 1e8;
             limits.xMax = 1e11;
         }
         if (!(limits.yMax > limits.yMin)) {
-            limits.yMin = -80.0;
-            limits.yMax = 10.0;
+            limits.yMin = smith ? -1.05 : -80.0;
+            limits.yMax = smith ? 1.05 : 10.0;
             limits.yManual = true;
         }
         std::ostringstream nodeList;
@@ -2048,11 +2069,15 @@ std::optional<std::string> buildGraphRecordFromQucsDiagram(const Block &block, c
         }
         std::ostringstream graph;
         graph << std::setprecision(12);
-        graph << "B 2 " << gx1 << ' ' << gy1 << ' ' << gx2 << ' ' << gy2 << " {flags=graph y1=" << limits.yMin
-              << " y2=" << limits.yMax
+        graph << "B 2 " << gx1 << ' ' << gy1 << ' ' << gx2 << ' ' << gy2 << " {flags=graph";
+        if (smith) {
+            // Xschem Mode=Smith (upstream PR #511); Z0 defaults to 50 Ω.
+            graph << " mode=Smith z0=50";
+        }
+        graph << " y1=" << limits.yMin << " y2=" << limits.yMax
               << " ypos1=0 ypos2=2 divy=5 subdivy=1 unity=1 x1=" << limits.xMin << " x2=" << limits.xMax
               << " divx=5 subdivx=1 xlabmag=1.0 ylabmag=1.0 node=\"" << nodeList.str()
-              << "\" color=4 dataset=-1 unitx=1 logx=1 logy=0}\n";
+              << "\" color=4 dataset=-1 unitx=1 logx=" << (smith ? 0 : 1) << " logy=0}\n";
         return graph.str();
     }
 

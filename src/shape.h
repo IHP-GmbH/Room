@@ -18,10 +18,24 @@ public:
     struct RectData {
         Box box;
         std::uint32_t layerId = 0;
+        std::uint32_t columns = 0;
+        std::uint32_t rows = 0;
+        std::int64_t stepX = 0;
+        std::int64_t stepY = 0;
+        std::int64_t colY = 0;
+        std::int64_t rowX = 0;
+        std::vector<Point> copies;
     };
     struct PolygonData {
         std::vector<Point> points;
         std::uint32_t layerId = 0;
+        std::uint32_t columns = 0;
+        std::uint32_t rows = 0;
+        std::int64_t stepX = 0;
+        std::int64_t stepY = 0;
+        std::int64_t colY = 0;
+        std::int64_t rowX = 0;
+        std::vector<Point> copies;
     };
     struct PathData {
         std::vector<Point> points;
@@ -30,6 +44,13 @@ public:
         std::int32_t bgnExt = 0;
         std::int32_t endExt = 0;
         bool round = false;
+        std::uint32_t columns = 0;
+        std::uint32_t rows = 0;
+        std::int64_t stepX = 0;
+        std::int64_t stepY = 0;
+        std::int64_t colY = 0;
+        std::int64_t rowX = 0;
+        std::vector<Point> copies;
     };
     struct TextData {
         Point position;

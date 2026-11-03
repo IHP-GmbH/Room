@@ -20,6 +20,11 @@ struct CompactRectArray {
   rows      @5 :UInt32;
   stepX     @6 :Int64;
   stepY     @7 :Int64;
+  # Column vector is (stepX, colY). Row vector is (rowX, stepY).
+  colY      @8 :Int64 = 0;
+  rowX      @9 :Int64 = 0;
+  # False: this array has no per-member entries in the layer property stream.
+  memberProperties @10 :Bool = true;
 }
 
 # GDS SREF-like placements of identical rectangles (same width/height).
@@ -28,6 +33,7 @@ struct CompactRectGroup {
   height @1 :Int64;
   llx   @2 :List(Int64);
   lly   @3 :List(Int64);
+  memberProperties @4 :Bool = true;
 }
 
 # Identical polygon geometry placed at different origins (first vertex).
@@ -36,6 +42,15 @@ struct CompactPolygonRepeat {
   deltas      @1 :List(Int64);
   originX     @2 :List(Int64);
   originY     @3 :List(Int64);
+  # When columns or rows is greater than 1, originX/originY hold the first placement
+  # and the rest are column vector (stepX, colY) by row vector (rowX, stepY).
+  columns     @4 :UInt32 = 0;
+  rows        @5 :UInt32 = 0;
+  stepX       @6 :Int64 = 0;
+  stepY       @7 :Int64 = 0;
+  colY        @8 :Int64 = 0;
+  rowX        @9 :Int64 = 0;
+  memberProperties @10 :Bool = true;
 }
 
 # Identical path geometry (width, ends, centerline) at different origins.
@@ -48,6 +63,13 @@ struct CompactPathRepeat {
   bgnExt      @5 :Int32 = 0;
   endExt      @6 :Int32 = 0;
   round       @7 :Bool = false;
+  columns     @8 :UInt32 = 0;
+  rows        @9 :UInt32 = 0;
+  stepX       @10 :Int64 = 0;
+  stepY       @11 :Int64 = 0;
+  colY        @12 :Int64 = 0;
+  rowX        @13 :Int64 = 0;
+  memberProperties @14 :Bool = true;
 }
 
 struct CompactLayerShapes {

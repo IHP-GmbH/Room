@@ -27,11 +27,32 @@ public:
     void                                                registerDatatypeRef(std::uint64_t ref, std::uint16_t datatype);
 
     void                                                beginCell(const std::string &name);
-    void                                                addPlacement(const std::string &cellName, std::int64_t x, std::int64_t y);
-    void                                                addRectangle(std::int64_t x, std::int64_t y, std::uint64_t w, std::uint64_t h);
-    void                                                addPolygon(const std::vector<Point> &points);
-    void                                                addPath(const std::vector<Point> &points, std::uint32_t width);
+    void                                                renameCell(const std::string &from, const std::string &to);
+    void                                                addPlacement(const std::string &cellName, std::int64_t x, std::int64_t y,
+                                                                     std::uint32_t columns = 0, std::uint32_t rows = 0,
+                                                                     std::int64_t stepX = 0, std::int64_t stepY = 0,
+                                                                     Orient orient = Orient::R0,
+                                                                     std::int64_t colY = 0, std::int64_t rowX = 0,
+                                                                     const std::vector<Point> *offsets = nullptr);
+    void                                                addRectangle(std::int64_t x, std::int64_t y, std::uint64_t w, std::uint64_t h,
+                                                                     std::uint32_t columns = 0, std::uint32_t rows = 0,
+                                                                     std::int64_t stepX = 0, std::int64_t stepY = 0,
+                                                                     const std::vector<Point> *copies = nullptr,
+                                                                     std::int64_t colY = 0, std::int64_t rowX = 0);
+    void                                                addPolygon(const std::vector<Point> &points,
+                                                                   std::uint32_t columns = 0, std::uint32_t rows = 0,
+                                                                   std::int64_t stepX = 0, std::int64_t stepY = 0,
+                                                                   const std::vector<Point> *copies = nullptr,
+                                                                   std::int64_t colY = 0, std::int64_t rowX = 0);
+    void                                                addPath(const std::vector<Point> &points, std::uint32_t width,
+                                                                std::uint32_t columns = 0, std::uint32_t rows = 0,
+                                                                std::int64_t stepX = 0, std::int64_t stepY = 0,
+                                                                std::int32_t bgnExt = 0, std::int32_t endExt = 0,
+                                                                bool round = false,
+                                                                const std::vector<Point> *copies = nullptr,
+                                                                std::int64_t colY = 0, std::int64_t rowX = 0);
     void                                                addText(const std::string &text, std::int64_t x, std::int64_t y, std::uint32_t height);
+    void                                                resolveTextPlaceholders(const std::vector<std::string> &names);
 
     void                                                finalize();
 

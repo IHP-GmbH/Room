@@ -13,6 +13,12 @@ Box Block::computeBBox(const Block &block)
     for (const auto &shape : block.shapes()) {
         if (const auto *r = shape.rect()) {
             bbox.expand(r->box);
+            if (r->columns > 1 || r->rows > 1) {
+                const std::int64_t spanX = static_cast<std::int64_t>(r->columns > 0 ? r->columns - 1 : 0) * r->stepX;
+                const std::int64_t spanY = static_cast<std::int64_t>(r->rows > 0 ? r->rows - 1 : 0) * r->stepY;
+                bbox.expand(r->box.llx + spanX, r->box.lly + spanY);
+                bbox.expand(r->box.urx + spanX, r->box.ury + spanY);
+            }
         } else if (const auto *p = shape.polygon()) {
             for (const auto &pt : p->points) {
                 bbox.expand(pt.x, pt.y);

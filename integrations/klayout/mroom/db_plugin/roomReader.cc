@@ -14,12 +14,14 @@
 #include "dbText.h"
 #include "dbTrans.h"
 #include "dbInstElement.h"
+#include "dbShape.h"
 
 #include "tlException.h"
 #include "tlInternational.h"
 #include "tlLog.h"
 #include "tlString.h"
 
+#include <algorithm>
 #include <limits>
 #include <map>
 #include <stdexcept>
@@ -125,6 +127,263 @@ void insert_shape (db::Shapes &shapes, const Obj &obj, db::properties_id_type pr
   } else {
     shapes.insert (db::object_with_properties<Obj> (obj, prop_id));
   }
+}
+
+struct Placement
+{
+  std::int64_t x = 0;
+  std::int64_t y = 0;
+};
+
+struct RegularGrid
+{
+  std::int64_t x0 = 0;
+  std::int64_t y0 = 0;
+  std::int64_t dx = 0;
+  std::int64_t dy = 0;
+  std::uint64_t nx = 1;
+  std::uint64_t ny = 1;
+};
+
+bool arithmetic_step (const std::vector<std::int64_t> &values, std::int64_t &step)
+{
+  if (values.size () <= 1) {
+    step = 0;
+    return true;
+  }
+  step = values[1] - values[0];
+  if (step == 0) {
+    return false;
+  }
+  for (std::size_t i = 2; i < values.size (); ++i) {
+    if (values[i] - values[i - 1] != step) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool as_regular_grid (std::vector<Placement> points, RegularGrid &grid)
+{
+  if (points.empty ()) {
+    return false;
+  }
+  const std::size_t original_count = points.size ();
+  std::sort (points.begin (), points.end (), [] (const Placement &a, const Placement &b) {
+    if (a.x != b.x) {
+      return a.x < b.x;
+    }
+    return a.y < b.y;
+  });
+  points.erase (std::unique (points.begin (), points.end (), [] (const Placement &a, const Placement &b) {
+    return a.x == b.x && a.y == b.y;
+  }), points.end ());
+  if (points.size () != original_count) {
+    return false;
+  }
+
+  std::vector<std::int64_t> xs;
+  std::vector<std::int64_t> ys;
+  xs.reserve (points.size ());
+  ys.reserve (points.size ());
+  for (const Placement &point : points) {
+    if (xs.empty () || xs.back () != point.x) {
+      xs.push_back (point.x);
+    }
+    ys.push_back (point.y);
+  }
+  std::sort (ys.begin (), ys.end ());
+  ys.erase (std::unique (ys.begin (), ys.end ()), ys.end ());
+  if (static_cast<std::uint64_t> (xs.size ()) * static_cast<std::uint64_t> (ys.size ()) != points.size ()) {
+    return false;
+  }
+  std::int64_t dx = 0;
+  std::int64_t dy = 0;
+  if (! arithmetic_step (xs, dx) || ! arithmetic_step (ys, dy)) {
+    return false;
+  }
+  std::size_t index = 0;
+  for (std::int64_t x : xs) {
+    for (std::int64_t y : ys) {
+      if (points[index].x != x || points[index].y != y) {
+        return false;
+      }
+      ++index;
+    }
+  }
+  grid.x0 = xs.front ();
+  grid.y0 = ys.front ();
+  grid.dx = dx;
+  grid.dy = dy;
+  grid.nx = xs.size ();
+  grid.ny = ys.size ();
+  return true;
+}
+
+void insert_box_grid (db::Shapes &shapes, db::Layout &layout,
+                      std::int64_t llx, std::int64_t lly, std::int64_t width, std::int64_t height,
+                      std::int64_t step_x, std::int64_t step_y, std::uint64_t columns, std::uint64_t rows)
+{
+  if (columns == 0 || rows == 0) {
+    return;
+  }
+  const db::Box box (db::Point (cast_coord (llx), cast_coord (lly)),
+                     db::Point (cast_coord (llx + width), cast_coord (lly + height)));
+  if (columns == 1 && rows == 1) {
+    shapes.insert (box);
+    return;
+  }
+  shapes.insert (db::Shape::box_array_type (box, db::UnitTrans (), layout.array_repository (),
+                                            db::Vector (cast_coord (step_x), 0),
+                                            db::Vector (0, cast_coord (step_y)),
+                                            columns, rows));
+}
+
+void insert_box_points (db::Shapes &shapes, db::Layout &layout, std::int64_t width, std::int64_t height,
+                        const std::vector<std::int64_t> &xs, const std::vector<std::int64_t> &ys)
+{
+  const std::size_t count = std::min (xs.size (), ys.size ());
+  std::vector<Placement> points;
+  points.reserve (count);
+  for (std::size_t i = 0; i < count; ++i) {
+    points.push_back (Placement { xs[i], ys[i] });
+  }
+  RegularGrid grid;
+  if (as_regular_grid (points, grid) && (grid.nx > 1 || grid.ny > 1)) {
+    insert_box_grid (shapes, layout, grid.x0, grid.y0, width, height, grid.dx, grid.dy, grid.nx, grid.ny);
+    return;
+  }
+
+  std::sort (points.begin (), points.end (), [] (const Placement &a, const Placement &b) {
+    if (a.y != b.y) {
+      return a.y < b.y;
+    }
+    return a.x < b.x;
+  });
+  std::size_t begin = 0;
+  while (begin < points.size ()) {
+    std::size_t end = begin + 1;
+    std::int64_t step = 0;
+    if (end < points.size () && points[end].y == points[begin].y && points[end].x != points[begin].x) {
+      step = points[end].x - points[begin].x;
+      ++end;
+      while (end < points.size () && points[end].y == points[begin].y &&
+             points[end].x - points[end - 1].x == step) {
+        ++end;
+      }
+    }
+    const std::uint64_t run = static_cast<std::uint64_t> (end - begin);
+    if (run > 1) {
+      insert_box_grid (shapes, layout, points[begin].x, points[begin].y, width, height, step, 0, run, 1);
+    } else {
+      insert_box_grid (shapes, layout, points[begin].x, points[begin].y, width, height, 0, 0, 1, 1);
+    }
+    begin = end;
+  }
+}
+
+template <class EmitRun>
+void insert_origins (const std::vector<std::int64_t> &xs, const std::vector<std::int64_t> &ys, EmitRun &&emit_run)
+{
+  const std::size_t count = std::min (xs.size (), ys.size ());
+  std::vector<Placement> points;
+  points.reserve (count);
+  for (std::size_t i = 0; i < count; ++i) {
+    points.push_back (Placement { xs[i], ys[i] });
+  }
+  RegularGrid grid;
+  if (as_regular_grid (points, grid) && (grid.nx > 1 || grid.ny > 1)) {
+    emit_run (grid.x0, grid.y0, grid.dx, grid.dy, grid.nx, grid.ny);
+    return;
+  }
+
+  std::sort (points.begin (), points.end (), [] (const Placement &a, const Placement &b) {
+    if (a.y != b.y) {
+      return a.y < b.y;
+    }
+    return a.x < b.x;
+  });
+  std::size_t begin = 0;
+  while (begin < points.size ()) {
+    std::size_t end = begin + 1;
+    std::int64_t step = 0;
+    if (end < points.size () && points[end].y == points[begin].y && points[end].x != points[begin].x) {
+      step = points[end].x - points[begin].x;
+      ++end;
+      while (end < points.size () && points[end].y == points[begin].y &&
+             points[end].x - points[end - 1].x == step) {
+        ++end;
+      }
+    }
+    const std::uint64_t run = static_cast<std::uint64_t> (end - begin);
+    if (run > 1) {
+      emit_run (points[begin].x, points[begin].y, step, 0, run, 1);
+    } else {
+      emit_run (points[begin].x, points[begin].y, 0, 0, 1, 1);
+    }
+    begin = end;
+  }
+}
+
+void insert_polygon_grid (db::Shapes &shapes, db::Layout &layout, const std::vector<room::Point> &prototype,
+                          std::int64_t shift_x, std::int64_t shift_y, std::int64_t step_x, std::int64_t step_y,
+                          std::uint64_t columns, std::uint64_t rows)
+{
+  if (prototype.size () < 3 || columns == 0 || rows == 0) {
+    return;
+  }
+  std::vector<db::Point> hull;
+  hull.reserve (prototype.size ());
+  for (const room::Point &point : prototype) {
+    hull.push_back (db::Point (cast_coord (point.x + shift_x), cast_coord (point.y + shift_y)));
+  }
+  db::SimplePolygon polygon;
+  polygon.assign_hull (hull.begin (), hull.end ());
+  if (columns == 1 && rows == 1) {
+    shapes.insert (polygon);
+    return;
+  }
+  shapes.insert (db::array<db::SimplePolygonPtr, db::Disp> (
+    db::SimplePolygonPtr (polygon, layout.shape_repository ()),
+    db::Disp (db::Vector (0, 0)),
+    layout.array_repository (),
+    db::Vector (cast_coord (step_x), 0),
+    db::Vector (0, cast_coord (step_y)),
+    columns, rows));
+}
+
+void insert_path_grid (db::Shapes &shapes, db::Layout &layout, const room::CompactPathRepeatRef &repeat,
+                       std::int64_t shift_x, std::int64_t shift_y, std::int64_t step_x, std::int64_t step_y,
+                       std::uint64_t columns, std::uint64_t rows)
+{
+  if (repeat.points.empty () || columns == 0 || rows == 0) {
+    return;
+  }
+  std::vector<db::Point> path_points;
+  path_points.reserve (repeat.points.size ());
+  for (const room::Point &point : repeat.points) {
+    path_points.push_back (db::Point (cast_coord (point.x + shift_x), cast_coord (point.y + shift_y)));
+  }
+  db::Path path;
+  path.assign (path_points.begin (), path_points.end ());
+  if (repeat.width > 0) {
+    path.width (cast_coord (repeat.width));
+  }
+  path.extensions (cast_coord (repeat.bgnExt), cast_coord (repeat.endExt));
+  if (repeat.round) {
+    path.round (true);
+  }
+  if (columns == 1 && rows == 1) {
+    shapes.insert (path);
+    return;
+  }
+  shapes.insert (db::array<db::PathPtr, db::Disp> (
+    db::PathPtr (path, layout.shape_repository ()),
+    db::Disp (db::Vector (0, 0)),
+    layout.array_repository (),
+    db::Vector (cast_coord (step_x), 0),
+    db::Vector (0, cast_coord (step_y)),
+    columns, rows));
 }
 
 void apply_core_properties (db::Cell &cell, const std::vector<room::Property> &cell_props,
@@ -315,6 +574,57 @@ void Reader::do_read (db::Layout &layout)
     } else {
       target_cell.insert (db::object_with_properties<db::CellInstArray> (arr, prop_id));
     }
+  };
+
+  auto target_shapes = [&] (const std::string &cell_name, std::uint32_t layer_id) -> db::Shapes * {
+    const auto cell_it = cell_index_by_name.find (cell_name);
+    if (cell_it == cell_index_by_name.end ()) {
+      return 0;
+    }
+    const unsigned int layer_index = layer_mapper.layer_index (layer_spec_by_id (cell_name, layer_id));
+    return &layout.cell (cell_it->second).shapes (layer_index);
+  };
+
+  handlers.onRectArray = [&] (const std::string &cell_name, const room::CompactRectArrayRef &array) {
+    db::Shapes *shapes = target_shapes (cell_name, array.layerId);
+    if (! shapes) {
+      return;
+    }
+    insert_box_grid (*shapes, layout, array.originLlx, array.originLly, array.width, array.height,
+                     array.stepX, array.stepY, array.columns, array.rows);
+  };
+  handlers.onRectGroup = [&] (const std::string &cell_name, const room::CompactRectGroupRef &group) {
+    db::Shapes *shapes = target_shapes (cell_name, group.layerId);
+    if (! shapes) {
+      return;
+    }
+    insert_box_points (*shapes, layout, group.width, group.height, group.llx, group.lly);
+  };
+  handlers.onPolygonRepeat = [&] (const std::string &cell_name, const room::CompactPolygonRepeatRef &repeat) {
+    db::Shapes *shapes = target_shapes (cell_name, repeat.layerId);
+    if (! shapes || repeat.originX.empty ()) {
+      return;
+    }
+    const std::int64_t origin_x = repeat.originX.front ();
+    const std::int64_t origin_y = repeat.originY.front ();
+    insert_origins (repeat.originX, repeat.originY,
+                    [&] (std::int64_t x, std::int64_t y, std::int64_t step_x, std::int64_t step_y,
+                         std::uint64_t columns, std::uint64_t rows) {
+      insert_polygon_grid (*shapes, layout, repeat.points, x - origin_x, y - origin_y, step_x, step_y, columns, rows);
+    });
+  };
+  handlers.onPathRepeat = [&] (const std::string &cell_name, const room::CompactPathRepeatRef &repeat) {
+    db::Shapes *shapes = target_shapes (cell_name, repeat.layerId);
+    if (! shapes || repeat.originX.empty ()) {
+      return;
+    }
+    const std::int64_t origin_x = repeat.originX.front ();
+    const std::int64_t origin_y = repeat.originY.front ();
+    insert_origins (repeat.originX, repeat.originY,
+                    [&] (std::int64_t x, std::int64_t y, std::int64_t step_x, std::int64_t step_y,
+                         std::uint64_t columns, std::uint64_t rows) {
+      insert_path_grid (*shapes, layout, repeat, x - origin_x, y - origin_y, step_x, step_y, columns, rows);
+    });
   };
 
   try {

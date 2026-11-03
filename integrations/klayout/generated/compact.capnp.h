@@ -41,7 +41,7 @@ struct CompactRectArray {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(ae1aea2873409447, 7, 0)
+    CAPNP_DECLARE_STRUCT_HEADER(ae1aea2873409447, 10, 0)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -56,7 +56,7 @@ struct CompactRectGroup {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(8c1e2260b9ef628a, 2, 2)
+    CAPNP_DECLARE_STRUCT_HEADER(8c1e2260b9ef628a, 3, 2)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -71,7 +71,7 @@ struct CompactPolygonRepeat {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(c88296998a35a80a, 1, 3)
+    CAPNP_DECLARE_STRUCT_HEADER(c88296998a35a80a, 6, 3)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -86,7 +86,7 @@ struct CompactPathRepeat {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(a0dda7b37ee1e085, 3, 3)
+    CAPNP_DECLARE_STRUCT_HEADER(a0dda7b37ee1e085, 8, 3)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -158,6 +158,12 @@ public:
 
   inline  ::int64_t getStepY() const;
 
+  inline  ::int64_t getColY() const;
+
+  inline  ::int64_t getRowX() const;
+
+  inline bool getMemberProperties() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -209,6 +215,15 @@ public:
 
   inline  ::int64_t getStepY();
   inline void setStepY( ::int64_t value);
+
+  inline  ::int64_t getColY();
+  inline void setColY( ::int64_t value);
+
+  inline  ::int64_t getRowX();
+  inline void setRowX( ::int64_t value);
+
+  inline bool getMemberProperties();
+  inline void setMemberProperties(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -263,6 +278,8 @@ public:
   inline bool hasLly() const;
   inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader getLly() const;
 
+  inline bool getMemberProperties() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -312,6 +329,9 @@ public:
   inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder initLly(unsigned int size);
   inline void adoptLly(::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>&& value);
   inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> disownLly();
+
+  inline bool getMemberProperties();
+  inline void setMemberProperties(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -367,6 +387,20 @@ public:
   inline bool hasOriginY() const;
   inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader getOriginY() const;
 
+  inline  ::uint32_t getColumns() const;
+
+  inline  ::uint32_t getRows() const;
+
+  inline  ::int64_t getStepX() const;
+
+  inline  ::int64_t getStepY() const;
+
+  inline  ::int64_t getColY() const;
+
+  inline  ::int64_t getRowX() const;
+
+  inline bool getMemberProperties() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -421,6 +455,27 @@ public:
   inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder initOriginY(unsigned int size);
   inline void adoptOriginY(::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>&& value);
   inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> disownOriginY();
+
+  inline  ::uint32_t getColumns();
+  inline void setColumns( ::uint32_t value);
+
+  inline  ::uint32_t getRows();
+  inline void setRows( ::uint32_t value);
+
+  inline  ::int64_t getStepX();
+  inline void setStepX( ::int64_t value);
+
+  inline  ::int64_t getStepY();
+  inline void setStepY( ::int64_t value);
+
+  inline  ::int64_t getColY();
+  inline void setColY( ::int64_t value);
+
+  inline  ::int64_t getRowX();
+  inline void setRowX( ::int64_t value);
+
+  inline bool getMemberProperties();
+  inline void setMemberProperties(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -483,6 +538,20 @@ public:
   inline  ::int32_t getEndExt() const;
 
   inline bool getRound() const;
+
+  inline  ::uint32_t getColumns() const;
+
+  inline  ::uint32_t getRows() const;
+
+  inline  ::int64_t getStepX() const;
+
+  inline  ::int64_t getStepY() const;
+
+  inline  ::int64_t getColY() const;
+
+  inline  ::int64_t getRowX() const;
+
+  inline bool getMemberProperties() const;
 
 private:
   ::capnp::_::StructReader _reader;
@@ -550,6 +619,27 @@ public:
 
   inline bool getRound();
   inline void setRound(bool value);
+
+  inline  ::uint32_t getColumns();
+  inline void setColumns( ::uint32_t value);
+
+  inline  ::uint32_t getRows();
+  inline void setRows( ::uint32_t value);
+
+  inline  ::int64_t getStepX();
+  inline void setStepX( ::int64_t value);
+
+  inline  ::int64_t getStepY();
+  inline void setStepY( ::int64_t value);
+
+  inline  ::int64_t getColY();
+  inline void setColY( ::int64_t value);
+
+  inline  ::int64_t getRowX();
+  inline void setRowX( ::int64_t value);
+
+  inline bool getMemberProperties();
+  inline void setMemberProperties(bool value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -1103,6 +1193,48 @@ inline void CompactRectArray::Builder::setStepY( ::int64_t value) {
       ::capnp::bounded<6>() * ::capnp::ELEMENTS, value);
 }
 
+inline  ::int64_t CompactRectArray::Reader::getColY() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<7>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactRectArray::Builder::getColY() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<7>() * ::capnp::ELEMENTS);
+}
+inline void CompactRectArray::Builder::setColY( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<7>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactRectArray::Reader::getRowX() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<8>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactRectArray::Builder::getRowX() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<8>() * ::capnp::ELEMENTS);
+}
+inline void CompactRectArray::Builder::setRowX( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<8>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool CompactRectArray::Reader::getMemberProperties() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<576>() * ::capnp::ELEMENTS, true);
+}
+
+inline bool CompactRectArray::Builder::getMemberProperties() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<576>() * ::capnp::ELEMENTS, true);
+}
+inline void CompactRectArray::Builder::setMemberProperties(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<576>() * ::capnp::ELEMENTS, value, true);
+}
+
 inline  ::int64_t CompactRectGroup::Reader::getWidth() const {
   return _reader.getDataField< ::int64_t>(
       ::capnp::bounded<0>() * ::capnp::ELEMENTS);
@@ -1205,6 +1337,20 @@ inline void CompactRectGroup::Builder::adoptLly(
 inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> CompactRectGroup::Builder::disownLly() {
   return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::disown(_builder.getPointerField(
       ::capnp::bounded<1>() * ::capnp::POINTERS));
+}
+
+inline bool CompactRectGroup::Reader::getMemberProperties() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<128>() * ::capnp::ELEMENTS, true);
+}
+
+inline bool CompactRectGroup::Builder::getMemberProperties() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<128>() * ::capnp::ELEMENTS, true);
+}
+inline void CompactRectGroup::Builder::setMemberProperties(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<128>() * ::capnp::ELEMENTS, value, true);
 }
 
 inline  ::uint32_t CompactPolygonRepeat::Reader::getVertexCount() const {
@@ -1333,6 +1479,104 @@ inline void CompactPolygonRepeat::Builder::adoptOriginY(
 inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> CompactPolygonRepeat::Builder::disownOriginY() {
   return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::disown(_builder.getPointerField(
       ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+
+inline  ::uint32_t CompactPolygonRepeat::Reader::getColumns() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t CompactPolygonRepeat::Builder::getColumns() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS);
+}
+inline void CompactPolygonRepeat::Builder::setColumns( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t CompactPolygonRepeat::Reader::getRows() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t CompactPolygonRepeat::Builder::getRows() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+inline void CompactPolygonRepeat::Builder::setRows( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactPolygonRepeat::Reader::getStepX() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactPolygonRepeat::Builder::getStepX() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS);
+}
+inline void CompactPolygonRepeat::Builder::setStepX( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<2>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactPolygonRepeat::Reader::getStepY() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactPolygonRepeat::Builder::getStepY() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS);
+}
+inline void CompactPolygonRepeat::Builder::setStepY( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<3>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactPolygonRepeat::Reader::getColY() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactPolygonRepeat::Builder::getColY() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+inline void CompactPolygonRepeat::Builder::setColY( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactPolygonRepeat::Reader::getRowX() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactPolygonRepeat::Builder::getRowX() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS);
+}
+inline void CompactPolygonRepeat::Builder::setRowX( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool CompactPolygonRepeat::Reader::getMemberProperties() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<96>() * ::capnp::ELEMENTS, true);
+}
+
+inline bool CompactPolygonRepeat::Builder::getMemberProperties() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<96>() * ::capnp::ELEMENTS, true);
+}
+inline void CompactPolygonRepeat::Builder::setMemberProperties(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<96>() * ::capnp::ELEMENTS, value, true);
 }
 
 inline  ::uint32_t CompactPathRepeat::Reader::getWidth() const {
@@ -1517,6 +1761,104 @@ inline bool CompactPathRepeat::Builder::getRound() {
 inline void CompactPathRepeat::Builder::setRound(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<128>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t CompactPathRepeat::Reader::getColumns() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t CompactPathRepeat::Builder::getColumns() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS);
+}
+inline void CompactPathRepeat::Builder::setColumns( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::uint32_t CompactPathRepeat::Reader::getRows() const {
+  return _reader.getDataField< ::uint32_t>(
+      ::capnp::bounded<6>() * ::capnp::ELEMENTS);
+}
+
+inline  ::uint32_t CompactPathRepeat::Builder::getRows() {
+  return _builder.getDataField< ::uint32_t>(
+      ::capnp::bounded<6>() * ::capnp::ELEMENTS);
+}
+inline void CompactPathRepeat::Builder::setRows( ::uint32_t value) {
+  _builder.setDataField< ::uint32_t>(
+      ::capnp::bounded<6>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactPathRepeat::Reader::getStepX() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactPathRepeat::Builder::getStepX() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS);
+}
+inline void CompactPathRepeat::Builder::setStepX( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<4>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactPathRepeat::Reader::getStepY() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactPathRepeat::Builder::getStepY() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS);
+}
+inline void CompactPathRepeat::Builder::setStepY( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<5>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactPathRepeat::Reader::getColY() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<6>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactPathRepeat::Builder::getColY() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<6>() * ::capnp::ELEMENTS);
+}
+inline void CompactPathRepeat::Builder::setColY( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<6>() * ::capnp::ELEMENTS, value);
+}
+
+inline  ::int64_t CompactPathRepeat::Reader::getRowX() const {
+  return _reader.getDataField< ::int64_t>(
+      ::capnp::bounded<7>() * ::capnp::ELEMENTS);
+}
+
+inline  ::int64_t CompactPathRepeat::Builder::getRowX() {
+  return _builder.getDataField< ::int64_t>(
+      ::capnp::bounded<7>() * ::capnp::ELEMENTS);
+}
+inline void CompactPathRepeat::Builder::setRowX( ::int64_t value) {
+  _builder.setDataField< ::int64_t>(
+      ::capnp::bounded<7>() * ::capnp::ELEMENTS, value);
+}
+
+inline bool CompactPathRepeat::Reader::getMemberProperties() const {
+  return _reader.getDataField<bool>(
+      ::capnp::bounded<129>() * ::capnp::ELEMENTS, true);
+}
+
+inline bool CompactPathRepeat::Builder::getMemberProperties() {
+  return _builder.getDataField<bool>(
+      ::capnp::bounded<129>() * ::capnp::ELEMENTS, true);
+}
+inline void CompactPathRepeat::Builder::setMemberProperties(bool value) {
+  _builder.setDataField<bool>(
+      ::capnp::bounded<129>() * ::capnp::ELEMENTS, value, true);
 }
 
 inline  ::uint32_t CompactLayerShapes::Reader::getLayerId() const {

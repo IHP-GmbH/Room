@@ -5,6 +5,7 @@
 #include "types.h"
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace room {
@@ -35,6 +36,7 @@ public:
     Cell*                                               findCell(const std::string &name);
     const Cell*                                         findCell(const std::string &name) const;
     Cell&                                               getOrCreateCell(const std::string &name);
+    void                                                renameCell(Cell &cell, std::string name);
 
     void                                                recomputeAllBBoxes(ViewType view = ViewType::Layout);
     void                                                refreshIndex(ViewType view = ViewType::Layout);
@@ -43,10 +45,13 @@ public:
     const LibIndex &                                    index() const { return m_index; }
 
 private:
+    void                                                ensureCellIndex() const;
+
     std::string                                         m_name;
     std::vector<Property>                               m_properties;
     std::vector<LayerSpec>                              m_layers;
     std::vector<Cell>                                   m_cells;
+    mutable std::unordered_map<std::string, std::size_t> m_cellIndex;
     LibIndex                                            m_index;
     bool                                                m_hasIndex = false;
 };

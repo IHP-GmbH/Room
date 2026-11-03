@@ -2,6 +2,7 @@
 #include "oas_importer.h"
 #include "text_dump.h"
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -60,14 +61,21 @@ int main(int argc, char *argv[])
         return 2;
     }
 
+    if (std::getenv("OAS_REP_STATS") != nullptr) {
+        std::cout << "rep stats only\n";
+        return 0;
+    }
+
     db.setGenerator("ROOM oas_to_room");
     db.saveToFile(roomPath, room::ViewType::Layout);
     std::cout << "Saved ROOM file: " << roomPath << '\n';
     std::cout << "  cells: " << db.lib().cells().size() << '\n';
 
-    room::TextDumper dumper;
-    dumper.dumpToFile(db, dumpPath);
-    std::cout << "Text dump: " << dumpPath << '\n';
+    if (dumpPath != "-") {
+        room::TextDumper dumper;
+        dumper.dumpToFile(db, dumpPath);
+        std::cout << "Text dump: " << dumpPath << '\n';
+    }
 
     return 0;
 }

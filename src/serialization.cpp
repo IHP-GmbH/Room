@@ -382,6 +382,22 @@ void writeBlock(schema::Block::Builder b, const Block &block)
         auto ib = insts[i];
         ib.setCellName(inst.cellName());
         writeTransform(ib.initTransform(), inst.transform());
+        if (inst.columns() > 1 || inst.rows() > 1) {
+            ib.setColumns(inst.columns());
+            ib.setRows(inst.rows());
+            ib.setStepX(inst.stepX());
+            ib.setStepY(inst.stepY());
+            ib.setColY(inst.colY());
+            ib.setRowX(inst.rowX());
+        }
+        if (inst.offsets().size() > 1) {
+            auto ox = ib.initOffsetX(inst.offsets().size());
+            auto oy = ib.initOffsetY(inst.offsets().size());
+            for (std::size_t j = 0; j < inst.offsets().size(); ++j) {
+                ox.set(j, inst.offsets()[j].x);
+                oy.set(j, inst.offsets()[j].y);
+            }
+        }
         writeProperties(ib.initProperties(inst.properties().size()), inst.properties());
     }
     auto nets = b.initNets(block.nets().size());
@@ -415,6 +431,20 @@ Block readBlock(schema::Block::Reader r)
     }
     for (const auto inst : instances) {
         Instance instance(inst.getCellName().cStr(), readTransform(inst.getTransform()));
+        if (inst.getColumns() > 1 || inst.getRows() > 1) {
+            instance.setArray(inst.getColumns(), inst.getRows(), inst.getStepX(), inst.getStepY(),
+                               inst.getColY(), inst.getRowX());
+        }
+        const auto offsetX = inst.getOffsetX();
+        const auto offsetY = inst.getOffsetY();
+        if (offsetX.size() > 1 && offsetX.size() == offsetY.size()) {
+            std::vector<Point> offsets;
+            offsets.reserve(offsetX.size());
+            for (std::size_t j = 0; j < offsetX.size(); ++j) {
+                offsets.push_back(Point{offsetX[j], offsetY[j]});
+            }
+            instance.setOffsets(std::move(offsets));
+        }
         instance.properties() = readProperties(inst.getProperties());
         block.instances().push_back(std::move(instance));
     }
@@ -894,6 +924,16 @@ VisitedInstance readVisitedInstance(schema::Instance::Reader inst)
     visited.rows = inst.getRows();
     visited.stepX = inst.getStepX();
     visited.stepY = inst.getStepY();
+    visited.colY = inst.getColY();
+    visited.rowX = inst.getRowX();
+    const auto offsetX = inst.getOffsetX();
+    const auto offsetY = inst.getOffsetY();
+    if (offsetX.size() > 1 && offsetX.size() == offsetY.size()) {
+        visited.offsets.reserve(offsetX.size());
+        for (std::size_t i = 0; i < offsetX.size(); ++i) {
+            visited.offsets.push_back(Point{offsetX[i], offsetY[i]});
+        }
+    }
     visited.properties = readProperties(inst.getProperties());
     return visited;
 }
@@ -920,8 +960,27 @@ void emitViewTopology(const std::string &cellName, ViewReader view, const Layout
     if (!compactBlockHasGeometry(compact)) {
         return;
     }
-    if (handlers.onShape) {
-        visitCompactShapes(compact, [&](Shape shape) { handlers.onShape(cellName, std::move(shape)); });
+    CompactRepeatHooks hooks;
+    const bool keepRepeats = static_cast<bool>(handlers.onRectArray) || static_cast<bool>(handlers.onRectGroup) ||
+                             static_cast<bool>(handlers.onPolygonRepeat) || static_cast<bool>(handlers.onPathRepeat);
+    if (handlers.onRectArray) {
+        hooks.rectArray = [&](const CompactRectArrayRef &array) { handlers.onRectArray(cellName, array); };
+    }
+    if (handlers.onRectGroup) {
+        hooks.rectGroup = [&](const CompactRectGroupRef &group) { handlers.onRectGroup(cellName, group); };
+    }
+    if (handlers.onPolygonRepeat) {
+        hooks.polygonRepeat = [&](const CompactPolygonRepeatRef &repeat) { handlers.onPolygonRepeat(cellName, repeat); };
+    }
+    if (handlers.onPathRepeat) {
+        hooks.pathRepeat = [&](const CompactPathRepeatRef &repeat) { handlers.onPathRepeat(cellName, repeat); };
+    }
+    if (handlers.onShape || keepRepeats) {
+        visitCompactShapes(compact, [&](Shape shape) {
+            if (handlers.onShape) {
+                handlers.onShape(cellName, std::move(shape));
+            }
+        }, keepRepeats ? &hooks : nullptr);
     }
     if (handlers.onInstance) {
         for (const auto inst : compact.getInstances()) {
