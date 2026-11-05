@@ -6,6 +6,8 @@
 
 #include <cstdint>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace room {
 
@@ -34,5 +36,18 @@ struct RoomFileInfo {
 };
 
 RoomFileInfo sniffRoomFile(const std::string &path);
+
+/*! \brief Hierarchy names from a .room file without decoding geometry payloads.
+ *
+ * Prefers LibIndex (topCells / entries / childRefs). Falls back to cell.name only.
+ * Does not touch ViewPayload compact/block data.
+ */
+struct RoomHierarchyInfo {
+    std::vector<std::string>                            topCells;
+    std::vector<std::string>                            allCells;
+    std::unordered_map<std::string, std::vector<std::string>> childRefs;
+};
+
+RoomHierarchyInfo sniffRoomHierarchy(const std::string &path);
 
 } // namespace room

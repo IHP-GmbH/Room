@@ -333,6 +333,18 @@ if(ROOM_BUILD_TESTS)
             add_executable(oas_hierarchy tests/oas_hierarchy.cpp)
             target_link_libraries(oas_hierarchy PRIVATE room_oas)
 
+            add_executable(oas_progress_callbacks tests/oas_progress_callbacks.cpp)
+            target_link_libraries(oas_progress_callbacks PRIVATE room_oas)
+            add_test(
+                NAME oas_progress_callbacks
+                COMMAND oas_progress_callbacks "${_ctest_out}"
+                WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            )
+            set_tests_properties(oas_progress_callbacks PROPERTIES
+                LABELS "oas;hierarchy;progress"
+                TIMEOUT 30
+            )
+
             add_executable(oas_room_roundtrip tests/oas_room_roundtrip.cpp)
             target_link_libraries(oas_room_roundtrip PRIVATE room_oas)
 
@@ -343,7 +355,7 @@ if(ROOM_BUILD_TESTS)
             endif()
 
             if(WIN32 AND EXISTS "${_zlib_bin_dir}/zlib1.dll")
-                foreach(_oas_tool oas_hierarchy oas_room_roundtrip layout_exchange_bench)
+                foreach(_oas_tool oas_hierarchy oas_progress_callbacks oas_room_roundtrip layout_exchange_bench)
                     add_custom_command(TARGET ${_oas_tool} POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                                 "${_zlib_bin_dir}/zlib1.dll"

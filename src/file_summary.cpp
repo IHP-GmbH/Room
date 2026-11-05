@@ -99,15 +99,45 @@ void writeFileSummary(schema::FileSummary::Builder builder, const FileSummary &s
     builder.setPrimaryCell(summary.primaryCell);
 }
 
+namespace {
+
+capnp::ReaderOptions largeRoomReaderOptions(std::uint64_t fileBytes)
+{
+    capnp::ReaderOptions opts;
+    // Cap'n Proto also caps total message size by traversalLimitInWords.
+    const std::uint64_t words = fileBytes / sizeof(capnp::word);
+    opts.traversalLimitInWords = words * 2 + (1024ull * 1024ull);
+    if (opts.traversalLimitInWords < 64ull * 1024ull * 1024ull) {
+        opts.traversalLimitInWords = 64ull * 1024ull * 1024ull;
+    }
+    return opts;
+}
+
+std::uint64_t roomFileSizeBytes(const std::string &path)
+{
+    std::ifstream in(path, std::ios::binary | std::ios::ate);
+    if (!in) {
+        throw std::runtime_error("Cannot open file for reading: " + path);
+    }
+    const std::streamsize size = in.tellg();
+    if (size <= 0) {
+        throw std::runtime_error("Cannot read file size: " + path);
+    }
+    return static_cast<std::uint64_t>(size);
+}
+
+} // namespace
+
 RoomFileInfo sniffRoomFile(const std::string &path)
 {
+    const std::uint64_t fileBytes = roomFileSizeBytes(path);
     std::ifstream in(path, std::ios::binary);
     if (!in) {
         throw std::runtime_error("Cannot open file for reading: " + path);
     }
 
     kj::std::StdInputStream kjIn(in);
-    capnp::InputStreamMessageReader reader(kjIn, {64 * 1024 * 1024});
+    capnp::InputStreamMessageReader reader(kjIn, largeRoomReaderOptions(fileBytes));
     const auto root = reader.getRoot<schema::Database>();
 
     RoomFileInfo info;
@@ -121,6 +151,63 @@ RoomFileInfo sniffRoomFile(const std::string &path)
     } else {
         info.summary = scanViewTypes(root.getLib());
     }
+    return info;
+}
+
+RoomHierarchyInfo sniffRoomHierarchy(const std::string &path)
+{
+    const std::uint64_t fileBytes = roomFileSizeBytes(path);
+    std::ifstream in(path, std::ios::binary);
+    if (!in) {
+        throw std::runtime_error("Cannot open file for reading: " + path);
+    }
+
+    kj::std::StdInputStream kjIn(in);
+    capnp::InputStreamMessageReader reader(kjIn, largeRoomReaderOptions(fileBytes));
+    const auto root = reader.getRoot<schema::Database>();
+    const auto lib = root.getLib();
+
+    RoomHierarchyInfo info;
+
+    const auto index = lib.getIndex();
+    const auto topCells = index.getTopCells();
+    info.topCells.reserve(topCells.size());
+    for (const auto name : topCells) {
+        info.topCells.emplace_back(name.cStr());
+    }
+
+    const auto entries = index.getEntries();
+    if (entries.size() > 0) {
+        info.allCells.reserve(entries.size());
+        for (const auto entry : entries) {
+            const std::string name = entry.getName().cStr();
+            info.allCells.push_back(name);
+            std::vector<std::string> refs;
+            const auto childRefs = entry.getChildRefs();
+            refs.reserve(childRefs.size());
+            for (const auto ref : childRefs) {
+                refs.emplace_back(ref.cStr());
+            }
+            if (!refs.empty()) {
+                info.childRefs.emplace(name, std::move(refs));
+            }
+        }
+    } else {
+        // No index entries: cell names only (never touch payloads).
+        const auto cells = lib.getCells();
+        info.allCells.reserve(cells.size());
+        for (const auto cell : cells) {
+            info.allCells.emplace_back(cell.getName().cStr());
+        }
+        if (info.topCells.empty()) {
+            info.topCells = info.allCells;
+        }
+    }
+
+    if (info.topCells.empty() && !info.allCells.empty()) {
+        info.topCells = info.allCells;
+    }
+
     return info;
 }
 

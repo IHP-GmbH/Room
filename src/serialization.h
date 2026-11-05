@@ -79,4 +79,19 @@ struct LayoutVisitHandlers {
  *****************************************************************************************/
 void visitLayoutFile(const std::string &path, const LayoutVisitHandlers &handlers);
 
+/*!****************************************************************************************
+ * \brief Loads one layout cell (and optional instance children) without decoding the rest.
+ *
+ * Opens the Cap'n Proto message once, finds cells by name only, and decodes layout
+ * payloads solely for the requested subtree. Used by Door snapshot previews.
+ *
+ * \param path       Path to a .layout.room file.
+ * \param cellName   Cell to load. Empty picks summary.primaryCell or the first cell name.
+ * \param maxDepth   How many instance levels to pull in (0 = named cell only).
+ * \return           Database containing only the decoded layout cells.
+ *****************************************************************************************/
+Database loadLayoutCellSubtree(const std::string &path,
+                               const std::string &cellName,
+                               int maxDepth = 4);
+
 } // namespace room

@@ -64,7 +64,12 @@ Database Database::loadFromFile(const std::string &path)
 
     kj::ArrayInputStream inputStream(
         kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
-    capnp::InputStreamMessageReader reader(inputStream);
+    // Cap'n Proto default traversalLimitInWords is 8 Mi words (~64 MiB). Wafer-scale
+    // .layout.room files need a limit proportional to the message size.
+    capnp::ReaderOptions readerOptions;
+    readerOptions.traversalLimitInWords =
+        (buffer.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
+    capnp::InputStreamMessageReader reader(inputStream, readerOptions);
     return readDatabase(reader.getRoot<schema::Database>());
 }
 

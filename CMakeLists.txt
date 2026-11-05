@@ -180,7 +180,12 @@ endif()
 
 if(ROOM_BUILD_EXAMPLES)
     add_executable(gds_to_room examples/gds_to_room/main.cpp)
-    target_link_libraries(gds_to_room PRIVATE room_utils)
+    if(TARGET room_oas)
+        target_link_libraries(gds_to_room PRIVATE room_oas)
+        target_compile_definitions(gds_to_room PRIVATE ROOM_GDS_VIA_OAS=1)
+    else()
+        target_link_libraries(gds_to_room PRIVATE room_utils)
+    endif()
 
     add_executable(room_to_gds examples/room_to_gds/main.cpp)
     target_link_libraries(room_to_gds PRIVATE room_utils)

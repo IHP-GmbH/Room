@@ -10,6 +10,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -1131,6 +1132,9 @@ struct OasParseState
     std::string currentCell;
     std::string modalPlacementCell;
 
+    std::function<void(const std::string &)>            onCellName;
+    std::function<void(const std::string &, const std::string &)> onCellRename;
+
     OasImportContext *                                  geom = nullptr;
     std::uint64_t                                       modalLayer = 0;
     std::uint64_t                                       modalDatatype = 0;
@@ -1220,13 +1224,29 @@ static std::string cellRefPlaceholder(std::uint64_t rn)
     return std::string("#oasref:") + std::to_string(rn);
 }
 
-static void retargetHierarchyName(OasHierarchy &out, const std::string &from, const std::string &to)
+static void noteHierarchyCell(OasParseState &st, OasHierarchy &out, const std::string &name)
+{
+    if (name.empty()) {
+        return;
+    }
+    const bool isNew = out.allCells.insert(name).second;
+    out.children[name];
+    if (isNew && st.onCellName) {
+        st.onCellName(name);
+    }
+}
+
+static void retargetHierarchyName(OasParseState &st, OasHierarchy &out,
+                                  const std::string &from, const std::string &to)
 {
     if (from == to) {
         return;
     }
+    // Swap placeholder → real name without a second "add" progress event.
+    // UI updates via onCellRename so progressive trees do not duplicate rows.
     if (out.allCells.erase(from) > 0) {
         out.allCells.insert(to);
+        out.children[to];
     }
     auto found = out.children.find(from);
     if (found != out.children.end()) {
@@ -1244,6 +1264,9 @@ static void retargetHierarchyName(OasHierarchy &out, const std::string &from, co
                 child = to;
             }
         }
+    }
+    if (st.onCellRename) {
+        st.onCellRename(from, to);
     }
 }
 
@@ -1267,13 +1290,11 @@ static void bindCellRefName(OasParseState &st, OasHierarchy &out, std::uint64_t 
     const std::string previous = it == st.cellNameByRef.end() ? std::string() : it->second;
     st.cellNameByRef[rn] = name;
     if (previous.empty() || previous == name) {
-        out.allCells.insert(name);
-        out.children[name];
+        noteHierarchyCell(st, out, name);
         return;
     }
-    retargetHierarchyName(out, previous, name);
-    out.allCells.insert(name);
-    out.children[name];
+    retargetHierarchyName(st, out, previous, name);
+    noteHierarchyCell(st, out, name);
     if (st.currentCell == previous) {
         st.currentCell = name;
     }
@@ -1778,8 +1799,7 @@ static bool parseOneRecord(OasCursor &c,
         st.cellNameByRef.emplace(rn, s);
 
         if (isLikelyValidCellName(s)) {
-            out.allCells.insert(s);
-            out.children[s];
+            noteHierarchyCell(st, out, s);
         }
 
 #ifdef OAS_DEBUG
@@ -1799,8 +1819,7 @@ static bool parseOneRecord(OasCursor &c,
         }
 
         if (isLikelyValidCellName(s)) {
-            out.allCells.insert(s);
-            out.children[s];
+            noteHierarchyCell(st, out, s);
         }
 
 #ifdef OAS_DEBUG
@@ -1833,8 +1852,7 @@ static bool parseOneRecord(OasCursor &c,
 #endif
         const std::string name = cellNameForRef(st, rn);
         st.currentCell = name;
-        out.allCells.insert(name);
-        out.children[name];
+        noteHierarchyCell(st, out, name);
         resetCellModals(st);
         if (st.geom != nullptr) {
             st.geom->beginCell(name);
@@ -1855,8 +1873,7 @@ static bool parseOneRecord(OasCursor &c,
 #endif
 
         st.currentCell = name;
-        out.allCells.insert(name);
-        out.children[name];
+        noteHierarchyCell(st, out, name);
         resetCellModals(st);
         if (st.geom != nullptr) {
             st.geom->beginCell(name);
@@ -1917,7 +1934,7 @@ static bool parseOneRecord(OasCursor &c,
 
         if (!placedCell.empty()) {
             out.children[st.currentCell].push_back(placedCell);
-            out.allCells.insert(placedCell);
+            noteHierarchyCell(st, out, placedCell);
             if (st.geom != nullptr) {
                 placeCell(st, placedCell, px, py, rep, R,
                           orientFromOasis((info & 0x06) >> 1, (info & 0x01) != 0));
@@ -1963,7 +1980,7 @@ static bool parseOneRecord(OasCursor &c,
 
         if (!placedCell.empty()) {
             out.children[st.currentCell].push_back(placedCell);
-            out.allCells.insert(placedCell);
+            noteHierarchyCell(st, out, placedCell);
             if (st.geom != nullptr) {
                 placeCell(st, placedCell, st.modalPlacementX, st.modalPlacementY, rep, R, Orient::R0);
             }
@@ -2575,7 +2592,7 @@ OasReader::OasReader(std::string fileName)
 {
 }
 
-bool OasReader::readHierarchy(OasHierarchy &out)
+bool OasReader::readHierarchy(OasHierarchy &out, const ProgressFn &onCell, const RenameFn &onRename)
 {
     out.topCells.clear();
     out.children.clear();
@@ -2630,6 +2647,8 @@ bool OasReader::readHierarchy(OasHierarchy &out)
     OasParseState st;
     st.fileBase = base;
     st.fileEnd = fileEnd;
+    st.onCellName = onCell;
+    st.onCellRename = onRename;
 
 #if OAS_GUARD
     st.recordCount = 0;

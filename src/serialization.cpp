@@ -22,7 +22,10 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <queue>
 #include <stdexcept>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <database.capnp.h>
@@ -387,16 +390,6 @@ void writeBlock(schema::Block::Builder b, const Block &block)
             ib.setRows(inst.rows());
             ib.setStepX(inst.stepX());
             ib.setStepY(inst.stepY());
-            ib.setColY(inst.colY());
-            ib.setRowX(inst.rowX());
-        }
-        if (inst.offsets().size() > 1) {
-            auto ox = ib.initOffsetX(inst.offsets().size());
-            auto oy = ib.initOffsetY(inst.offsets().size());
-            for (std::size_t j = 0; j < inst.offsets().size(); ++j) {
-                ox.set(j, inst.offsets()[j].x);
-                oy.set(j, inst.offsets()[j].y);
-            }
         }
         writeProperties(ib.initProperties(inst.properties().size()), inst.properties());
     }
@@ -432,18 +425,7 @@ Block readBlock(schema::Block::Reader r)
     for (const auto inst : instances) {
         Instance instance(inst.getCellName().cStr(), readTransform(inst.getTransform()));
         if (inst.getColumns() > 1 || inst.getRows() > 1) {
-            instance.setArray(inst.getColumns(), inst.getRows(), inst.getStepX(), inst.getStepY(),
-                               inst.getColY(), inst.getRowX());
-        }
-        const auto offsetX = inst.getOffsetX();
-        const auto offsetY = inst.getOffsetY();
-        if (offsetX.size() > 1 && offsetX.size() == offsetY.size()) {
-            std::vector<Point> offsets;
-            offsets.reserve(offsetX.size());
-            for (std::size_t j = 0; j < offsetX.size(); ++j) {
-                offsets.push_back(Point{offsetX[j], offsetY[j]});
-            }
-            instance.setOffsets(std::move(offsets));
+            instance.setArray(inst.getColumns(), inst.getRows(), inst.getStepX(), inst.getStepY());
         }
         instance.properties() = readProperties(inst.getProperties());
         block.instances().push_back(std::move(instance));
@@ -924,16 +906,6 @@ VisitedInstance readVisitedInstance(schema::Instance::Reader inst)
     visited.rows = inst.getRows();
     visited.stepX = inst.getStepX();
     visited.stepY = inst.getStepY();
-    visited.colY = inst.getColY();
-    visited.rowX = inst.getRowX();
-    const auto offsetX = inst.getOffsetX();
-    const auto offsetY = inst.getOffsetY();
-    if (offsetX.size() > 1 && offsetX.size() == offsetY.size()) {
-        visited.offsets.reserve(offsetX.size());
-        for (std::size_t i = 0; i < offsetX.size(); ++i) {
-            visited.offsets.push_back(Point{offsetX[i], offsetY[i]});
-        }
-    }
     visited.properties = readProperties(inst.getProperties());
     return visited;
 }
@@ -1058,6 +1030,109 @@ void visitLayoutFile(const std::string &path, const LayoutVisitHandlers &handler
     for (const auto cell : cells) {
         visitOneCell(cell, handlers, false);
     }
+}
+
+Database loadLayoutCellSubtree(const std::string &path,
+                               const std::string &cellName,
+                               int maxDepth)
+{
+    std::ifstream in(path, std::ios::binary | std::ios::ate);
+    if (!in) {
+        throw std::runtime_error("Cannot open file for reading: " + path);
+    }
+    const std::streamsize fileSize = in.tellg();
+    if (fileSize <= 0) {
+        throw std::runtime_error("Cannot read file size: " + path);
+    }
+    in.seekg(0, std::ios::beg);
+
+    std::vector<char> buffer(static_cast<std::size_t>(fileSize));
+    constexpr std::size_t chunkBytes = 256ull << 20;
+    for (std::size_t offset = 0; offset < buffer.size(); offset += chunkBytes) {
+        const std::size_t count = std::min(chunkBytes, buffer.size() - offset);
+        if (!in.read(buffer.data() + offset, static_cast<std::streamsize>(count))) {
+            throw std::runtime_error("Failed to read file: " + path);
+        }
+    }
+
+    kj::ArrayInputStream inputStream(
+        kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
+    capnp::ReaderOptions readerOptions;
+    readerOptions.traversalLimitInWords =
+        (buffer.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
+    capnp::InputStreamMessageReader reader(inputStream, readerOptions);
+    const auto root = reader.getRoot<schema::Database>();
+    const auto libReader = root.getLib();
+    const auto cellsReader = libReader.getCells();
+
+    std::unordered_map<std::string, std::uint32_t> nameToIndex;
+    nameToIndex.reserve(static_cast<std::size_t>(cellsReader.size()));
+    for (unsigned i = 0; i < cellsReader.size(); ++i) {
+        nameToIndex.emplace(cellsReader[i].getName().cStr(), i);
+    }
+
+    std::string rootName = cellName;
+    if (rootName.empty()) {
+        if (root.hasSummary()) {
+            rootName = root.getSummary().getPrimaryCell().cStr();
+        }
+        if (rootName.empty() && cellsReader.size() > 0) {
+            rootName = cellsReader[0].getName().cStr();
+        }
+    }
+    if (rootName.empty() || nameToIndex.find(rootName) == nameToIndex.end()) {
+        throw std::runtime_error("Layout cell not found in ROOM file: " + rootName);
+    }
+
+    Database db;
+    db.setVersion(root.getVersion().cStr());
+    db.setGenerator(root.getGenerator().cStr());
+    db.setTechnology(root.getTechnology().cStr());
+    db.setFileView(ViewType::Layout);
+    db.lib() = Lib(libReader.getName().cStr());
+    readLibLayers(db.lib(), libReader);
+
+    std::unordered_set<std::string> loaded;
+    std::queue<std::pair<std::string, int>> pending;
+    pending.push({rootName, 0});
+
+    while (!pending.empty()) {
+        const auto [name, depth] = pending.front();
+        pending.pop();
+        if (!loaded.insert(name).second) {
+            continue;
+        }
+        const auto it = nameToIndex.find(name);
+        if (it == nameToIndex.end()) {
+            continue;
+        }
+
+        const auto cellReader = cellsReader[it->second];
+        Cell cell(name);
+        cell.properties() = readProperties(cellReader.getProperties());
+        for (const auto contentReader : cellReader.getContents()) {
+            const bool isLayoutPayload =
+                contentReader.getPayload().which() == schema::ViewPayload::LAYOUT
+                || contentReader.getViewType() == schema::ViewType::LAYOUT;
+            if (!isLayoutPayload || contentReader.getPayload().which() != schema::ViewPayload::LAYOUT) {
+                continue;
+            }
+            CellContent content = readCellContent(contentReader);
+            if (depth < maxDepth) {
+                for (const Instance &inst : content.block().instances()) {
+                    if (loaded.find(inst.cellName()) == loaded.end()) {
+                        pending.push({inst.cellName(), depth + 1});
+                    }
+                }
+            }
+            cell.contents().push_back(std::move(content));
+            break;
+        }
+        db.lib().cells().push_back(std::move(cell));
+    }
+
+    db.setFileSummary(FileSummary::fromLib(db.lib(), ViewType::Layout));
+    return db;
 }
 
 } // namespace room

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -18,9 +19,14 @@ struct OasHierarchy {
 
 class OasReader {
 public:
+    using ProgressFn = std::function<void(const std::string &cellName)>;
+    using RenameFn = std::function<void(const std::string &from, const std::string &to)>;
+
     explicit OasReader(std::string fileName);
 
-    bool                                                readHierarchy(OasHierarchy &out);
+    bool                                                readHierarchy(OasHierarchy &out,
+                                                                  const ProgressFn &onCell = {},
+                                                                  const RenameFn &onRename = {});
 
     bool                                                importDatabase(Database &db,
                                                                   const std::string &libName = "oas_import",

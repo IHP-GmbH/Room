@@ -36,3 +36,18 @@ output/
 *.room
 integrations/klayout/mroom/db_plugin/local.pri
 scripts/*.log
+
+# Local wafer / huge bench fixtures (never commit)
+**/wafer.oas
+**/wafer.gds
+**/wafer.layout.room
+**/bench_wafer*
+scripts/bench_wafer*
+designs/
+build-wsl/
+build-export/
+build-room-rename/
+build-tools/
+_rebuild_room.log
+third_party/capnp-install-linux/
+third_party/capnproto-linux/

@@ -37,6 +37,7 @@ constexpr std::uint16_t GDS_WIDTH    = 0x0F03;
 constexpr std::uint16_t GDS_XY       = 0x1003;
 constexpr std::uint16_t GDS_ENDEL    = 0x1100;
 constexpr std::uint16_t GDS_SNAME    = 0x1206;
+constexpr std::uint16_t GDS_COLROW   = 0x1302;
 constexpr std::uint16_t GDS_STRANS   = 0x1A01;
 constexpr std::uint16_t GDS_MAG      = 0x1B05;
 constexpr std::uint16_t GDS_STRING   = 0x1906;
@@ -169,6 +170,58 @@ void applyProperties(std::vector<Property> &target, const std::vector<Property> 
     target = props;
 }
 
+/*! \brief True when points form an axis-aligned rectangle (optional closed duplicate). */
+bool asAxisAlignedRect(const std::vector<Point> &points, Box &box)
+{
+    std::size_t n = points.size();
+    if (n >= 2 && points.front().x == points.back().x && points.front().y == points.back().y) {
+        --n;
+    }
+    if (n != 4) {
+        return false;
+    }
+    std::int64_t llx = points[0].x;
+    std::int64_t lly = points[0].y;
+    std::int64_t urx = points[0].x;
+    std::int64_t ury = points[0].y;
+    for (std::size_t i = 1; i < n; ++i) {
+        llx = std::min(llx, points[i].x);
+        lly = std::min(lly, points[i].y);
+        urx = std::max(urx, points[i].x);
+        ury = std::max(ury, points[i].y);
+    }
+    if (llx == urx || lly == ury) {
+        return false;
+    }
+    bool sawLowerLeft = false;
+    bool sawLowerRight = false;
+    bool sawUpperLeft = false;
+    bool sawUpperRight = false;
+    for (std::size_t i = 0; i < n; ++i) {
+        const Point &here = points[i];
+        const Point &next = points[(i + 1) % n];
+        if (here.x != next.x && here.y != next.y) {
+            return false;
+        }
+        const bool onLeft = here.x == llx;
+        const bool onRight = here.x == urx;
+        const bool onBottom = here.y == lly;
+        const bool onTop = here.y == ury;
+        if ((!onLeft && !onRight) || (!onBottom && !onTop)) {
+            return false;
+        }
+        sawLowerLeft = sawLowerLeft || (onLeft && onBottom);
+        sawLowerRight = sawLowerRight || (onRight && onBottom);
+        sawUpperLeft = sawUpperLeft || (onLeft && onTop);
+        sawUpperRight = sawUpperRight || (onRight && onTop);
+    }
+    if (!(sawLowerLeft && sawLowerRight && sawUpperLeft && sawUpperRight)) {
+        return false;
+    }
+    box = Box{llx, lly, urx, ury};
+    return true;
+}
+
 struct ElementDraft {
     enum class Type { None, Boundary, Path, Text, Box, Sref, Aref };
 
@@ -182,6 +235,8 @@ struct ElementDraft {
     bool hasBgnExt = false;
     bool hasEndExt = false;
     std::uint16_t pathType = 0;
+    std::uint32_t columns = 1;
+    std::uint32_t rows = 1;
     std::vector<Point> points;
     std::string text;
     std::string sname;
@@ -299,16 +354,28 @@ public:
             case ElementDraft::Type::Boundary:
             case ElementDraft::Type::Box: {
                 if (draft.points.size() >= 3) {
-                    Shape::PolygonData poly;
-                    poly.layerId = ensureViewLayer(content, draft.layer, draft.dataType, LayerPurpose::Boundary);
-                    poly.points = draft.points;
-                    if (!poly.points.empty() && poly.points.front().x == poly.points.back().x &&
-                        poly.points.front().y == poly.points.back().y) {
-                        poly.points.pop_back();
+                    const std::uint32_t layerId =
+                        ensureViewLayer(content, draft.layer, draft.dataType, LayerPurpose::Boundary);
+                    Box rectBox;
+                    if (asAxisAlignedRect(draft.points, rectBox)) {
+                        Shape::RectData rect;
+                        rect.layerId = layerId;
+                        rect.box = rectBox;
+                        Shape shape(rect);
+                        applyProperties(shape.properties(), draft.properties);
+                        block.shapes().push_back(std::move(shape));
+                    } else {
+                        Shape::PolygonData poly;
+                        poly.layerId = layerId;
+                        poly.points = draft.points;
+                        if (!poly.points.empty() && poly.points.front().x == poly.points.back().x &&
+                            poly.points.front().y == poly.points.back().y) {
+                            poly.points.pop_back();
+                        }
+                        Shape shape(poly);
+                        applyProperties(shape.properties(), draft.properties);
+                        block.shapes().push_back(std::move(shape));
                     }
-                    Shape shape(poly);
-                    applyProperties(shape.properties(), draft.properties);
-                    block.shapes().push_back(std::move(shape));
                 }
                 break;
             }
@@ -351,6 +418,27 @@ public:
                 draft.transform.orient = gdsStransToOrient(draft.strans);
                 draft.transform.mag = draft.mag;
                 Instance inst(draft.sname, draft.transform);
+                if (draft.type == ElementDraft::Type::Aref) {
+                    const std::uint32_t columns = draft.columns == 0 ? 1 : draft.columns;
+                    const std::uint32_t rows = draft.rows == 0 ? 1 : draft.rows;
+                    const std::int64_t originX = draft.points.empty() ? 0 : draft.points.front().x;
+                    const std::int64_t originY = draft.points.empty() ? 0 : draft.points.front().y;
+                    const std::int64_t colDx = (draft.points.size() >= 2 && columns > 1)
+                                                  ? (draft.points[1].x - originX) / (columns - 1)
+                                                  : 0;
+                    const std::int64_t colDy = (draft.points.size() >= 2 && columns > 1)
+                                                  ? (draft.points[1].y - originY) / (columns - 1)
+                                                  : 0;
+                    const std::int64_t rowDx = (draft.points.size() >= 3 && rows > 1)
+                                                  ? (draft.points[2].x - originX) / (rows - 1)
+                                                  : 0;
+                    const std::int64_t rowDy = (draft.points.size() >= 3 && rows > 1)
+                                                  ? (draft.points[2].y - originY) / (rows - 1)
+                                                  : 0;
+                    if (columns > 1 || rows > 1) {
+                        inst.setArray(columns, rows, colDx, rowDy, colDy, rowDx);
+                    }
+                }
                 applyProperties(inst.properties(), draft.properties);
                 block.instances().push_back(std::move(inst));
                 break;
@@ -420,8 +508,6 @@ public:
             case GDS_AREF:
                 flushDraft();
                 draft.type = ElementDraft::Type::Aref;
-                // Count only — identical per-AREF warnings flood LibMan/CI logs on fill-heavy chips.
-                ++m_arefWarningCount;
                 break;
             case GDS_LAYER:
                 if (payloadLen >= 2) {
@@ -463,6 +549,12 @@ public:
                 break;
             case GDS_SNAME:
                 draft.sname = decodeGdsString(payload, payloadLen);
+                break;
+            case GDS_COLROW:
+                if (payloadLen >= 4) {
+                    draft.columns = be16(payload);
+                    draft.rows = be16(payload + 2);
+                }
                 break;
             case GDS_STRING:
                 draft.text = decodeGdsString(payload, payloadLen);
@@ -515,13 +607,6 @@ public:
         if (!sawEndLib) {
             m_warnings.push_back("ENDLIB not found; file may be truncated");
         }
-        if (m_arefWarningCount > 0) {
-            m_warnings.push_back(
-                "AREF geometry expansion is not implemented; storing "
-                + std::to_string(m_arefWarningCount)
-                + " array reference(s) as instance references");
-        }
-
         for (auto &cell : db.lib().cells()) {
             if (CellContent *content = cell.findContent(ViewType::Layout)) {
                 content->setDbuPerMicron(dbuPerMicron);
@@ -541,7 +626,6 @@ private:
     std::vector<std::string> &m_errors;
     std::vector<LayerSpec> m_globalLayers;
     std::unordered_map<LayerKey, std::uint32_t, LayerKeyHash> m_layerMap;
-    std::size_t m_arefWarningCount = 0;
 };
 
 } // namespace

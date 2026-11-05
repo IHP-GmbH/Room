@@ -113,7 +113,11 @@ bool runKLayoutBatch(const std::string &scriptName,
         return false;
     }
 
-    const std::string resolvedScript = scriptPath(scriptName);
+    // Absolute/relative path to an existing file, else scripts/<name> under CORE_SOURCE_DIR.
+    std::string resolvedScript = normalizePath(scriptName);
+    if (!fileExists(resolvedScript)) {
+        resolvedScript = scriptPath(scriptName);
+    }
     if (!fileExists(resolvedScript)) {
         errors.push_back("KLayout script not found: " + resolvedScript);
         return false;
