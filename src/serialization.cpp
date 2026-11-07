@@ -14,6 +14,7 @@
 #include "compact_codec.h"
 #include "layer_utils.h"
 #include "lib_index.h"
+#include "mapped_file.h"
 
 #include <capnp/message.h>
 #include <capnp/serialize.h>
@@ -22,6 +23,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <limits>
 #include <queue>
 #include <stdexcept>
 #include <unordered_map>
@@ -1032,35 +1034,26 @@ void visitLayoutFile(const std::string &path, const LayoutVisitHandlers &handler
     }
 }
 
-Database loadLayoutCellSubtree(const std::string &path,
-                               const std::string &cellName,
-                               int maxDepth)
+namespace {
+
+/*! Breadth-first layout load over a memory-mapped .room file (shared by subtree/overview). */
+Database loadLayoutBreadthFirst(const std::string &path,
+                                const std::string &cellName,
+                                int maxDepth,
+                                std::size_t shapeBudget,
+                                bool withIndex)
 {
-    std::ifstream in(path, std::ios::binary | std::ios::ate);
-    if (!in) {
-        throw std::runtime_error("Cannot open file for reading: " + path);
+    const MappedFile mapped(path);
+    if (mapped.size() < sizeof(capnp::word) || mapped.size() % sizeof(capnp::word) != 0) {
+        throw std::runtime_error("Not a ROOM file (bad size): " + path);
     }
-    const std::streamsize fileSize = in.tellg();
-    if (fileSize <= 0) {
-        throw std::runtime_error("Cannot read file size: " + path);
-    }
-    in.seekg(0, std::ios::beg);
-
-    std::vector<char> buffer(static_cast<std::size_t>(fileSize));
-    constexpr std::size_t chunkBytes = 256ull << 20;
-    for (std::size_t offset = 0; offset < buffer.size(); offset += chunkBytes) {
-        const std::size_t count = std::min(chunkBytes, buffer.size() - offset);
-        if (!in.read(buffer.data() + offset, static_cast<std::streamsize>(count))) {
-            throw std::runtime_error("Failed to read file: " + path);
-        }
-    }
-
-    kj::ArrayInputStream inputStream(
-        kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
     capnp::ReaderOptions readerOptions;
     readerOptions.traversalLimitInWords =
-        (buffer.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
-    capnp::InputStreamMessageReader reader(inputStream, readerOptions);
+        (mapped.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
+    capnp::FlatArrayMessageReader reader(
+        kj::arrayPtr(static_cast<const capnp::word *>(mapped.data()),
+                     static_cast<std::size_t>(mapped.size() / sizeof(capnp::word))),
+        readerOptions);
     const auto root = reader.getRoot<schema::Database>();
     const auto libReader = root.getLib();
     const auto cellsReader = libReader.getCells();
@@ -1091,16 +1084,22 @@ Database loadLayoutCellSubtree(const std::string &path,
     db.setFileView(ViewType::Layout);
     db.lib() = Lib(libReader.getName().cStr());
     readLibLayers(db.lib(), libReader);
+    if (withIndex && libReader.hasIndex()) {
+        db.lib().setIndex(readLibIndex(libReader.getIndex()));
+    }
 
-    std::unordered_set<std::string> loaded;
+    std::unordered_set<std::string> queued;
     std::queue<std::pair<std::string, int>> pending;
     pending.push({rootName, 0});
+    queued.insert(rootName);
+    std::size_t decodedShapes = 0;
 
     while (!pending.empty()) {
         const auto [name, depth] = pending.front();
         pending.pop();
-        if (!loaded.insert(name).second) {
-            continue;
+        // Root is always decoded; children only while the shape budget lasts.
+        if (depth > 0 && decodedShapes >= shapeBudget) {
+            break;
         }
         const auto it = nameToIndex.find(name);
         if (it == nameToIndex.end()) {
@@ -1111,16 +1110,14 @@ Database loadLayoutCellSubtree(const std::string &path,
         Cell cell(name);
         cell.properties() = readProperties(cellReader.getProperties());
         for (const auto contentReader : cellReader.getContents()) {
-            const bool isLayoutPayload =
-                contentReader.getPayload().which() == schema::ViewPayload::LAYOUT
-                || contentReader.getViewType() == schema::ViewType::LAYOUT;
-            if (!isLayoutPayload || contentReader.getPayload().which() != schema::ViewPayload::LAYOUT) {
+            if (contentReader.getPayload().which() != schema::ViewPayload::LAYOUT) {
                 continue;
             }
             CellContent content = readCellContent(contentReader);
+            decodedShapes += content.block().shapes().size();
             if (depth < maxDepth) {
                 for (const Instance &inst : content.block().instances()) {
-                    if (loaded.find(inst.cellName()) == loaded.end()) {
+                    if (queued.insert(inst.cellName()).second) {
                         pending.push({inst.cellName(), depth + 1});
                     }
                 }
@@ -1133,6 +1130,23 @@ Database loadLayoutCellSubtree(const std::string &path,
 
     db.setFileSummary(FileSummary::fromLib(db.lib(), ViewType::Layout));
     return db;
+}
+
+} // namespace
+
+Database loadLayoutCellSubtree(const std::string &path,
+                               const std::string &cellName,
+                               int maxDepth)
+{
+    return loadLayoutBreadthFirst(path, cellName, maxDepth,
+                                  std::numeric_limits<std::size_t>::max(), false);
+}
+
+Database loadLayoutOverview(const std::string &path,
+                            const std::string &cellName,
+                            const LayoutOverviewOptions &options)
+{
+    return loadLayoutBreadthFirst(path, cellName, options.maxDepth, options.shapeBudget, true);
 }
 
 } // namespace room

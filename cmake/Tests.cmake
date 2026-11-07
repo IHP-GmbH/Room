@@ -56,6 +56,9 @@ if(ROOM_BUILD_TESTS)
     add_executable(lib_index_persist tests/lib_index_persist.cpp)
     target_link_libraries(lib_index_persist PRIVATE room_utils)
 
+    add_executable(layout_overview_unit tests/layout_overview_unit.cpp)
+    target_link_libraries(layout_overview_unit PRIVATE room)
+
     add_executable(compact_geometry_size tests/compact_geometry_size.cpp)
     target_link_libraries(compact_geometry_size PRIVATE room_utils)
 
@@ -237,6 +240,16 @@ if(ROOM_BUILD_TESTS)
     )
     set_tests_properties(lib_index_persist PROPERTIES
         LABELS "room;index"
+        TIMEOUT 60
+    )
+
+    add_test(
+        NAME layout_overview_unit
+        COMMAND layout_overview_unit "${_ctest_out}/layout_overview.layout.room"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    set_tests_properties(layout_overview_unit PROPERTIES
+        LABELS "room;index;snapshot"
         TIMEOUT 60
     )
 

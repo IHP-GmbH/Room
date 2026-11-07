@@ -95,6 +95,7 @@ set(ROOM_SOURCES
     src/lib_index.cpp
     src/database.cpp
     src/file_summary.cpp
+    src/mapped_file.cpp
     src/room_paths.cpp
     src/serialization.cpp
     src/compact_codec.cpp

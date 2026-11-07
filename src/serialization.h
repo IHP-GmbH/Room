@@ -94,4 +94,28 @@ Database loadLayoutCellSubtree(const std::string &path,
                                const std::string &cellName,
                                int maxDepth = 4);
 
+/*!****************************************************************************************
+ * \brief Limits for loadLayoutOverview().
+ *****************************************************************************************/
+struct LayoutOverviewOptions {
+    int         maxDepth = 32;          /*!< Instance levels to walk. */
+    std::size_t shapeBudget = 300000;   /*!< Stop decoding child cells after this many shapes. */
+};
+
+/*!****************************************************************************************
+ * \brief Loads a bounded overview of one layout cell from a memory-mapped .room file.
+ *
+ * Decodes the named cell, then children breadth-first until \p options.shapeBudget is
+ * spent. The persisted LibIndex (per-cell bboxes) is attached so callers can draw
+ * undecoded children as boxes. Only touched pages of the file are read.
+ *
+ * \param path       Path to a .layout.room file.
+ * \param cellName   Cell to load. Empty picks summary.primaryCell or the first cell name.
+ * \param options    Depth and shape budget.
+ * \return           Database with decoded cells and, when present, the library index.
+ *****************************************************************************************/
+Database loadLayoutOverview(const std::string &path,
+                            const std::string &cellName,
+                            const LayoutOverviewOptions &options = {});
+
 } // namespace room
