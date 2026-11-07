@@ -1348,7 +1348,8 @@ void normalizeSubcircuitMetadata(std::vector<Property> &props)
         if (prop.name != "format") {
             continue;
         }
-        if (prop.value.find("@pinlist") == std::string::npos) {
+        // "@@pin" lists the pins explicitly and fixes their netlist order; keep such formats.
+        if (prop.value.find("@pinlist") == std::string::npos && prop.value.find("@@") == std::string::npos) {
             prop.value = "@name @pinlist @symname";
         }
         break;
