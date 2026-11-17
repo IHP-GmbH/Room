@@ -591,8 +591,7 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
                 bucket.polygonRepeats.push_back(std::move(repeat));
                 break;
             }
-            if ((polygon.columns > 1 || polygon.rows > 1) && !polygon.points.empty() &&
-                shape.properties().empty()) {
+            if ((polygon.columns > 1 || polygon.rows > 1) && !polygon.points.empty()) {
                 PolygonRepeatSpec repeat;
                 repeat.vertexCount = static_cast<std::uint32_t>(polygon.points.size());
                 appendDeltaEncoded(repeat.deltas, polygon.points);
@@ -604,6 +603,8 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
                 repeat.rowX = polygon.rowX;
                 repeat.originX.push_back(polygon.points.front().x);
                 repeat.originY.push_back(polygon.points.front().y);
+                repeat.properties = shape.properties();
+                // Shared properties for the whole grid (not per-placement).
                 repeat.memberProperties = false;
                 bucket.polygonRepeats.push_back(std::move(repeat));
                 break;
@@ -636,7 +637,7 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
                 bucket.pathRepeats.push_back(std::move(repeat));
                 break;
             }
-            if ((path.columns > 1 || path.rows > 1) && !path.points.empty() && shape.properties().empty()) {
+            if ((path.columns > 1 || path.rows > 1) && !path.points.empty()) {
                 PathRepeatSpec repeat;
                 repeat.width = path.width;
                 repeat.bgnExt = path.bgnExt;
@@ -652,36 +653,11 @@ std::map<std::uint32_t, LayerBucket> bucketShapes(const Block &block)
                 repeat.rowX = path.rowX;
                 repeat.originX.push_back(path.points.front().x);
                 repeat.originY.push_back(path.points.front().y);
+                repeat.properties = shape.properties();
+                // Shared properties for the whole grid (not per-placement).
                 repeat.memberProperties = false;
                 bucket.pathRepeats.push_back(std::move(repeat));
                 break;
-            }
-            if ((path.columns > 1 || path.rows > 1) && !path.points.empty()) {
-                const std::uint32_t columns = path.columns == 0 ? 1 : path.columns;
-                const std::uint32_t rows = path.rows == 0 ? 1 : path.rows;
-                const std::uint64_t members = static_cast<std::uint64_t>(columns) * rows;
-                if (members > 0) {
-                PathRepeatSpec repeat;
-                repeat.width = path.width;
-                repeat.bgnExt = path.bgnExt;
-                repeat.endExt = path.endExt;
-                repeat.round = path.round;
-                repeat.vertexCount = static_cast<std::uint32_t>(path.points.size());
-                appendDeltaEncoded(repeat.deltas, path.points);
-                repeat.properties = shape.properties();
-                const std::int64_t originX = path.points.front().x;
-                const std::int64_t originY = path.points.front().y;
-                repeat.originX.reserve(static_cast<std::size_t>(columns) * rows);
-                repeat.originY.reserve(static_cast<std::size_t>(columns) * rows);
-                for (std::uint32_t row = 0; row < rows; ++row) {
-                    for (std::uint32_t col = 0; col < columns; ++col) {
-                        repeat.originX.push_back(originX + static_cast<std::int64_t>(col) * path.stepX);
-                        repeat.originY.push_back(originY + static_cast<std::int64_t>(row) * path.stepY);
-                    }
-                }
-                bucket.pathRepeats.push_back(std::move(repeat));
-                break;
-                }
             }
             PendingPath pending;
             pending.width = path.width;

@@ -15,9 +15,9 @@ INCLUDEPATH += \
   $$COMMONDB_ROOT/utils \
   $$CAPNP_ROOT/include
 
-LIBS += -L$$CAPNP_ROOT/lib -lcapnp -lkj
+LIBS += -L$$CAPNP_ROOT/lib -lcapnp -lkj -lz
 
-DEFINES += ROOM_KLAYOUT_PLUGIN
+DEFINES += ROOM_KLAYOUT_PLUGIN OAS_TRACE=0
 
 CONFIG += c++17
 QMAKE_CXXFLAGS += -std=c++17
@@ -38,10 +38,12 @@ SOURCES += \
   $$CORE_SRC/lib_index.cpp \
   $$CORE_SRC/database.cpp \
   $$CORE_SRC/file_summary.cpp \
-  $$CORE_SRC/mapped_file.cpp \
   $$CORE_SRC/serialization.cpp \
+  $$CORE_SRC/mapped_file.cpp \
   $$CORE_SRC/compact_codec.cpp \
   $$CORE_SRC/varint_codec.cpp \
+  $$COMMONDB_ROOT/utils/oas_geometry.cpp \
+  $$COMMONDB_ROOT/utils/oas_reader.cpp \
   $$CORE_GEN/common.capnp.c++ \
   $$CORE_GEN/dm.capnp.c++ \
   $$CORE_GEN/design.capnp.c++ \

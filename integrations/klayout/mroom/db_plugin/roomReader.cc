@@ -222,7 +222,8 @@ bool as_regular_grid (std::vector<Placement> points, RegularGrid &grid)
 
 void insert_box_grid (db::Shapes &shapes, db::Layout &layout,
                       std::int64_t llx, std::int64_t lly, std::int64_t width, std::int64_t height,
-                      std::int64_t step_x, std::int64_t step_y, std::uint64_t columns, std::uint64_t rows)
+                      std::int64_t step_x, std::int64_t step_y, std::uint64_t columns, std::uint64_t rows,
+                      std::int64_t col_y = 0, std::int64_t row_x = 0)
 {
   if (columns == 0 || rows == 0) {
     return;
@@ -234,15 +235,41 @@ void insert_box_grid (db::Shapes &shapes, db::Layout &layout,
     return;
   }
   shapes.insert (db::Shape::box_array_type (box, db::UnitTrans (), layout.array_repository (),
-                                            db::Vector (cast_coord (step_x), 0),
-                                            db::Vector (0, cast_coord (step_y)),
+                                            db::Vector (cast_coord (step_x), cast_coord (col_y)),
+                                            db::Vector (cast_coord (row_x), cast_coord (step_y)),
                                             columns, rows));
+}
+
+template <class Array>
+void fill_iterated (Array &array, const std::vector<std::int64_t> &xs, const std::vector<std::int64_t> &ys)
+{
+  const std::size_t count = std::min (xs.size (), ys.size ());
+  std::vector<db::Vector> points;
+  points.reserve (count);
+  const db::Coord x0 = cast_coord (xs.front ());
+  const db::Coord y0 = cast_coord (ys.front ());
+  for (std::size_t i = 0; i < count; ++i) {
+    points.push_back (db::Vector (cast_coord (xs[i]) - x0, cast_coord (ys[i]) - y0));
+  }
+  array.reserve (count);
+  array.insert (points.begin (), points.end ());
+  array.sort ();
 }
 
 void insert_box_points (db::Shapes &shapes, db::Layout &layout, std::int64_t width, std::int64_t height,
                         const std::vector<std::int64_t> &xs, const std::vector<std::int64_t> &ys)
 {
   const std::size_t count = std::min (xs.size (), ys.size ());
+  if (! layout.is_editable () && count > 1) {
+    const db::Coord x0 = cast_coord (xs.front ());
+    const db::Coord y0 = cast_coord (ys.front ());
+    const db::Box box (db::Point (x0, y0),
+                       db::Point (cast_coord (xs.front () + width), cast_coord (ys.front () + height)));
+    db::Shape::box_array_type::iterated_array_type array;
+    fill_iterated (array, xs, ys);
+    shapes.insert (db::Shape::box_array_type (box, db::UnitTrans (), layout.array_repository ().insert (array)));
+    return;
+  }
   std::vector<Placement> points;
   points.reserve (count);
   for (std::size_t i = 0; i < count; ++i) {
@@ -327,7 +354,8 @@ void insert_origins (const std::vector<std::int64_t> &xs, const std::vector<std:
 
 void insert_polygon_grid (db::Shapes &shapes, db::Layout &layout, const std::vector<room::Point> &prototype,
                           std::int64_t shift_x, std::int64_t shift_y, std::int64_t step_x, std::int64_t step_y,
-                          std::uint64_t columns, std::uint64_t rows)
+                          std::uint64_t columns, std::uint64_t rows,
+                          std::int64_t col_y = 0, std::int64_t row_x = 0)
 {
   if (prototype.size () < 3 || columns == 0 || rows == 0) {
     return;
@@ -347,14 +375,15 @@ void insert_polygon_grid (db::Shapes &shapes, db::Layout &layout, const std::vec
     db::SimplePolygonPtr (polygon, layout.shape_repository ()),
     db::Disp (db::Vector (0, 0)),
     layout.array_repository (),
-    db::Vector (cast_coord (step_x), 0),
-    db::Vector (0, cast_coord (step_y)),
+    db::Vector (cast_coord (step_x), cast_coord (col_y)),
+    db::Vector (cast_coord (row_x), cast_coord (step_y)),
     columns, rows));
 }
 
 void insert_path_grid (db::Shapes &shapes, db::Layout &layout, const room::CompactPathRepeatRef &repeat,
                        std::int64_t shift_x, std::int64_t shift_y, std::int64_t step_x, std::int64_t step_y,
-                       std::uint64_t columns, std::uint64_t rows)
+                       std::uint64_t columns, std::uint64_t rows,
+                       std::int64_t col_y = 0, std::int64_t row_x = 0)
 {
   if (repeat.points.empty () || columns == 0 || rows == 0) {
     return;
@@ -381,8 +410,8 @@ void insert_path_grid (db::Shapes &shapes, db::Layout &layout, const room::Compa
     db::PathPtr (path, layout.shape_repository ()),
     db::Disp (db::Vector (0, 0)),
     layout.array_repository (),
-    db::Vector (cast_coord (step_x), 0),
-    db::Vector (0, cast_coord (step_y)),
+    db::Vector (cast_coord (step_x), cast_coord (col_y)),
+    db::Vector (cast_coord (row_x), cast_coord (step_y)),
     columns, rows));
 }
 
@@ -556,14 +585,21 @@ void Reader::do_read (db::Layout &layout)
 
     const db::ICplxTrans trans = make_transform (instance.transform);
     db::CellInstArray arr (db::CellInst (child_it->second), trans);
-    if (instance.columns > 1 || instance.rows > 1) {
+    if (instance.offsets.size () > 1) {
+      std::vector<db::Vector> points;
+      points.reserve (instance.offsets.size ());
+      for (const room::Point &point : instance.offsets) {
+        points.push_back (db::Vector (cast_coord (point.x), cast_coord (point.y)));
+      }
+      arr = db::CellInstArray (db::CellInst (child_it->second), trans, points.begin (), points.end ());
+    } else if (instance.columns > 1 || instance.rows > 1) {
       const unsigned long columns = instance.columns == 0 ? 1 : instance.columns;
       const unsigned long rows = instance.rows == 0 ? 1 : instance.rows;
       arr = db::CellInstArray (
         db::CellInst (child_it->second),
         trans,
-        db::Vector (cast_coord (instance.stepX), 0),
-        db::Vector (0, cast_coord (instance.stepY)),
+        db::Vector (cast_coord (instance.stepX), cast_coord (instance.colY)),
+        db::Vector (cast_coord (instance.rowX), cast_coord (instance.stepY)),
         columns,
         rows);
     }
@@ -591,7 +627,7 @@ void Reader::do_read (db::Layout &layout)
       return;
     }
     insert_box_grid (*shapes, layout, array.originLlx, array.originLly, array.width, array.height,
-                     array.stepX, array.stepY, array.columns, array.rows);
+                     array.stepX, array.stepY, array.columns, array.rows, array.colY, array.rowX);
   };
   handlers.onRectGroup = [&] (const std::string &cell_name, const room::CompactRectGroupRef &group) {
     db::Shapes *shapes = target_shapes (cell_name, group.layerId);
@@ -605,6 +641,28 @@ void Reader::do_read (db::Layout &layout)
     if (! shapes || repeat.originX.empty ()) {
       return;
     }
+    if (repeat.columns > 1 || repeat.rows > 1) {
+      insert_polygon_grid (*shapes, layout, repeat.points, 0, 0, repeat.stepX, repeat.stepY,
+                           repeat.columns, repeat.rows, repeat.colY, repeat.rowX);
+      return;
+    }
+    if (! layout.is_editable () && repeat.originX.size () > 1) {
+      std::vector<db::Point> hull;
+      hull.reserve (repeat.points.size ());
+      for (const room::Point &point : repeat.points) {
+        hull.push_back (db::Point (cast_coord (point.x), cast_coord (point.y)));
+      }
+      db::SimplePolygon polygon;
+      polygon.assign_hull (hull.begin (), hull.end ());
+      const db::Vector place (polygon.box ().lower_left () - db::Point ());
+      polygon.move (-place);
+      const db::SimplePolygonPtr prototype (polygon, layout.shape_repository ());
+      db::Shape::simple_polygon_ptr_array_type::iterated_array_type array;
+      fill_iterated (array, repeat.originX, repeat.originY);
+      shapes->insert (db::Shape::simple_polygon_ptr_array_type (prototype, db::Disp (place),
+                                                                layout.array_repository ().insert (array)));
+      return;
+    }
     const std::int64_t origin_x = repeat.originX.front ();
     const std::int64_t origin_y = repeat.originY.front ();
     insert_origins (repeat.originX, repeat.originY,
@@ -616,6 +674,35 @@ void Reader::do_read (db::Layout &layout)
   handlers.onPathRepeat = [&] (const std::string &cell_name, const room::CompactPathRepeatRef &repeat) {
     db::Shapes *shapes = target_shapes (cell_name, repeat.layerId);
     if (! shapes || repeat.originX.empty ()) {
+      return;
+    }
+    if (repeat.columns > 1 || repeat.rows > 1) {
+      insert_path_grid (*shapes, layout, repeat, 0, 0, repeat.stepX, repeat.stepY,
+                        repeat.columns, repeat.rows, repeat.colY, repeat.rowX);
+      return;
+    }
+    if (! layout.is_editable () && repeat.originX.size () > 1 && ! repeat.points.empty ()) {
+      std::vector<db::Point> path_points;
+      path_points.reserve (repeat.points.size ());
+      for (const room::Point &point : repeat.points) {
+        path_points.push_back (db::Point (cast_coord (point.x), cast_coord (point.y)));
+      }
+      db::Path path;
+      path.assign (path_points.begin (), path_points.end ());
+      if (repeat.width > 0) {
+        path.width (cast_coord (repeat.width));
+      }
+      path.extensions (cast_coord (repeat.bgnExt), cast_coord (repeat.endExt));
+      if (repeat.round) {
+        path.round (true);
+      }
+      const db::Vector place (*path.begin () - db::Point ());
+      path.move (-place);
+      const db::PathPtr prototype (path, layout.shape_repository ());
+      db::Shape::path_ptr_array_type::iterated_array_type array;
+      fill_iterated (array, repeat.originX, repeat.originY);
+      shapes->insert (db::Shape::path_ptr_array_type (prototype, db::Disp (place),
+                                                      layout.array_repository ().insert (array)));
       return;
     }
     const std::int64_t origin_x = repeat.originX.front ();

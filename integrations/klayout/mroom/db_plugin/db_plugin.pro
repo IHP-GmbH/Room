@@ -14,16 +14,23 @@ include($$KLAYOUT_SRC/plugins/db_plugin.pri)
 
 include($$PWD/../room.pri)
 
+LSTREAM_DIR = $$clean_path($$KLAYOUT_SRC/plugins/streamers/lstream/db_plugin)
+INCLUDEPATH += $$LSTREAM_DIR
+
 HEADERS += \
   roomPlugin.h \
   roomReader.h \
   roomWriter.h \
   roomFormat.h \
-  propertyBridge.h
+  propertyBridge.h \
+  $$LSTREAM_DIR/lstrCompressor.h \
+  $$LSTREAM_DIR/lstrCompressed.h
 
 SOURCES += \
   roomPlugin.cc \
   roomReader.cc \
   roomWriter.cc \
   roomFormat.cc \
-  propertyBridge.cc
+  propertyBridge.cc \
+  $$LSTREAM_DIR/lstrCompressor.cc \
+  $$LSTREAM_DIR/lstrCompressed.cc
