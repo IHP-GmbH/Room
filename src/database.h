@@ -12,6 +12,14 @@ namespace room {
  *****************************************************************************************/
 struct SaveOptions {
     bool compactGeometry = true; /*!< When true, geometry is written to payload.compact. */
+    /*! When true (default), compact encode re-detects rect/poly/path repetitions.
+     *  Set false when the caller already supplied columns/rows/copies (e.g. KLayout LStream). */
+    bool detectRepetition = true;
+    /*! When true, wrap the Cap'n Proto payload in a zlib layer (ROOMZ magic). */
+    bool compressFile = true;
+    /*! zlib level 0..9 (0=store/fastest zlib wrapper, 1=Z_BEST_SPEED, 9=Z_BEST_COMPRESSION).
+     *  Ignored when compressFile is false. Default 1. */
+    int compressLevel = 1;
 };
 
 /*!****************************************************************************************

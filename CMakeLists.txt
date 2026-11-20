@@ -97,6 +97,7 @@ set(ROOM_SOURCES
     src/file_summary.cpp
     src/mapped_file.cpp
     src/room_paths.cpp
+    src/room_file_io.cpp
     src/serialization.cpp
     src/compact_codec.cpp
     src/varint_codec.cpp
@@ -115,6 +116,10 @@ target_include_directories(room PUBLIC
 )
 
 target_link_libraries(room PUBLIC ${CAPNP_LIBRARY} ${KJ_LIBRARY})
+
+find_package(ZLIB REQUIRED)
+target_link_libraries(room PUBLIC ZLIB::ZLIB)
+target_include_directories(room PUBLIC ${ZLIB_INCLUDE_DIRS})
 
 add_library(room_utils STATIC
     utils/gds_importer.cpp

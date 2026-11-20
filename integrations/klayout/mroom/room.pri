@@ -40,6 +40,7 @@ SOURCES += \
   $$CORE_SRC/file_summary.cpp \
   $$CORE_SRC/serialization.cpp \
   $$CORE_SRC/mapped_file.cpp \
+  $$CORE_SRC/room_file_io.cpp \
   $$CORE_SRC/compact_codec.cpp \
   $$CORE_SRC/varint_codec.cpp \
   $$COMMONDB_ROOT/utils/oas_geometry.cpp \

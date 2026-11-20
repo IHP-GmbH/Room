@@ -105,6 +105,9 @@ struct CompactLayerShapes {
   pathBgnExt @19 :List(Int32);
   pathEndExt @20 :List(Int32);
   pathRound @21 :List(Bool);
+
+  # Zigzag-varint packed rectCoords (llx,lly,urx,ury…). When non-empty, preferred over list @1.
+  rectCoordsPacked @22 :Data;
 }
 
 struct CompactBlock {

@@ -7,6 +7,7 @@
 #include "database.h"
 #include "instance.h"
 #include "layer_utils.h"
+#include "room_file_io.h"
 #include "serialization.h"
 #include "shape.h"
 #include "types.h"
@@ -34,6 +35,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <map>
 #include <set>
 #include <string>
@@ -105,21 +107,89 @@ room::LayerSpec layer_spec_from_properties (const db::LayerProperties &propertie
   return spec;
 }
 
+class TlKjOutputStream : public kj::OutputStream
+{
+public:
+  explicit TlKjOutputStream (tl::OutputStream &stream) : m_stream (stream) {}
+
+  void write (const void *buffer, size_t size) override
+  {
+    if (size == 0) {
+      return;
+    }
+    m_stream.put_raw (reinterpret_cast<const char *> (buffer), size);
+  }
+
+private:
+  tl::OutputStream &m_stream;
+};
+
+bool env_flag (const char *name, bool default_value)
+{
+  const char *raw = std::getenv (name);
+  if (raw == nullptr || *raw == '\0') {
+    return default_value;
+  }
+  if (raw[0] == '0' && raw[1] == '\0') {
+    return false;
+  }
+  if ((raw[0] == 'n' || raw[0] == 'N') && (raw[1] == '\0' || raw[1] == 'o' || raw[1] == 'O')) {
+    return false;
+  }
+  if ((raw[0] == 'f' || raw[0] == 'F') && (raw[1] == '\0' || raw[1] == 'a' || raw[1] == 'A')) {
+    return false;
+  }
+  return true;
+}
+
+int env_int (const char *name, int default_value)
+{
+  const char *raw = std::getenv (name);
+  if (raw == nullptr || *raw == '\0') {
+    return default_value;
+  }
+  char *end = nullptr;
+  const long value = std::strtol (raw, &end, 10);
+  if (end == raw) {
+    return default_value;
+  }
+  return static_cast<int> (value);
+}
+
 void write_database_to_stream (room::Database &database, tl::OutputStream &stream)
 {
   database.lib ().recomputeAllBBoxes ();
   database.lib ().refreshIndex ();
   database.setFileSummary (room::FileSummary::fromLib (database.lib (), room::ViewType::Layout));
 
+  // LStream already attached columns/rows/copies — skip a second compact optimize pass by default.
+  // Tunables (read each write):
+  //   ROOM_COMPRESS=0|1          whole-file ROOMZ zlib (default 1)
+  //   ROOM_COMPRESS_LEVEL=0..9   zlib level (default 1 = Z_BEST_SPEED)
+  //   ROOM_DETECT_REPETITION=0|1 second compact optimize (default 0)
   room::SaveOptions options;
   options.compactGeometry = true;
+  options.detectRepetition = env_flag ("ROOM_DETECT_REPETITION", false);
+  options.compressFile = env_flag ("ROOM_COMPRESS", true);
+  options.compressLevel = env_int ("ROOM_COMPRESS_LEVEL", 1);
+
   capnp::MallocMessageBuilder message;
   writeDatabase (message.initRoot<room::schema::Database> (), database, options);
 
-  kj::VectorOutputStream vector_stream;
-  capnp::writeMessage (vector_stream, message);
-  const kj::ArrayPtr<const kj::byte> bytes = vector_stream.getArray ();
-  stream.put_raw (reinterpret_cast<const char *> (bytes.begin ()), bytes.size ());
+  if (options.compressFile) {
+    kj::VectorOutputStream vector_stream;
+    capnp::writeMessage (vector_stream, message);
+    const kj::ArrayPtr<const kj::byte> bytes = vector_stream.getArray ();
+    const std::vector<std::uint8_t> framed =
+        room::compressRoomPayload (bytes.begin (), bytes.size (), options.compressLevel);
+    stream.put_raw (reinterpret_cast<const char *> (framed.data ()), framed.size ());
+    return;
+  }
+
+  // Uncompressed path: stream Cap'n Proto segments straight to KLayout's OutputStream
+  // (no intermediate full-file VectorOutputStream copy).
+  TlKjOutputStream adapter (stream);
+  capnp::writeMessage (adapter, message);
 }
 
 std::string resolve_lib_name (const db::Layout &layout, const db::SaveLayoutOptions &options, const tl::OutputStream &stream)

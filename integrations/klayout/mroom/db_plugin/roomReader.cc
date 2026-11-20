@@ -26,6 +26,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace roomdb
@@ -260,7 +261,9 @@ void insert_box_points (db::Shapes &shapes, db::Layout &layout, std::int64_t wid
                         const std::vector<std::int64_t> &xs, const std::vector<std::int64_t> &ys)
 {
   const std::size_t count = std::min (xs.size (), ys.size ());
-  if (! layout.is_editable () && count > 1) {
+  // Prefer iterated arrays even on editable layouts — expanding point clouds is ~2× slower
+  // and loses to native GDS load on wafer-scale designs.
+  if (count > 1) {
     const db::Coord x0 = cast_coord (xs.front ());
     const db::Coord y0 = cast_coord (ys.front ());
     const db::Box box (db::Point (x0, y0),
@@ -464,8 +467,8 @@ void Reader::do_read (db::Layout &layout)
     throw tl::Exception (tl::to_string (tr ("ROOM reader requires a file path")));
   }
 
-  std::map<std::string, db::cell_index_type> cell_index_by_name;
-  std::map<std::string, std::vector<room::LayerSpec>> layers_by_cell;
+  std::unordered_map<std::string, db::cell_index_type> cell_index_by_name;
+  std::unordered_map<std::string, std::vector<room::LayerSpec>> layers_by_cell;
   LayerMapper layer_mapper (layout);
   bool dbu_set = false;
 
@@ -621,6 +624,20 @@ void Reader::do_read (db::Layout &layout)
     return &layout.cell (cell_it->second).shapes (layer_index);
   };
 
+  handlers.onRectCoords = [&] (const std::string &cell_name, const room::CompactRectCoordsRef &coords) {
+    db::Shapes *shapes = target_shapes (cell_name, coords.layerId);
+    if (! shapes || coords.coords == nullptr || coords.coordCount < 4) {
+      return;
+    }
+    for (std::size_t i = 0; i + 3 < coords.coordCount; i += 4) {
+      const std::int64_t llx = coords.coords[i];
+      const std::int64_t lly = coords.coords[i + 1];
+      const std::int64_t urx = coords.coords[i + 2];
+      const std::int64_t ury = coords.coords[i + 3];
+      shapes->insert (db::Box (db::Point (cast_coord (llx), cast_coord (lly)),
+                               db::Point (cast_coord (urx), cast_coord (ury))));
+    }
+  };
   handlers.onRectArray = [&] (const std::string &cell_name, const room::CompactRectArrayRef &array) {
     db::Shapes *shapes = target_shapes (cell_name, array.layerId);
     if (! shapes) {
@@ -646,7 +663,7 @@ void Reader::do_read (db::Layout &layout)
                            repeat.columns, repeat.rows, repeat.colY, repeat.rowX);
       return;
     }
-    if (! layout.is_editable () && repeat.originX.size () > 1) {
+    if (repeat.originX.size () > 1) {
       std::vector<db::Point> hull;
       hull.reserve (repeat.points.size ());
       for (const room::Point &point : repeat.points) {
@@ -681,7 +698,7 @@ void Reader::do_read (db::Layout &layout)
                         repeat.columns, repeat.rows, repeat.colY, repeat.rowX);
       return;
     }
-    if (! layout.is_editable () && repeat.originX.size () > 1 && ! repeat.points.empty ()) {
+    if (repeat.originX.size () > 1 && ! repeat.points.empty ()) {
       std::vector<db::Point> path_points;
       path_points.reserve (repeat.points.size ());
       for (const room::Point &point : repeat.points) {

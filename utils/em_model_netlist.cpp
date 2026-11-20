@@ -12,10 +12,12 @@
 
 #include <cctype>
 #include <fstream>
-#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <direct.h>
+#include <io.h>
+#else
+#include <sys/stat.h>
 #endif
 
 namespace room {
@@ -50,8 +52,13 @@ bool endsWithInsensitive(const std::string &value, const std::string &suffix)
 
 bool pathExists(const std::string &path)
 {
+#ifdef _WIN32
+    // MinGW can rewrite ::stat → stat64i32 with no linker symbol; use CRT _access.
+    return _access(path.c_str(), 0) == 0;
+#else
     struct stat st {};
     return ::stat(path.c_str(), &st) == 0;
+#endif
 }
 
 bool isWindowsDrivePath(const std::string &path)

@@ -1,4 +1,5 @@
 #include "database.h"
+#include "room_file_io.h"
 #include "serialization.h"
 
 #include <capnp/message.h>
@@ -40,36 +41,40 @@ void Database::saveToFile(const std::string &path, ViewType fileView, SaveOption
     if (!out) {
         throw std::runtime_error("Cannot open file for writing: " + path);
     }
+
+    if (options.compressFile) {
+        kj::VectorOutputStream vectorStream;
+        capnp::writeMessage(vectorStream, message);
+        const kj::ArrayPtr<const kj::byte> bytes = vectorStream.getArray();
+        const std::vector<std::uint8_t> framed =
+            compressRoomPayload(bytes.begin(), bytes.size(), options.compressLevel);
+        if (!out.write(reinterpret_cast<const char *>(framed.data()),
+                       static_cast<std::streamsize>(framed.size()))) {
+            throw std::runtime_error("Failed to write compressed ROOM file: " + path);
+        }
+        return;
+    }
+
     kj::std::StdOutputStream kjOut(out);
     capnp::writeMessage(kjOut, message);
 }
 
 Database Database::loadFromFile(const std::string &path)
 {
-    std::ifstream in(path, std::ios::binary | std::ios::ate);
-    if (!in) {
-        throw std::runtime_error("Cannot open file for reading: " + path);
+    const std::vector<std::uint8_t> buffer = readRoomFileBytes(path);
+    if (buffer.size() < sizeof(capnp::word) || buffer.size() % sizeof(capnp::word) != 0) {
+        throw std::runtime_error("ROOM file too small: " + path);
     }
 
-    const std::streamsize fileSize = in.tellg();
-    if (fileSize <= 0) {
-        throw std::runtime_error("Cannot read file size: " + path);
-    }
-    in.seekg(0, std::ios::beg);
-
-    std::vector<char> buffer(static_cast<std::size_t>(fileSize));
-    if (!in.read(buffer.data(), fileSize)) {
-        throw std::runtime_error("Failed to read file: " + path);
-    }
-
-    kj::ArrayInputStream inputStream(
-        kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
     // Cap'n Proto default traversalLimitInWords is 8 Mi words (~64 MiB). Wafer-scale
     // .layout.room files need a limit proportional to the message size.
     capnp::ReaderOptions readerOptions;
     readerOptions.traversalLimitInWords =
         (buffer.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
-    capnp::InputStreamMessageReader reader(inputStream, readerOptions);
+    capnp::FlatArrayMessageReader reader(
+        kj::arrayPtr(reinterpret_cast<const capnp::word *>(buffer.data()),
+                     buffer.size() / sizeof(capnp::word)),
+        readerOptions);
     return readDatabase(reader.getRoot<schema::Database>());
 }
 

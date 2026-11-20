@@ -15,6 +15,7 @@
 #include "layer_utils.h"
 #include "lib_index.h"
 #include "mapped_file.h"
+#include "room_file_io.h"
 
 #include <capnp/message.h>
 #include <capnp/serialize.h>
@@ -491,12 +492,13 @@ template <typename ViewBuilder>
 void writeViewTopology(ViewBuilder viewBuilder,
                        const std::vector<LayerSpec> &layers,
                        const Block &block,
-                       bool compactGeometry)
+                       bool compactGeometry,
+                       bool detectRepetition)
 {
     writeViewLayers(viewBuilder, layers);
     if (compactGeometry) {
         writeBlockShell(viewBuilder.initBlock(), block);
-        writeCompactBlock(viewBuilder.initCompact(), block);
+        writeCompactBlock(viewBuilder.initCompact(), block, detectRepetition);
     } else {
         writeBlock(viewBuilder.initBlock(), block);
     }
@@ -592,27 +594,28 @@ void writeViewPayload(schema::ViewPayload::Builder payload,
                       ViewType viewType,
                       const std::vector<LayerSpec> &layers,
                       const Block &block,
-                      bool compactGeometry)
+                      bool compactGeometry,
+                      bool detectRepetition)
 {
     switch (viewType) {
     case ViewType::Layout: {
         auto layout = payload.initLayout();
-        writeViewTopology(layout, layers, block, compactGeometry);
+        writeViewTopology(layout, layers, block, compactGeometry, detectRepetition);
         break;
     }
     case ViewType::Schematic: {
         auto schematic = payload.initSchematic();
-        writeViewTopology(schematic, layers, block, compactGeometry);
+        writeViewTopology(schematic, layers, block, compactGeometry, detectRepetition);
         break;
     }
     case ViewType::Symbol: {
         auto symbol = payload.initSymbol();
-        writeViewTopology(symbol, layers, block, compactGeometry);
+        writeViewTopology(symbol, layers, block, compactGeometry, detectRepetition);
         break;
     }
     case ViewType::Abstract: {
         auto abstract = payload.initAbstract();
-        writeViewTopology(abstract, layers, block, compactGeometry);
+        writeViewTopology(abstract, layers, block, compactGeometry, detectRepetition);
         break;
     }
     case ViewType::EmModel:
@@ -642,7 +645,7 @@ Block readBlockFromPayload(schema::ViewPayload::Reader payload)
 void writeCellContent(schema::CellContent::Builder b,
                       const CellContent &content,
                       const std::vector<LayerSpec> &libLayers,
-                      bool compactGeometry)
+                      const SaveOptions &options)
 {
     b.setViewType(toSchemaViewType(content.viewType()));
     b.setDbuPerMicron(content.dbuPerMicron());
@@ -661,7 +664,8 @@ void writeCellContent(schema::CellContent::Builder b,
         return;
     }
     const std::vector<LayerSpec> viewLayers = layersForSerialization(content, libLayers);
-    writeViewPayload(b.initPayload(), content.viewType(), viewLayers, content.block(), compactGeometry);
+    writeViewPayload(b.initPayload(), content.viewType(), viewLayers, content.block(),
+                     options.compactGeometry, options.detectRepetition);
 }
 
 CellContent readCellContent(schema::CellContent::Reader r)
@@ -826,7 +830,7 @@ void writeDatabase(schema::Database::Builder root, const Database &db, SaveOptio
 
         auto contents = cellBuilder.initContents(cell.contents().size());
         for (std::size_t i = 0; i < cell.contents().size(); ++i) {
-            writeCellContent(contents[i], cell.contents()[i], db.lib().layers(), options.compactGeometry);
+            writeCellContent(contents[i], cell.contents()[i], db.lib().layers(), options);
         }
     }
 
@@ -935,8 +939,12 @@ void emitViewTopology(const std::string &cellName, ViewReader view, const Layout
         return;
     }
     CompactRepeatHooks hooks;
-    const bool keepRepeats = static_cast<bool>(handlers.onRectArray) || static_cast<bool>(handlers.onRectGroup) ||
+    const bool keepRepeats = static_cast<bool>(handlers.onRectCoords) ||
+                             static_cast<bool>(handlers.onRectArray) || static_cast<bool>(handlers.onRectGroup) ||
                              static_cast<bool>(handlers.onPolygonRepeat) || static_cast<bool>(handlers.onPathRepeat);
+    if (handlers.onRectCoords) {
+        hooks.rectCoords = [&](const CompactRectCoordsRef &coords) { handlers.onRectCoords(cellName, coords); };
+    }
     if (handlers.onRectArray) {
         hooks.rectArray = [&](const CompactRectArrayRef &array) { handlers.onRectArray(cellName, array); };
     }
@@ -995,30 +1003,19 @@ void visitOneCell(schema::Cell::Reader cell, const LayoutVisitHandlers &handlers
 
 void visitLayoutFile(const std::string &path, const LayoutVisitHandlers &handlers)
 {
-    std::ifstream in(path, std::ios::binary | std::ios::ate);
-    if (!in) {
-        throw std::runtime_error("Cannot open file for reading: " + path);
-    }
-    const std::streamsize fileSize = in.tellg();
-    if (fileSize <= 0) {
-        throw std::runtime_error("Cannot read file size: " + path);
-    }
-    in.seekg(0, std::ios::beg);
-
-    std::vector<char> buffer(static_cast<std::size_t>(fileSize));
-    constexpr std::size_t chunkBytes = 256ull << 20;
-    for (std::size_t offset = 0; offset < buffer.size(); offset += chunkBytes) {
-        const std::size_t count = std::min(chunkBytes, buffer.size() - offset);
-        if (!in.read(buffer.data() + offset, static_cast<std::streamsize>(count))) {
-            throw std::runtime_error("Failed to read file: " + path);
-        }
+    const std::vector<std::uint8_t> buffer = readRoomFileBytes(path);
+    if (buffer.size() < sizeof(capnp::word) || buffer.size() % sizeof(capnp::word) != 0) {
+        throw std::runtime_error("Not a ROOM file (bad size): " + path);
     }
 
-    kj::ArrayInputStream inputStream(
-        kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
+    // FlatArray avoids an extra Cap'n Proto segment copy after ROOMZ inflate / raw read.
     capnp::ReaderOptions readerOptions;
-    readerOptions.traversalLimitInWords = (buffer.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
-    capnp::InputStreamMessageReader reader(inputStream, readerOptions);
+    readerOptions.traversalLimitInWords =
+        (buffer.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
+    capnp::FlatArrayMessageReader reader(
+        kj::arrayPtr(reinterpret_cast<const capnp::word *>(buffer.data()),
+                     buffer.size() / sizeof(capnp::word)),
+        readerOptions);
     const auto root = reader.getRoot<schema::Database>();
     const auto lib = root.getLib();
     if (handlers.onFile) {
@@ -1043,16 +1040,18 @@ Database loadLayoutBreadthFirst(const std::string &path,
                                 std::size_t shapeBudget,
                                 bool withIndex)
 {
-    const MappedFile mapped(path);
-    if (mapped.size() < sizeof(capnp::word) || mapped.size() % sizeof(capnp::word) != 0) {
+    // ROOMZ (compressed) cannot be FlatArray-mapped; decode to Cap'n Proto bytes first.
+    // Uncompressed files still go through decodeRoomFileBytes as a cheap copy.
+    const std::vector<std::uint8_t> buffer = readRoomFileBytes(path);
+    if (buffer.size() < sizeof(capnp::word) || buffer.size() % sizeof(capnp::word) != 0) {
         throw std::runtime_error("Not a ROOM file (bad size): " + path);
     }
     capnp::ReaderOptions readerOptions;
     readerOptions.traversalLimitInWords =
-        (mapped.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
+        (buffer.size() / sizeof(capnp::word)) * 2 + (1024 * 1024);
     capnp::FlatArrayMessageReader reader(
-        kj::arrayPtr(static_cast<const capnp::word *>(mapped.data()),
-                     static_cast<std::size_t>(mapped.size() / sizeof(capnp::word))),
+        kj::arrayPtr(reinterpret_cast<const capnp::word *>(buffer.data()),
+                     buffer.size() / sizeof(capnp::word)),
         readerOptions);
     const auto root = reader.getRoot<schema::Database>();
     const auto libReader = root.getLib();

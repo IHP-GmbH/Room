@@ -101,7 +101,7 @@ struct CompactLayerShapes {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(c0854c926e42f5d8, 1, 21)
+    CAPNP_DECLARE_STRUCT_HEADER(c0854c926e42f5d8, 1, 22)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -749,6 +749,9 @@ public:
   inline bool hasPathRound() const;
   inline  ::capnp::List<bool,  ::capnp::Kind::PRIMITIVE>::Reader getPathRound() const;
 
+  inline bool hasRectCoordsPacked() const;
+  inline  ::capnp::Data::Reader getRectCoordsPacked() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -940,6 +943,13 @@ public:
   inline  ::capnp::List<bool,  ::capnp::Kind::PRIMITIVE>::Builder initPathRound(unsigned int size);
   inline void adoptPathRound(::capnp::Orphan< ::capnp::List<bool,  ::capnp::Kind::PRIMITIVE>>&& value);
   inline ::capnp::Orphan< ::capnp::List<bool,  ::capnp::Kind::PRIMITIVE>> disownPathRound();
+
+  inline bool hasRectCoordsPacked();
+  inline  ::capnp::Data::Builder getRectCoordsPacked();
+  inline void setRectCoordsPacked( ::capnp::Data::Reader value);
+  inline  ::capnp::Data::Builder initRectCoordsPacked(unsigned int size);
+  inline void adoptRectCoordsPacked(::capnp::Orphan< ::capnp::Data>&& value);
+  inline ::capnp::Orphan< ::capnp::Data> disownRectCoordsPacked();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -2643,6 +2653,40 @@ inline void CompactLayerShapes::Builder::adoptPathRound(
 inline ::capnp::Orphan< ::capnp::List<bool,  ::capnp::Kind::PRIMITIVE>> CompactLayerShapes::Builder::disownPathRound() {
   return ::capnp::_::PointerHelpers< ::capnp::List<bool,  ::capnp::Kind::PRIMITIVE>>::disown(_builder.getPointerField(
       ::capnp::bounded<20>() * ::capnp::POINTERS));
+}
+
+inline bool CompactLayerShapes::Reader::hasRectCoordsPacked() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<21>() * ::capnp::POINTERS).isNull();
+}
+inline bool CompactLayerShapes::Builder::hasRectCoordsPacked() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<21>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Data::Reader CompactLayerShapes::Reader::getRectCoordsPacked() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_reader.getPointerField(
+      ::capnp::bounded<21>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Data::Builder CompactLayerShapes::Builder::getRectCoordsPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_builder.getPointerField(
+      ::capnp::bounded<21>() * ::capnp::POINTERS));
+}
+inline void CompactLayerShapes::Builder::setRectCoordsPacked( ::capnp::Data::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::set(_builder.getPointerField(
+      ::capnp::bounded<21>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Data::Builder CompactLayerShapes::Builder::initRectCoordsPacked(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::init(_builder.getPointerField(
+      ::capnp::bounded<21>() * ::capnp::POINTERS), size);
+}
+inline void CompactLayerShapes::Builder::adoptRectCoordsPacked(
+    ::capnp::Orphan< ::capnp::Data>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::adopt(_builder.getPointerField(
+      ::capnp::bounded<21>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Data> CompactLayerShapes::Builder::disownRectCoordsPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::disown(_builder.getPointerField(
+      ::capnp::bounded<21>() * ::capnp::POINTERS));
 }
 
 inline bool CompactBlock::Reader::hasLayerShapes() const {

@@ -66,6 +66,7 @@ struct LayoutVisitHandlers {
     std::function<void(const std::string &cellName, Shape shape)> onShape;
     std::function<void(const std::string &cellName, VisitedInstance instance)> onInstance;
     /*! Receivers for compact repetitions. When set, identical members without properties stay one array. */
+    std::function<void(const std::string &cellName, const CompactRectCoordsRef &coords)> onRectCoords;
     std::function<void(const std::string &cellName, const CompactRectArrayRef &array)> onRectArray;
     std::function<void(const std::string &cellName, const CompactRectGroupRef &group)> onRectGroup;
     std::function<void(const std::string &cellName, const CompactPolygonRepeatRef &repeat)> onPolygonRepeat;

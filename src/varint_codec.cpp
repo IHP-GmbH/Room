@@ -47,6 +47,7 @@ bool readVarint(const std::uint8_t *data, std::size_t size, std::size_t &cursor,
 std::vector<std::uint8_t> encodeVarint64(const std::vector<std::int64_t> &values)
 {
     std::vector<std::uint8_t> out;
+    // Zigzag varints for layout coords are usually 1–3 bytes; 2× is a solid first guess.
     out.reserve(values.size() * 2);
     for (const std::int64_t value : values) {
         appendVarint(out, zigzagEncode(value));
@@ -57,6 +58,8 @@ std::vector<std::uint8_t> encodeVarint64(const std::vector<std::int64_t> &values
 std::vector<std::int64_t> decodeVarint64(const std::uint8_t *data, std::size_t size)
 {
     std::vector<std::int64_t> out;
+    // Lower bound: every value occupies at least one byte.
+    out.reserve(size);
     std::size_t cursor = 0;
     while (cursor < size) {
         std::uint64_t encoded = 0;

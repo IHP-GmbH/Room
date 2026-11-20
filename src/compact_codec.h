@@ -41,6 +41,17 @@ struct CompactRectGroupRef {
 };
 
 /*!****************************************************************************************
+ * \brief Packed plain rectangles (llx,lly,urx,ury) with no per-rect properties.
+ *
+ * coords points at a contiguous buffer owned by the decoder for the duration of the callback.
+ *****************************************************************************************/
+struct CompactRectCoordsRef {
+    std::uint32_t layerId = 0;
+    const std::int64_t *coords = nullptr;
+    std::size_t coordCount = 0; /*!< Multiple of 4. */
+};
+
+/*!****************************************************************************************
  * \brief One polygon translated onto each origin. points are absolute at origins[0].
  *****************************************************************************************/
 struct CompactPolygonRepeatRef {
@@ -83,6 +94,7 @@ struct CompactPathRepeatRef {
  * Otherwise the members are emitted as individual shapes.
  *****************************************************************************************/
 struct CompactRepeatHooks {
+    std::function<void(const CompactRectCoordsRef &)> rectCoords;
     std::function<void(const CompactRectArrayRef &)> rectArray;
     std::function<void(const CompactRectGroupRef &)> rectGroup;
     std::function<void(const CompactPolygonRepeatRef &)> polygonRepeat;
@@ -94,7 +106,8 @@ struct CompactRepeatHooks {
  * \param builder  CompactBlock builder to fill.
  * \param block    Source topology from memory.
  *****************************************************************************************/
-void writeCompactBlock(schema::CompactBlock::Builder builder, const Block &block);
+void writeCompactBlock(schema::CompactBlock::Builder builder, const Block &block,
+                       bool detectRepetition = true);
 
 /*!****************************************************************************************
  * \brief Decodes a CompactBlock into an in-memory Block.
