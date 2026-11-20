@@ -2,17 +2,16 @@
 
 #include "cell.h"
 #include "lib.h"
+#include "room_file_io.h"
 
 #include <database.capnp.h>
 
 #include <capnp/message.h>
 #include <capnp/serialize.h>
-#include <kj/io.h>
-#include <kj/std/iostream.h>
 
-#include <fstream>
 #include <set>
 #include <stdexcept>
+#include <vector>
 
 namespace room {
 namespace {
@@ -101,11 +100,11 @@ void writeFileSummary(schema::FileSummary::Builder builder, const FileSummary &s
 
 namespace {
 
-capnp::ReaderOptions largeRoomReaderOptions(std::uint64_t fileBytes)
+capnp::ReaderOptions largeRoomReaderOptions(std::uint64_t messageBytes)
 {
     capnp::ReaderOptions opts;
     // Cap'n Proto also caps total message size by traversalLimitInWords.
-    const std::uint64_t words = fileBytes / sizeof(capnp::word);
+    const std::uint64_t words = messageBytes / sizeof(capnp::word);
     opts.traversalLimitInWords = words * 2 + (1024ull * 1024ull);
     if (opts.traversalLimitInWords < 64ull * 1024ull * 1024ull) {
         opts.traversalLimitInWords = 64ull * 1024ull * 1024ull;
@@ -113,31 +112,25 @@ capnp::ReaderOptions largeRoomReaderOptions(std::uint64_t fileBytes)
     return opts;
 }
 
-std::uint64_t roomFileSizeBytes(const std::string &path)
+/*! Decode ROOMZ if needed, then open as FlatArray (same path as Database::loadFromFile). */
+std::vector<std::uint8_t> openRoomMessageBytes(const std::string &path)
 {
-    std::ifstream in(path, std::ios::binary | std::ios::ate);
-    if (!in) {
-        throw std::runtime_error("Cannot open file for reading: " + path);
+    std::vector<std::uint8_t> buffer = readRoomFileBytes(path);
+    if (buffer.size() < sizeof(capnp::word) || buffer.size() % sizeof(capnp::word) != 0) {
+        throw std::runtime_error("Not a ROOM file (bad size): " + path);
     }
-    const std::streamsize size = in.tellg();
-    if (size <= 0) {
-        throw std::runtime_error("Cannot read file size: " + path);
-    }
-    return static_cast<std::uint64_t>(size);
+    return buffer;
 }
 
 } // namespace
 
 RoomFileInfo sniffRoomFile(const std::string &path)
 {
-    const std::uint64_t fileBytes = roomFileSizeBytes(path);
-    std::ifstream in(path, std::ios::binary);
-    if (!in) {
-        throw std::runtime_error("Cannot open file for reading: " + path);
-    }
-
-    kj::std::StdInputStream kjIn(in);
-    capnp::InputStreamMessageReader reader(kjIn, largeRoomReaderOptions(fileBytes));
+    const std::vector<std::uint8_t> buffer = openRoomMessageBytes(path);
+    capnp::FlatArrayMessageReader reader(
+        kj::arrayPtr(reinterpret_cast<const capnp::word *>(buffer.data()),
+                     buffer.size() / sizeof(capnp::word)),
+        largeRoomReaderOptions(buffer.size()));
     const auto root = reader.getRoot<schema::Database>();
 
     RoomFileInfo info;
@@ -156,14 +149,11 @@ RoomFileInfo sniffRoomFile(const std::string &path)
 
 RoomHierarchyInfo sniffRoomHierarchy(const std::string &path)
 {
-    const std::uint64_t fileBytes = roomFileSizeBytes(path);
-    std::ifstream in(path, std::ios::binary);
-    if (!in) {
-        throw std::runtime_error("Cannot open file for reading: " + path);
-    }
-
-    kj::std::StdInputStream kjIn(in);
-    capnp::InputStreamMessageReader reader(kjIn, largeRoomReaderOptions(fileBytes));
+    const std::vector<std::uint8_t> buffer = openRoomMessageBytes(path);
+    capnp::FlatArrayMessageReader reader(
+        kj::arrayPtr(reinterpret_cast<const capnp::word *>(buffer.data()),
+                     buffer.size() / sizeof(capnp::word)),
+        largeRoomReaderOptions(buffer.size()));
     const auto root = reader.getRoot<schema::Database>();
     const auto lib = root.getLib();
 

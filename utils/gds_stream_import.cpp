@@ -1,6 +1,7 @@
 #include "gds_stream_import.h"
 
 #include "enums.h"
+#include "room_file_io.h"
 #include "varint_codec.h"
 
 #include <compact.capnp.h>
@@ -1432,15 +1433,16 @@ GdsStreamImportResult importGdsStreamToRoom(const std::string &gdsPath, const st
 
 GdsStreamStats readCompactRoomStats(const std::string &roomPath)
 {
-    std::vector<char> buffer;
-    std::string error;
-    if (!readAll(roomPath, buffer, error)) {
-        throw std::runtime_error(error);
+    const std::vector<std::uint8_t> buffer = readRoomFileBytes(roomPath);
+    if (buffer.size() < sizeof(capnp::word) || buffer.size() % sizeof(capnp::word) != 0) {
+        throw std::runtime_error("Not a ROOM file (bad size): " + roomPath);
     }
-    kj::ArrayInputStream input(kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
     capnp::ReaderOptions options;
     options.traversalLimitInWords = buffer.size() / sizeof(capnp::word) + (1024 * 1024);
-    capnp::InputStreamMessageReader reader(input, options);
+    capnp::FlatArrayMessageReader reader(
+        kj::arrayPtr(reinterpret_cast<const capnp::word *>(buffer.data()),
+                     buffer.size() / sizeof(capnp::word)),
+        options);
     auto root = reader.getRoot<schema::Database>();
     GdsStreamStats stats;
     const auto cells = root.getLib().getCells();

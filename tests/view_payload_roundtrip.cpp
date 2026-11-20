@@ -1,13 +1,13 @@
 #include "database.h"
 #include "compact_codec.h"
 #include "gds_importer.h"
+#include "room_file_io.h"
 
 #include <database.capnp.h>
 #include <views.capnp.h>
 
 #include <capnp/message.h>
 #include <capnp/serialize.h>
-#include <kj/io.h>
 
 #include <cstdio>
 #include <fstream>
@@ -80,21 +80,15 @@ bool payloadMatchesViewType(room::schema::ViewPayload::Reader payload, room::sch
 
 void verifyPayloadInFile(const std::string &roomPath)
 {
-    std::ifstream in(roomPath, std::ios::binary | std::ios::ate);
-    if (!in) {
-        throw std::runtime_error("Cannot open core file: " + roomPath);
-    }
-
-    const std::streamsize fileSize = in.tellg();
-    in.seekg(0, std::ios::beg);
-    std::vector<char> buffer(static_cast<std::size_t>(fileSize));
-    if (!in.read(buffer.data(), fileSize)) {
+    // saveToFile defaults to ROOMZ; decode before Cap'n Proto parse.
+    const std::vector<std::uint8_t> buffer = room::readRoomFileBytes(roomPath);
+    if (buffer.size() < sizeof(capnp::word) || buffer.size() % sizeof(capnp::word) != 0) {
         throw std::runtime_error("Cannot read core file: " + roomPath);
     }
 
-    kj::ArrayInputStream inputStream(
-        kj::arrayPtr(reinterpret_cast<const kj::byte *>(buffer.data()), buffer.size()));
-    capnp::InputStreamMessageReader reader(inputStream);
+    capnp::FlatArrayMessageReader reader(
+        kj::arrayPtr(reinterpret_cast<const capnp::word *>(buffer.data()),
+                     buffer.size() / sizeof(capnp::word)));
     const auto root = reader.getRoot<room::schema::Database>();
 
     if (root.getVersion().cStr() != std::string("1.0")) {
