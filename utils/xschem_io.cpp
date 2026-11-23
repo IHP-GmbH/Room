@@ -729,74 +729,92 @@ Instance instanceForQucsExport(const Instance &src)
     return inst;
 }
 
+// Xschem reads attribute text in two passes. Pass 1 (load_ascii_string) unescapes the
+// whole {...} block: a backslash keeps the next character. Pass 2 (get_tok_value) splits
+// the result into name=value pairs and unescapes each value: double quotes group, a
+// backslash keeps the next character. Writing applies the same passes in reverse.
+
+// Separators between Xschem attributes (token.c's SPACE).
+bool isAttrSpace(char ch)
+{
+    return ch == ' ' || ch == '\t' || ch == '\n' || ch == ';';
+}
+
 void skipAttrWhitespace(const std::string &body, std::size_t &pos)
 {
-    while (pos < body.size() && std::isspace(static_cast<unsigned char>(body[pos]))) {
+    while (pos < body.size() && isAttrSpace(body[pos])) {
         ++pos;
     }
 }
 
+// Pass 1 when reading: undoes escapeAttrBlock.
+std::string unescapeAttrBlock(const std::string &body)
+{
+    std::string out;
+    for (std::size_t i = 0; i < body.size(); ++i) {
+        if (body[i] == '\\' && i + 1 < body.size()) {
+            ++i;
+        }
+        out.push_back(body[i]);
+    }
+    return out;
+}
+
+// Pass 1 when writing, as Xschem's save_ascii_string.
+std::string escapeAttrBlock(const std::string &body)
+{
+    std::string out;
+    for (const char ch : body) {
+        if (ch == '\\' || ch == '{' || ch == '}') {
+            out.push_back('\\');
+        }
+        out.push_back(ch);
+    }
+    return out;
+}
+
+// Pass 2 when reading: one value, as Xschem's get_tok_value without quotes.
 std::string readAttrValue(const std::string &body, std::size_t &pos)
 {
     skipAttrWhitespace(body, pos);
-    if (pos >= body.size()) {
-        return {};
-    }
-    if (body[pos] == '"') {
-        ++pos;
-        std::string value;
-        while (pos < body.size()) {
-            if (body[pos] == '"') {
-                ++pos;
-                break;
-            }
-            if (body[pos] == '\\' && pos + 1 < body.size()) {
-                value.push_back(body[pos + 1]);
-                pos += 2;
-                continue;
-            }
-            value.push_back(body[pos]);
-            ++pos;
-        }
-        return value;
-    }
     std::string value;
-    while (pos < body.size() && !std::isspace(static_cast<unsigned char>(body[pos]))) {
-        if (body[pos] == '\\' && pos + 1 < body.size()) {
-            ++pos;
+    bool quote = false;
+    bool escape = false;
+    for (; pos < body.size(); ++pos) {
+        const char ch = body[pos];
+        if (isAttrSpace(ch) && !quote && !escape) {
+            break;
         }
-        value.push_back(body[pos]);
-        ++pos;
+        if (escape || (ch != '\\' && ch != '"')) {
+            value.push_back(ch);
+        }
+        if (ch == '"' && !escape) {
+            quote = !quote;
+        }
+        escape = ch == '\\' && !escape;
     }
     return value;
 }
 
 bool attrValueNeedsQuotes(const std::string &value)
 {
-    if (value.empty()) {
-        return true;
-    }
-    for (const char ch : value) {
-        if (std::isspace(static_cast<unsigned char>(ch)) || ch == '{' || ch == '}' || ch == '"' || ch == '\\') {
-            return true;
-        }
-    }
-    return false;
+    return value.empty() || std::any_of(value.begin(), value.end(), [](char ch) {
+               return isAttrSpace(ch) || ch == '"' || ch == '\\';
+           });
 }
 
-// Escapes what readAttrValue unescapes; Xschem drops values with bare braces.
+// Pass 2 when writing: escapes what readAttrValue unescapes.
 std::string quoteAttrValue(const std::string &value)
 {
-    std::ostringstream oss;
-    oss << '"';
+    std::string out = "\"";
     for (const char ch : value) {
-        if (ch == '"' || ch == '\\' || ch == '{' || ch == '}') {
-            oss << '\\';
+        if (ch == '"' || ch == '\\') {
+            out.push_back('\\');
         }
-        oss << ch;
+        out.push_back(ch);
     }
-    oss << '"';
-    return oss.str();
+    out.push_back('"');
+    return out;
 }
 
 void parseAttrBlock(const std::string &block, std::vector<Property> &props)
@@ -804,7 +822,7 @@ void parseAttrBlock(const std::string &block, std::vector<Property> &props)
     if (block.size() < 2 || block.front() != '{' || block.back() != '}') {
         return;
     }
-    std::string body = block.substr(1, block.size() - 2);
+    std::string body = unescapeAttrBlock(block.substr(1, block.size() - 2));
     for (char &ch : body) {
         if (ch == '\r') {
             ch = '\n';
@@ -831,11 +849,7 @@ void parseAttrBlock(const std::string &block, std::vector<Property> &props)
 
 std::string formatAttrBlock(const std::vector<Property> &props)
 {
-    if (props.empty()) {
-        return "{}";
-    }
     std::ostringstream oss;
-    oss << '{';
     for (std::size_t i = 0; i < props.size(); ++i) {
         if (i > 0) {
             oss << ' ';
@@ -847,8 +861,7 @@ std::string formatAttrBlock(const std::vector<Property> &props)
             oss << props[i].value;
         }
     }
-    oss << '}';
-    return oss.str();
+    return '{' + escapeAttrBlock(oss.str()) + '}';
 }
 
 struct PointKey {
@@ -1382,13 +1395,11 @@ void writeNetRecord(std::ostream &out, const Shape::PathData &path, const std::v
     writeCoord(out, path.points[1].x);
     out << ' ';
     writeCoord(out, path.points[1].y);
-    if (const std::string *lab = findProperty(props, "lab")) {
-        out << " {lab=" << *lab << "}";
-    } else if (const std::string *lab = findProperty(props, "label")) {
-        out << " {lab=" << *lab << "}";
-    } else {
-        out << " {}";
+    const std::string *lab = findProperty(props, "lab");
+    if (!lab) {
+        lab = findProperty(props, "label");
     }
+    out << ' ' << formatAttrBlock(lab ? std::vector<Property>{Property("lab", *lab)} : std::vector<Property>{});
     out << '\n';
 }
 
