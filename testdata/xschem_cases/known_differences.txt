@@ -11,16 +11,18 @@ bus.sch lost: N 0 0 200 0 {bus=true;lab=DATA[3:0];}
 bus.sch lost: N 200 0 200 100 {bus=true;lab=DATA[3:0];}
 
 # ROOM's core.primitive and qucs.type properties are written to the file.
-escapes.sch added: C {res.sym} 100 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R1;qucs.type=R;value=\};}
+escapes.sch added: C {res.sym} 100 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R1;qucs.type=R;value=};}
 escapes.sch added: C {res.sym} 200 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R2;qucs.type=R;value=1k;}
-escapes.sch lost: C {res.sym} 100 0 0 0 {name=R1;value=\};}
+escapes.sch added: C {res.sym} 300 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R3;qucs.type=R;value=a;b;}
+escapes.sch lost: C {res.sym} 100 0 0 0 {name=R1;value=};}
 escapes.sch lost: C {res.sym} 200 0 0 0 {name=R2;value=1k;}
+escapes.sch lost: C {res.sym} 300 0 0 0 {name=R3;value=a;b;}
 
 # m is dropped; ROOM's core.primitive and qucs.type properties are written to the file.
-expressions.sch added: C {capa.sym} 100 0 0 0 {core.primitive=analogLib/C.symbol.room;name=C1;qucs.type=C;value=\{cload\};}
+expressions.sch added: C {capa.sym} 100 0 0 0 {core.primitive=analogLib/C.symbol.room;name=C1;qucs.type=C;value={cload};}
 expressions.sch added: C {res.sym} 0 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R1;qucs.type=R;value='rload*2';}
 expressions.sch added: C {res.sym} 200 0 0 0 {core.primitive=analogLib/R.symbol.room;name=R[3:0];qucs.type=R;value=1k;}
-expressions.sch lost: C {capa.sym} 100 0 0 0 {m=2;name=C1;value=\{cload\};}
+expressions.sch lost: C {capa.sym} 100 0 0 0 {m=2;name=C1;value={cload};}
 expressions.sch lost: C {res.sym} 0 0 0 0 {m=1;name=R1;value='rload*2';}
 expressions.sch lost: C {res.sym} 200 0 0 0 {name=R[3:0];value=1k;}
 

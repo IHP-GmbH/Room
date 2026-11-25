@@ -51,18 +51,14 @@ std::vector<std::string> tokens(const std::string &text, std::vector<bool> &brac
         }
         std::string token;
         if (text[i] == '{') {
-            int depth = 1;
-            for (++i; i < text.size() && depth > 0; ++i) {
+            // Like Xschem's load_ascii_string, the group ends at the first unescaped '}'.
+            for (++i; i < text.size() && text[i] != '}'; ++i) {
                 if (text[i] == '\\' && i + 1 < text.size()) {
-                    token += text[i];
-                    token += text[++i];
-                    continue;
+                    token += text[i++];
                 }
-                depth += text[i] == '{' ? 1 : text[i] == '}' ? -1 : 0;
-                if (depth > 0) {
-                    token += text[i];
-                }
+                token += text[i];
             }
+            ++i;
             braced.push_back(true);
         } else {
             while (i < text.size() && !std::isspace(static_cast<unsigned char>(text[i]))) {
@@ -75,35 +71,41 @@ std::vector<std::string> tokens(const std::string &text, std::vector<bool> &brac
     return out;
 }
 
-// Attribute order and quoting style are not semantic; key=value pairs are.
-std::string attributes(const std::string &text)
+// Attribute order and quoting style are not semantic; key=value pairs are. Values are
+// decoded like Xschem does: block escapes first, then quotes and escapes per value.
+std::string attributes(const std::string &escaped)
 {
+    std::string text;
+    for (std::size_t i = 0; i < escaped.size(); ++i) {
+        if (escaped[i] == '\\' && i + 1 < escaped.size()) {
+            ++i;
+        }
+        text += escaped[i];
+    }
+    // Xschem separates attributes by whitespace and ';'.
+    const auto separator = [](char ch) { return std::isspace(static_cast<unsigned char>(ch)) || ch == ';'; };
     std::vector<std::string> pairs;
     std::size_t i = 0;
     while (i < text.size()) {
-        if (std::isspace(static_cast<unsigned char>(text[i]))) {
+        if (separator(text[i])) {
             ++i;
             continue;
         }
         std::string key;
-        while (i < text.size() && text[i] != '=' && !std::isspace(static_cast<unsigned char>(text[i]))) {
+        while (i < text.size() && text[i] != '=' && !separator(text[i])) {
             key += text[i++];
         }
         std::string value;
         if (i < text.size() && text[i] == '=') {
-            ++i;
-            if (i < text.size() && text[i] == '"') {
-                for (++i; i < text.size() && text[i] != '"'; ++i) {
-                    if (text[i] == '\\' && i + 1 < text.size()) {
-                        value += text[i++];
-                    }
-                    value += text[i];
+            bool quote = false;
+            bool escape = false;
+            for (++i; i < text.size() && (quote || escape || !separator(text[i])); ++i) {
+                const char ch = text[i];
+                if (escape || (ch != '\\' && ch != '"')) {
+                    value += ch;
                 }
-                ++i;
-            } else {
-                while (i < text.size() && !std::isspace(static_cast<unsigned char>(text[i]))) {
-                    value += text[i++];
-                }
+                quote = ch == '"' && !escape ? !quote : quote;
+                escape = ch == '\\' && !escape;
             }
         }
         pairs.push_back(key + "=" + value);
