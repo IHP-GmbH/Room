@@ -2,7 +2,9 @@
 
 **Sniff** reads only the Cap'n Proto header of a `.room` file — no geometry payloads are decoded. LibMan, project browsers, and CI use this to pick the right tool and view without loading the full database.
 
-Full API reference: [File summary / sniff](https://ihp-gmbh.github.io/Room/filesummary.html).
+If the file starts with the **ROOMZ** magic (`ROOMZ\0\x01\0`), sniff inflates the zlib frame first (same path as `Database::loadFromFile`), then reads the Cap'n Proto header. Legacy uncompressed Cap'n Proto `.room` files are accepted unchanged.
+
+Full API reference: [File summary / sniff](https://ihp-gmbh.github.io/Room/filesummary.html). ROOMZ layout: [COMPACT_ENCODING.md](COMPACT_ENCODING.md#whole-file-frame-roomz).
 
 ## API
 
@@ -20,11 +22,11 @@ room::RoomFileInfo info = room::sniffRoomFile("cell.schematic.room");
 |-----------------|---------|---------|
 | `room::FileSummary` | `ROOM::room` | Denormalized view + cell inventory |
 | `room::RoomFileInfo` | `ROOM::room` | Header fields + `FileSummary` |
-| `sniffRoomFile(path)` | `ROOM::room` | Read metadata from disk |
+| `sniffRoomFile(path)` | `ROOM::room` | Read metadata from disk (ROOMZ or raw) |
 | `FileSummary::fromLib()` | `ROOM::room` | Build summary when saving |
 | `Database::fileSummary()` | `ROOM::room` | Summary attached after load/save |
 
-On save, `Database::saveToFile(path, fileView)` writes `Database.summary` (Cap'n Proto `FileSummary`) so sniff is O(header) even for large layout files.
+On save, `Database::saveToFile(path, fileView)` writes `Database.summary` (Cap'n Proto `FileSummary`) so sniff is O(header) even for large layout files. Default save also applies ROOMZ compression (`SaveOptions::compressFile`).
 
 ## CLI / test
 

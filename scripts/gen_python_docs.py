@@ -160,7 +160,7 @@ pages = {
       <h2 id="factories">Factories</h2>
       <table class="memlist">
         <tr><td><code>Database.create()</code> / <code>room.create()</code></td><td>Empty database.</td></tr>
-        <tr><td><code>Database.open(path)</code> / <code>room.open(path)</code></td><td>Load <code>.room</code>.</td></tr>
+        <tr><td><code>Database.open(path)</code> / <code>room.open(path)</code></td><td>Load <code>.room</code> (ROOMZ or legacy raw Cap'n Proto).</td></tr>
         <tr><td><code>from_gds / from_qucs / from_xschem / from_oas</code></td><td>Import foreign formats.</td></tr>
       </table>
       <h2 id="props">Properties</h2>
@@ -179,7 +179,7 @@ pages = {
         <tr><td><code>get_or_create_cell(name)</code></td><td>Create if missing.</td></tr>
         <tr><td><code>add_layer(...)</code></td><td>Append layer; returns index.</td></tr>
         <tr><td><code>info()</code></td><td>Summary <code>dict</code>.</td></tr>
-        <tr><td><code>save(path, view="layout")</code></td><td>Write <code>.room</code>.</td></tr>
+        <tr><td><code>save(path, view="layout")</code></td><td>Write <code>.room</code> (C++ defaults: compact + ROOMZ).</td></tr>
         <tr><td><code>to_gds / to_qucs / to_xschem / to_oas</code></td><td>Export.</td></tr>
         <tr><td><code>close()</code></td><td>Free handle (<code>with</code> supported).</td></tr>
       </table>

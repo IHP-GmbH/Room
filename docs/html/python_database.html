@@ -82,7 +82,7 @@
       <h2 id="factories">Factories</h2>
       <table class="memlist">
         <tr><td><a href="#create"><code>Database.create()</code> / <code>room.create()</code></a></td><td>Empty in-memory database.</td></tr>
-        <tr><td><a href="#open"><code>Database.open(path)</code> / <code>room.open(path)</code></a></td><td>Load <code>.room</code>.</td></tr>
+        <tr><td><a href="#open"><code>Database.open(path)</code> / <code>room.open(path)</code></a></td><td>Load <code>.room</code> (ROOMZ or legacy raw Cap'n Proto).</td></tr>
         <tr><td><code>from_gds / from_qucs / from_xschem / from_oas</code></td><td>Import foreign formats.</td></tr>
       </table>
 
@@ -105,7 +105,7 @@
         <tr><td><a href="#add_layer"><code>add_layer(...)</code></a></td><td>Append layer; returns index.</td></tr>
         <tr><td><code>summary_cell_count()</code> / <code>summary_primary_cell()</code></td><td>Header summary.</td></tr>
         <tr><td><a href="#info"><code>info()</code></a></td><td>Summary <code>dict</code>.</td></tr>
-        <tr><td><a href="#save"><code>save(path, view="layout")</code></a></td><td>Write <code>.room</code>.</td></tr>
+        <tr><td><a href="#save"><code>save(path, view="layout")</code></a></td><td>Write <code>.room</code> (C++ defaults: compact + ROOMZ).</td></tr>
         <tr><td><code>to_gds / to_qucs / to_xschem / to_oas</code></td><td>Export.</td></tr>
         <tr><td><code>close()</code></td><td>Free handle (<code>with</code> supported).</td></tr>
       </table>
@@ -126,7 +126,7 @@
 
       <div class="fn-block" id="open">
         <h3 class="fn-title">Database.open(path) / room.open(path) &rarr; Database</h3>
-        <p class="fn-desc">Loads a <code>.room</code> file (C++ <code>loadFromFile</code>). Path strings are <code>strip()</code>&rsquo;d so accidental leading/trailing spaces (e.g. from paste) do not break open. Import/export helpers apply the same normalization.</p>
+        <p class="fn-desc">Loads a <code>.room</code> file (C++ <code>loadFromFile</code>). Accepts ROOMZ-compressed and legacy uncompressed Cap'n Proto files. Path strings are <code>strip()</code>&rsquo;d so accidental leading/trailing spaces (e.g. from paste) do not break open. Import/export helpers apply the same normalization.</p>
       </div>
 
       <div class="fn-block" id="version">
@@ -191,7 +191,7 @@
 
       <div class="fn-block" id="save">
         <h3 class="fn-title">save(path, view="layout")</h3>
-        <p class="fn-desc">Method. Write <code>.room</code> (C++ <code>saveToFile</code>).</p>
+        <p class="fn-desc">Method. Write <code>.room</code> via C++ <code>saveToFile</code> with default <a href="database.html#saveoptions"><code>SaveOptions</code></a> (compact geometry + ROOMZ zlib). Per-option knobs (<code>detectRepetition</code>, <code>compressFile</code>, <code>compressLevel</code>) are C++-only today.</p>
       </div>
 
       <h2>Example</h2>

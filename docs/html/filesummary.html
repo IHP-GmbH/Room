@@ -62,7 +62,8 @@
 
       <h2 id="details">Detailed Description</h2>
       <p>Cap'n Proto <code>Database.summary</code> stores a denormalized header for fast tool routing. LibMan uses sniff to choose KLayout vs Xschem without loading shapes. If <code>summary</code> is missing (older files), <code>sniffRoomFile</code> scans cell view types from the lib section only.</p>
-      <p>See also <a href="../SNIFF.md">docs/SNIFF.md</a> and <a href="database.html#fileSummary">Database::fileSummary()</a>.</p>
+      <p><code>sniffRoomFile</code> first decodes a whole-file <strong>ROOMZ</strong> zlib frame when present (same path as <a href="database.html#loadFromFile">Database::loadFromFile</a>), then reads the Cap'n Proto header. Legacy uncompressed <code>.room</code> files still work. Geometry payloads are not decoded.</p>
+      <p>See also <a href="../SNIFF.md">docs/SNIFF.md</a>, <a href="../COMPACT_ENCODING.md">COMPACT_ENCODING.md</a> (ROOMZ frame), and <a href="database.html#fileSummary">Database::fileSummary()</a>.</p>
 
       <h2>Member Type Documentation</h2>
 
@@ -93,8 +94,8 @@
 
       <div class="fn-block" id="sniff">
         <h3 class="fn-title">RoomFileInfo sniffRoomFile(const std::string &amp; path)</h3>
-        <p class="fn-desc">Opens the file, reads the Cap'n Proto root message, and returns header fields. Does not deserialize <code>payload</code> geometry.</p>
-        <p class="fn-throws"><strong>Throws:</strong> <code>std::runtime_error</code> if the file cannot be opened or parsed.</p>
+        <p class="fn-desc">Opens the file, inflates ROOMZ when needed, reads the Cap'n Proto root message, and returns header fields. Does not deserialize <code>payload</code> geometry.</p>
+        <p class="fn-throws"><strong>Throws:</strong> <code>std::runtime_error</code> if the file cannot be opened, inflated, or parsed.</p>
       </div>
 
       <h2 id="example">Example</h2>

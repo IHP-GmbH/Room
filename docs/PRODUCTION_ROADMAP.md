@@ -13,7 +13,7 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 1. Charter + v1 Definition of Done  
 2. Skip-friendly opaque views + extension registry  
 3. ~~Native OAS read/write (strict)~~ (done; preserved round-trip XOR 0; layout editor owns edited export)  
-4. Streaming + optional `.room` compression  
+4. Streaming (ROOMZ whole-file compression done)  
 5. Benchmark CI table + large-design stress tests  
 6. API stability + licensing strategy  
 
@@ -68,9 +68,11 @@ Reference: [DESIGN_CHARTER.md](DESIGN_CHARTER.md) · [SCHEMA_EVOLUTION.md](SCHEM
 ## 6. Compactness and performance
 
 - [x] **Layout-optimized storage (v2)** — layer groups, delta vertices, AREF/SREF-like rect repeats, polygon/path templates, zigzag varint packed streams ([COMPACT_ENCODING.md](COMPACT_ENCODING.md))
-- [~] **Benchmark suite** — `compact_geometry_size` + [COMPACT_ENCODING.md](COMPACT_ENCODING.md) (Debug, June 2026); CI table + memory peak TBD
+- [x] **Whole-file ROOMZ compression** — zlib frame (`ROOMZ\0\x01\0` + size + zlib); default on save (`SaveOptions::compressFile`); load/sniff auto-detect; legacy raw Cap'n Proto still loads ([COMPACT_ENCODING.md](COMPACT_ENCODING.md#whole-file-frame-roomz))
+- [x] **`SaveOptions` knobs** — `compactGeometry`, `detectRepetition`, `compressFile`, `compressLevel` ([database.h](../src/database.h))
+- [~] **Benchmark suite** — `compact_geometry_size` + [COMPACT_ENCODING.md](COMPACT_ENCODING.md) (Debug, June 2026); CI table + memory peak TBD; re-measure with ROOMZ on
 - [ ] **Streaming** — incremental read/write for large libraries (avoid full-RAM materialization)
-- [ ] **Optional file compression** — gzip/zstd wrapper on `.room` (varint streams done; whole-file gzip TBD)
+- [ ] **Alternate compressors** — optional zstd (or similar) beside zlib ROOMZ if needed
 
 ---
 

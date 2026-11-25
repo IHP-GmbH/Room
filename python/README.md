@@ -30,7 +30,7 @@
 # ## API
 #
 #   import room
-#   db = room.open("design.room")   # paths are strip()'d
+#   db = room.open("design.room")   # ROOMZ or legacy raw; paths are strip()'d
 #   print(db.cell_names())
 #   cell = db.find_cell(db.cell_names()[0])
 #   cxt = cell.content()           # sole view when the file has one content
@@ -39,6 +39,9 @@
 #   # Explicit view when a cell has several contents:
 #   cell.content("schematic")
 #   cell.layout()
+#
+#   db.save("out.room")            # C++ defaults: compact + ROOMZ
+#   # SaveOptions knobs (detectRepetition/compress*) are C++-only for now
 #
 #   python -m room info design.room
 #   python -m room ls design.room

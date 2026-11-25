@@ -43,7 +43,7 @@ Database
                      └── opaque         (skip-friendly unknown views)
 ```
 
-**C++ API:** `CellContent::block()` is the in-memory accessor for topology; `CellContent::layers()` holds the per-view layer table (`LayerSpec` + `LayerPurpose`). Layout coordinates use `dbuPerMicron`; schematic/symbol coordinates use `dbuPerEditorUnit` (see [Coordinate scale](https://ihp-gmbh.github.io/Room/coordscale.html)). `Cell::aliases()` and `Cell::pCell()` cover PDK cell identity. On save, compact encoding is the default (`SaveOptions::compactGeometry`); load auto-detects `compact` vs `block`. See [docs/COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) and [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
+**C++ API:** `CellContent::block()` is the in-memory accessor for topology; `CellContent::layers()` holds the per-view layer table (`LayerSpec` + `LayerPurpose`). Layout coordinates use `dbuPerMicron`; schematic/symbol coordinates use `dbuPerEditorUnit` (see [Coordinate scale](https://ihp-gmbh.github.io/Room/coordscale.html)). `Cell::aliases()` and `Cell::pCell()` cover PDK cell identity. On save, defaults are compact geometry + whole-file ROOMZ zlib (`SaveOptions`: `compactGeometry`, `detectRepetition`, `compressFile`, `compressLevel`). Load and sniff auto-detect ROOMZ vs legacy raw Cap'n Proto, and `compact` vs `block`. See [docs/COMPACT_ENCODING.md](docs/COMPACT_ENCODING.md) and [docs/SCHEMA_EVOLUTION.md](docs/SCHEMA_EVOLUTION.md).
 
 ## Requirements
 

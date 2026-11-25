@@ -68,7 +68,19 @@ Optional persisted [index.capnp](../schema/index.capnp) at `Lib` level (not wire
 |---------|------------------|-------|
 | 0.1 | `CellContent.block` | Pre-release; not supported |
 | 0.2 | dual `block` + `payload` | Short-lived; not supported |
-| 1.0 | `CellContent.payload` only | Current |
+| 1.0 | `CellContent.payload` only | Current; compact default; optional ROOMZ outer frame |
+
+### Outer file frame (ROOMZ)
+
+The Cap'n Proto schema is unchanged by compression. When `SaveOptions::compressFile` is true (default), the serialized message is stored as:
+
+`ROOMZ\0\x01\0` + `uint64` LE uncompressed size + zlib bytes.
+
+Readers must sniff the 8-byte magic before treating the file as Cap'n Proto. Uncompressed Cap'n Proto `.room` files remain valid. See [COMPACT_ENCODING.md](COMPACT_ENCODING.md#whole-file-frame-roomz).
+
+### Compact packed fields
+
+Within `payload.*.compact`, zigzag-varint packed delta streams (`polygonDeltasPacked` / `pathDeltasPacked`) are optional alternatives to `List(Int64)` and are chosen when smaller. Older readers that ignore unknown fields still see the non-packed lists when present; new writers may omit the list form when packed wins.
 
 ## Extension points (planned)
 

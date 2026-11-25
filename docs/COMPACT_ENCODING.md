@@ -83,17 +83,47 @@ Command: `scripts\run_oas_room_roundtrip_test.cmd` or `oas_room_roundtrip source
 
 Import decodes geometry into ROOM and stores strict OAS header/tail/geometry bytes on the library and cells. Export reassembles the file from those payloads (byte-identical to source on unchanged designs). **KLayout XOR = 0** on the reference fixture. A fallback writer (KLayout strict template + native rects) exists for ROOM-only designs without preserved payload; layout editing/export polish is left to the layout editor.
 
+## Whole-file frame (ROOMZ)
+
+By default (`SaveOptions::compressFile = true`) the Cap'n Proto message is wrapped in a **ROOMZ** zlib frame before writing the `.room` file:
+
+| Offset | Size | Content |
+|--------|------|---------|
+| 0 | 8 | Magic `ROOMZ\0\x01\0` |
+| 8 | 8 | Uncompressed Cap'n Proto size (little-endian `uint64`) |
+| 16 | … | zlib-compressed Cap'n Proto bytes |
+
+- Default zlib level: `SaveOptions::compressLevel = 1` (fast).
+- `loadFromFile` and `sniffRoomFile` detect ROOMZ by magic and inflate; legacy raw Cap'n Proto `.room` files still load.
+- Implementation: [`src/room_file_io.h`](../src/room_file_io.h).
+
+ROOMZ is orthogonal to compact geometry: compact shrinks the Cap'n Proto payload; ROOMZ compresses that payload on disk.
+
 ## API
 
 ```cpp
-db.saveToFile("design.room");  // compact v2 by default
+// Defaults: compactGeometry=true, detectRepetition=true,
+//           compressFile=true, compressLevel=1
+db.saveToFile("design.room", room::ViewType::Layout);
 
 room::SaveOptions opts;
-opts.compactGeometry = false;
-db.saveToFile("design_verbose.room", opts);
+opts.compactGeometry = false;   // verbose payload.block
+opts.compressFile = false;      // legacy raw Cap'n Proto
+db.saveToFile("design_verbose.room", room::ViewType::Layout, opts);
 
-room::Database db = room::Database::loadFromFile("design.room");
+room::SaveOptions streamOpts;
+streamOpts.detectRepetition = false;  // caller already set arrays/groups
+db.saveToFile("from_klayout.room", room::ViewType::Layout, streamOpts);
+
+room::Database loaded = room::Database::loadFromFile("design.room");
 ```
+
+| `SaveOptions` member | Default | Meaning |
+|----------------------|---------|---------|
+| `compactGeometry` | `true` | Write `payload.compact` vs verbose `payload.block` |
+| `detectRepetition` | `true` | Re-detect rect/poly/path repeats on compact encode; set `false` when columns/rows/copies are already set (e.g. KLayout LStream) |
+| `compressFile` | `true` | Wrap Cap'n Proto in ROOMZ |
+| `compressLevel` | `1` | zlib 0..9 (ignored if `compressFile` is false) |
 
 ## Reproduce
 
