@@ -124,7 +124,7 @@ jobs:
     env:
       # Cross-repo artifact download from adatsuk/KLayout-roomdb needs a PAT
       # with actions:read (org secret GH_PAT). github.token is same-repo only.
-      GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+      GH_TOKEN: ${{ secrets.GH_PAT || secrets.ROOM_NOTIFIER || github.token }}
       KLAYOUT_ROOMDB_REPO: adatsuk/KLayout-roomdb
       KLAYOUT_BUNDLE_NAME: klayout-linux-ubuntu24
     steps:

@@ -26,14 +26,14 @@ jobs:
     steps:
       - name: Dispatch room-updated to ${{ matrix.repo }}
         env:
-          # Needs a PAT (classic: repo scope) or fine-grained: Actions write on each dependent.
-          # Add as repository secret GH_PAT on IHP-GmbH/Room (same token Door CI already uses).
-          GH_TOKEN: ${{ secrets.GH_PAT || secrets.LIBMAN_CORE_GIT_TOKEN }}
+          # Needs a PAT (classic: public_repo / fine-grained Contents:write on dependents).
+          # Accepted secret names: GH_PAT, ROOM_NOTIFIER, or legacy LIBMAN_CORE_GIT_TOKEN.
+          GH_TOKEN: ${{ secrets.GH_PAT || secrets.ROOM_NOTIFIER || secrets.LIBMAN_CORE_GIT_TOKEN }}
         run: |
           if [[ -z "${GH_TOKEN}" ]]; then
-            echo "::error::Missing secrets.GH_PAT on IHP-GmbH/Room — cannot notify ${{ matrix.repo }}."
+            echo "::error::Missing secrets.GH_PAT (or ROOM_NOTIFIER) on IHP-GmbH/Room — cannot notify ${{ matrix.repo }}."
             echo "Create a PAT with access to IHP-GmbH/Door and adatsuk/{Qucs-S-roomdb,XSchem-roomdb,KLayout-roomdb},"
-            echo "then add it as Actions secret GH_PAT on the Room repository."
+            echo "then add it as Actions secret GH_PAT or ROOM_NOTIFIER on the Room repository."
             exit 1
           fi
           gh api --method POST "repos/${{ matrix.repo }}/dispatches" \
