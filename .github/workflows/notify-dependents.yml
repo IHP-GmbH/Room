@@ -1,0 +1,39 @@
+name: Notify dependents
+
+# When ROOM main moves, rebuild Door / Qucs-S / Xschem / KLayout against the new tip.
+# Dependents listen for repository_dispatch type "room-updated".
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    name: repository_dispatch → dependents
+    runs-on: ubuntu-latest
+    # Skip the cascade for docs-only / CI-meta pushes if desired later; for now always fire.
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - IHP-GmbH/Door
+          - adatsuk/Qucs-S-roomdb
+          - adatsuk/XSchem-roomdb
+          - adatsuk/KLayout-roomdb
+    steps:
+      - name: Dispatch room-updated to ${{ matrix.repo }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [[ -z "${GH_TOKEN}" ]]; then
+            echo "secrets.GH_PAT is required to dispatch cross-repo rebuilds" >&2
+            exit 1
+          fi
+          gh api --method POST "repos/${{ matrix.repo }}/dispatches" \
+            -f event_type='room-updated' \
+            -f client_payload[room_sha]='${{ github.sha }}' \
+            -f client_payload[room_ref]='${{ github.ref_name }}'
+          echo "Dispatched room-updated → ${{ matrix.repo }} (room_sha=${{ github.sha }})"
