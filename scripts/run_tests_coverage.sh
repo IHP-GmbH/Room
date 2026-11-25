@@ -40,6 +40,8 @@ export ROOM_SOURCE_DIR="$ROOT_DIR"
 
 chmod +x "$ROOT_DIR"/scripts/run_sample_gds_roundtrip_test.sh \
     "$ROOT_DIR"/scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh \
+    "$ROOT_DIR"/scripts/fetch_klayout_mroom_bundle.sh \
+    "$ROOT_DIR"/scripts/run_sg13g2_mroom_xor_test.sh \
     "$ROOT_DIR"/scripts/run_oas_hierarchy_test.sh \
     "$ROOT_DIR"/scripts/run_oas_room_roundtrip_test.sh 2>/dev/null || true
 

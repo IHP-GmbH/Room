@@ -82,6 +82,8 @@ jobs:
             scripts/run_sg13g2_stdcell_gds_roundtrip_test.sh \
             scripts/run_oas_hierarchy_test.sh \
             scripts/run_oas_room_roundtrip_test.sh \
+            scripts/fetch_klayout_mroom_bundle.sh \
+            scripts/run_sg13g2_mroom_xor_test.sh \
             scripts/render_ci_test_summary.sh
           ls third_party/capnp-install/lib/libcapnp*.so >/dev/null || \
             (echo "Cap'n Proto libs missing; restore build cache or rebuild capnp." >&2; exit 1)
@@ -112,6 +114,58 @@ jobs:
       - name: Summary
         if: always()
         run: ./scripts/render_ci_test_summary.sh build/logs
+
+  # Geometric XOR through the published KLayout+mroom binary (not apt klayout).
+  # Uses sg13g2_stdcell.gds only — never wafer fixtures.
+  mroom-xor-ubuntu:
+    name: mroom XOR (sg13g2)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      # Cross-repo artifact download from adatsuk/KLayout-roomdb needs a PAT
+      # with actions:read (org secret GH_PAT). github.token is same-repo only.
+      GH_TOKEN: ${{ secrets.GH_PAT || github.token }}
+      KLAYOUT_ROOMDB_REPO: adatsuk/KLayout-roomdb
+      KLAYOUT_BUNDLE_NAME: klayout-linux-ubuntu24
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install runtime libs for bundled KLayout
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1 \
+            libxkbcommon-x11-0 \
+            libdbus-1-3 \
+            libxcb-cursor0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-render-util0 \
+            libxcb-shape0 \
+            libxcb-xinerama0 \
+            libxcb-xfixes0 \
+            libfontconfig1
+          chmod +x scripts/fetch_klayout_mroom_bundle.sh \
+            scripts/run_sg13g2_mroom_xor_test.sh
+
+      - name: "sg13g2 XOR via prebuilt KLayout+mroom"
+        run: |
+          mkdir -p build/logs
+          ./scripts/run_sg13g2_mroom_xor_test.sh build 2>&1 | tee build/logs/sg13g2_mroom_xor.log
+
+      - name: Upload XOR logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sg13g2-mroom-xor-logs
+          path: |
+            build/logs/sg13g2_mroom_xor.log
+            build/klayout-mroom-bundle/BUNDLE_SOURCE.txt
+            build/tests/sg13g2_mroom_xor/
+          if-no-files-found: warn
+          retention-days: 7
 
   coverage-ubuntu:
     name: Coverage (Ubuntu)
