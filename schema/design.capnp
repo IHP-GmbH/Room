@@ -73,6 +73,9 @@ struct Instance {
   # Irregular placement offsets, including (0, 0). Empty means a single or a regular array.
   offsetX    @9 :List(Int64);
   offsetY    @10 :List(Int64);
+  # Delta + zigzag/varint. Non-empty preferred over offsetX/offsetY.
+  offsetXPacked @11 :Data;
+  offsetYPacked @12 :Data;
 }
 
 struct Term {

@@ -12,6 +12,7 @@
 #include "file_summary.h"
 
 #include "compact_codec.h"
+#include "varint_codec.h"
 #include "layer_utils.h"
 #include "lib_index.h"
 #include "mapped_file.h"
@@ -22,7 +23,10 @@
 #include <kj/io.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
 #include <limits>
 #include <queue>
@@ -912,9 +916,74 @@ VisitedInstance readVisitedInstance(schema::Instance::Reader inst)
     visited.rows = inst.getRows();
     visited.stepX = inst.getStepX();
     visited.stepY = inst.getStepY();
+    visited.colY = inst.getColY();
+    visited.rowX = inst.getRowX();
+    const auto packedX = inst.getOffsetXPacked();
+    const auto packedY = inst.getOffsetYPacked();
+    std::vector<std::int64_t> xs;
+    std::vector<std::int64_t> ys;
+    if (packedX.size() > 0) {
+        xs = decodeDeltaPacked(reinterpret_cast<const std::uint8_t *>(packedX.begin()), packedX.size());
+    } else {
+        const auto list = inst.getOffsetX();
+        xs.reserve(list.size());
+        for (const auto value : list) {
+            xs.push_back(value);
+        }
+    }
+    if (packedY.size() > 0) {
+        ys = decodeDeltaPacked(reinterpret_cast<const std::uint8_t *>(packedY.begin()), packedY.size());
+    } else {
+        const auto list = inst.getOffsetY();
+        ys.reserve(list.size());
+        for (const auto value : list) {
+            ys.push_back(value);
+        }
+    }
+    if (xs.size() > 1 && xs.size() == ys.size()) {
+        visited.offsets.reserve(xs.size());
+        for (std::size_t i = 0; i < xs.size(); ++i) {
+            visited.offsets.push_back(Point{xs[i], ys[i]});
+        }
+    }
     visited.properties = readProperties(inst.getProperties());
     return visited;
 }
+
+namespace {
+
+double handlerSeconds = 0;
+
+template <typename Fn>
+void timeHandler(Fn &&fn)
+{
+    const auto started = std::chrono::steady_clock::now();
+    fn();
+    handlerSeconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
+}
+
+void reportReadTiming(double disk_s, double inflate_s, double walk_s)
+{
+    const double decode_s = walk_s - handlerSeconds;
+    char line[192];
+    std::snprintf(line, sizeof(line),
+                  "ROOM_READ_TIMING disk_s %.3f inflate_s %.3f decode_s %.3f insert_s %.3f\n",
+                  disk_s, inflate_s, decode_s, handlerSeconds);
+    std::fputs(line, stderr);
+    std::fflush(stderr);
+    const char *path = std::getenv("ROOM_TIMING_LOG");
+    if (path == nullptr || *path == '\0') {
+        return;
+    }
+    std::FILE *out = std::fopen(path, "a");
+    if (out == nullptr) {
+        return;
+    }
+    std::fputs(line, out);
+    std::fclose(out);
+}
+
+} // namespace
 
 template <typename ViewReader>
 void emitViewTopology(const std::string &cellName, ViewReader view, const LayoutVisitHandlers &handlers)
@@ -922,13 +991,15 @@ void emitViewTopology(const std::string &cellName, ViewReader view, const Layout
     const auto block = view.getBlock();
     if (blockHasTopology(block)) {
         for (const auto shape : block.getShapes()) {
+            Shape decoded = readShape(shape);
             if (handlers.onShape) {
-                handlers.onShape(cellName, readShape(shape));
+                timeHandler([&] { handlers.onShape(cellName, std::move(decoded)); });
             }
         }
         if (handlers.onInstance) {
             for (const auto inst : block.getInstances()) {
-                handlers.onInstance(cellName, readVisitedInstance(inst));
+                VisitedInstance decoded = readVisitedInstance(inst);
+                timeHandler([&] { handlers.onInstance(cellName, std::move(decoded)); });
             }
         }
         return;
@@ -943,30 +1014,41 @@ void emitViewTopology(const std::string &cellName, ViewReader view, const Layout
                              static_cast<bool>(handlers.onRectArray) || static_cast<bool>(handlers.onRectGroup) ||
                              static_cast<bool>(handlers.onPolygonRepeat) || static_cast<bool>(handlers.onPathRepeat);
     if (handlers.onRectCoords) {
-        hooks.rectCoords = [&](const CompactRectCoordsRef &coords) { handlers.onRectCoords(cellName, coords); };
+        hooks.rectCoords = [&](const CompactRectCoordsRef &coords) {
+            timeHandler([&] { handlers.onRectCoords(cellName, coords); });
+        };
     }
     if (handlers.onRectArray) {
-        hooks.rectArray = [&](const CompactRectArrayRef &array) { handlers.onRectArray(cellName, array); };
+        hooks.rectArray = [&](const CompactRectArrayRef &array) {
+            timeHandler([&] { handlers.onRectArray(cellName, array); });
+        };
     }
     if (handlers.onRectGroup) {
-        hooks.rectGroup = [&](const CompactRectGroupRef &group) { handlers.onRectGroup(cellName, group); };
+        hooks.rectGroup = [&](const CompactRectGroupRef &group) {
+            timeHandler([&] { handlers.onRectGroup(cellName, group); });
+        };
     }
     if (handlers.onPolygonRepeat) {
-        hooks.polygonRepeat = [&](const CompactPolygonRepeatRef &repeat) { handlers.onPolygonRepeat(cellName, repeat); };
+        hooks.polygonRepeat = [&](const CompactPolygonRepeatRef &repeat) {
+            timeHandler([&] { handlers.onPolygonRepeat(cellName, repeat); });
+        };
     }
     if (handlers.onPathRepeat) {
-        hooks.pathRepeat = [&](const CompactPathRepeatRef &repeat) { handlers.onPathRepeat(cellName, repeat); };
+        hooks.pathRepeat = [&](const CompactPathRepeatRef &repeat) {
+            timeHandler([&] { handlers.onPathRepeat(cellName, repeat); });
+        };
     }
     if (handlers.onShape || keepRepeats) {
         visitCompactShapes(compact, [&](Shape shape) {
             if (handlers.onShape) {
-                handlers.onShape(cellName, std::move(shape));
+                timeHandler([&] { handlers.onShape(cellName, std::move(shape)); });
             }
         }, keepRepeats ? &hooks : nullptr);
     }
     if (handlers.onInstance) {
         for (const auto inst : compact.getInstances()) {
-            handlers.onInstance(cellName, readVisitedInstance(inst));
+            VisitedInstance decoded = readVisitedInstance(inst);
+            timeHandler([&] { handlers.onInstance(cellName, std::move(decoded)); });
         }
     }
 }
@@ -993,7 +1075,7 @@ void visitOneCell(schema::Cell::Reader cell, const LayoutVisitHandlers &handlers
             visited.layers = readViewLayers(layout);
             visited.cellProperties = readProperties(cell.getProperties());
             visited.contentProperties = readProperties(content.getProperties());
-            handlers.onCell(visited);
+            timeHandler([&] { handlers.onCell(visited); });
             return;
         }
         emitViewTopology(name, layout, handlers);
@@ -1003,7 +1085,10 @@ void visitOneCell(schema::Cell::Reader cell, const LayoutVisitHandlers &handlers
 
 void visitLayoutFile(const std::string &path, const LayoutVisitHandlers &handlers)
 {
+    handlerSeconds = 0;
     const std::vector<std::uint8_t> buffer = readRoomFileBytes(path);
+    const RoomFileReadTiming fileTiming = lastRoomFileReadTiming();
+    const auto walkStarted = std::chrono::steady_clock::now();
     if (buffer.size() < sizeof(capnp::word) || buffer.size() % sizeof(capnp::word) != 0) {
         throw std::runtime_error("Not a ROOM file (bad size): " + path);
     }
@@ -1019,7 +1104,9 @@ void visitLayoutFile(const std::string &path, const LayoutVisitHandlers &handler
     const auto root = reader.getRoot<schema::Database>();
     const auto lib = root.getLib();
     if (handlers.onFile) {
-        handlers.onFile(lib.getName().cStr(), readProperties(lib.getProperties()));
+        const std::string libName = lib.getName().cStr();
+        const std::vector<Property> props = readProperties(lib.getProperties());
+        timeHandler([&] { handlers.onFile(libName, props); });
     }
 
     const auto cells = lib.getCells();
@@ -1029,6 +1116,8 @@ void visitLayoutFile(const std::string &path, const LayoutVisitHandlers &handler
     for (const auto cell : cells) {
         visitOneCell(cell, handlers, false);
     }
+    reportReadTiming(fileTiming.disk_s, fileTiming.inflate_s,
+                     std::chrono::duration<double>(std::chrono::steady_clock::now() - walkStarted).count());
 }
 
 namespace {

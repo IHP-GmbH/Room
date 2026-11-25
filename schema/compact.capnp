@@ -34,6 +34,9 @@ struct CompactRectGroup {
   llx   @2 :List(Int64);
   lly   @3 :List(Int64);
   memberProperties @4 :Bool = true;
+  # Delta + zigzag/varint. Non-empty preferred over llx/lly.
+  llxPacked @5 :Data;
+  llyPacked @6 :Data;
 }
 
 # Identical polygon geometry placed at different origins (first vertex).

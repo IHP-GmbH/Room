@@ -56,7 +56,7 @@ struct CompactRectGroup {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(8c1e2260b9ef628a, 3, 2)
+    CAPNP_DECLARE_STRUCT_HEADER(8c1e2260b9ef628a, 3, 4)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -280,6 +280,12 @@ public:
 
   inline bool getMemberProperties() const;
 
+  inline bool hasLlxPacked() const;
+  inline  ::capnp::Data::Reader getLlxPacked() const;
+
+  inline bool hasLlyPacked() const;
+  inline  ::capnp::Data::Reader getLlyPacked() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -332,6 +338,20 @@ public:
 
   inline bool getMemberProperties();
   inline void setMemberProperties(bool value);
+
+  inline bool hasLlxPacked();
+  inline  ::capnp::Data::Builder getLlxPacked();
+  inline void setLlxPacked( ::capnp::Data::Reader value);
+  inline  ::capnp::Data::Builder initLlxPacked(unsigned int size);
+  inline void adoptLlxPacked(::capnp::Orphan< ::capnp::Data>&& value);
+  inline ::capnp::Orphan< ::capnp::Data> disownLlxPacked();
+
+  inline bool hasLlyPacked();
+  inline  ::capnp::Data::Builder getLlyPacked();
+  inline void setLlyPacked( ::capnp::Data::Reader value);
+  inline  ::capnp::Data::Builder initLlyPacked(unsigned int size);
+  inline void adoptLlyPacked(::capnp::Orphan< ::capnp::Data>&& value);
+  inline ::capnp::Orphan< ::capnp::Data> disownLlyPacked();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -1361,6 +1381,74 @@ inline bool CompactRectGroup::Builder::getMemberProperties() {
 inline void CompactRectGroup::Builder::setMemberProperties(bool value) {
   _builder.setDataField<bool>(
       ::capnp::bounded<128>() * ::capnp::ELEMENTS, value, true);
+}
+
+inline bool CompactRectGroup::Reader::hasLlxPacked() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
+}
+inline bool CompactRectGroup::Builder::hasLlxPacked() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Data::Reader CompactRectGroup::Reader::getLlxPacked() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_reader.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Data::Builder CompactRectGroup::Builder::getLlxPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+inline void CompactRectGroup::Builder::setLlxPacked( ::capnp::Data::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::set(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Data::Builder CompactRectGroup::Builder::initLlxPacked(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::init(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), size);
+}
+inline void CompactRectGroup::Builder::adoptLlxPacked(
+    ::capnp::Orphan< ::capnp::Data>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::adopt(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Data> CompactRectGroup::Builder::disownLlxPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::disown(_builder.getPointerField(
+      ::capnp::bounded<2>() * ::capnp::POINTERS));
+}
+
+inline bool CompactRectGroup::Reader::hasLlyPacked() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline bool CompactRectGroup::Builder::hasLlyPacked() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Data::Reader CompactRectGroup::Reader::getLlyPacked() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_reader.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Data::Builder CompactRectGroup::Builder::getLlyPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
+}
+inline void CompactRectGroup::Builder::setLlyPacked( ::capnp::Data::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::set(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Data::Builder CompactRectGroup::Builder::initLlyPacked(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::init(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), size);
+}
+inline void CompactRectGroup::Builder::adoptLlyPacked(
+    ::capnp::Orphan< ::capnp::Data>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::adopt(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Data> CompactRectGroup::Builder::disownLlyPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::disown(_builder.getPointerField(
+      ::capnp::bounded<3>() * ::capnp::POINTERS));
 }
 
 inline  ::uint32_t CompactPolygonRepeat::Reader::getVertexCount() const {

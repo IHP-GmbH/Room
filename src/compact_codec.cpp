@@ -388,6 +388,24 @@ struct DeltaKeyHash {
     }
 };
 
+// Chain after the first vertex. The absolute start is stored as the placement origin,
+// and the reader overwrites the first encoded point with that origin.
+std::vector<std::int64_t> translationKey(const std::vector<std::int64_t> &deltas)
+{
+    if (deltas.size() <= 2) {
+        return {};
+    }
+    return std::vector<std::int64_t>(deltas.begin() + 2, deltas.end());
+}
+
+void storeLoosePolygon(LayerBucket &bucket, const std::vector<Point> &points, const std::vector<std::int64_t> &deltas,
+                       const std::vector<Property> &properties)
+{
+    bucket.polygonVertexCounts.push_back(static_cast<std::uint32_t>(points.size()));
+    bucket.polygonDeltas.insert(bucket.polygonDeltas.end(), deltas.begin(), deltas.end());
+    appendShapeProperties(bucket, properties);
+}
+
 void optimizePolygons(std::vector<std::pair<std::vector<Point>, std::vector<Property>>> &polygons,
                       LayerBucket &bucket)
 {
@@ -402,27 +420,28 @@ void optimizePolygons(std::vector<std::pair<std::vector<Point>, std::vector<Prop
         Entry entry;
         entry.points = std::move(polygon.first);
         entry.properties = std::move(polygon.second);
+        if (entry.points.empty()) {
+            storeLoosePolygon(bucket, entry.points, entry.deltas, entry.properties);
+            continue;
+        }
         appendDeltaEncoded(entry.deltas, entry.points);
-        DeltaKey key{entry.deltas};
-        groups[key].push_back(std::move(entry));
+        groups[DeltaKey{translationKey(entry.deltas)}].push_back(std::move(entry));
     }
     polygons.clear();
 
     for (auto &entry : groups) {
-        auto &items = entry.second;
-        if (items.size() >= 2) {
-            bool sameProps = true;
-            for (std::size_t i = 1; i < items.size(); ++i) {
-                if (!propertiesEqual(items[0].properties, items[i].properties)) {
-                    sameProps = false;
-                    break;
-                }
-            }
-            if (sameProps) {
+        std::map<std::string, std::vector<Entry>> byProps;
+        for (Entry &item : entry.second) {
+            byProps[propertyKey(item.properties)].push_back(std::move(item));
+        }
+        for (auto &propEntry : byProps) {
+            std::vector<Entry> &items = propEntry.second;
+            if (items.size() >= 2) {
                 PolygonRepeatSpec repeat;
                 repeat.vertexCount = static_cast<std::uint32_t>(items[0].points.size());
-                repeat.deltas = entry.first.deltas;
+                repeat.deltas = items[0].deltas;
                 repeat.properties = items[0].properties;
+                repeat.memberProperties = !items[0].properties.empty();
                 for (const Entry &item : items) {
                     repeat.originX.push_back(item.points[0].x);
                     repeat.originY.push_back(item.points[0].y);
@@ -430,14 +449,22 @@ void optimizePolygons(std::vector<std::pair<std::vector<Point>, std::vector<Prop
                 bucket.polygonRepeats.push_back(std::move(repeat));
                 continue;
             }
-        }
-
-        for (Entry &item : items) {
-            bucket.polygonVertexCounts.push_back(static_cast<std::uint32_t>(item.points.size()));
-            bucket.polygonDeltas.insert(bucket.polygonDeltas.end(), item.deltas.begin(), item.deltas.end());
-            appendShapeProperties(bucket, item.properties);
+            storeLoosePolygon(bucket, items[0].points, items[0].deltas, items[0].properties);
         }
     }
+}
+
+void storeLoosePath(LayerBucket &bucket, const std::uint32_t width, const std::int32_t bgnExt,
+                    const std::int32_t endExt, const bool round, const std::vector<Point> &points,
+                    const std::vector<std::int64_t> &deltas, const std::vector<Property> &properties)
+{
+    bucket.pathWidths.push_back(width);
+    bucket.pathBgnExt.push_back(bgnExt);
+    bucket.pathEndExt.push_back(endExt);
+    bucket.pathRound.push_back(round ? 1 : 0);
+    bucket.pathVertexCounts.push_back(static_cast<std::uint32_t>(points.size()));
+    bucket.pathDeltas.insert(bucket.pathDeltas.end(), deltas.begin(), deltas.end());
+    appendShapeProperties(bucket, properties);
 }
 
 void optimizePaths(std::vector<PendingPath> &paths, LayerBucket &bucket)
@@ -461,39 +488,38 @@ void optimizePaths(std::vector<PendingPath> &paths, LayerBucket &bucket)
         entry.round = path.round;
         entry.points = std::move(path.points);
         entry.properties = std::move(path.properties);
+        if (entry.points.empty()) {
+            storeLoosePath(bucket, entry.width, entry.bgnExt, entry.endExt, entry.round, entry.points, entry.deltas,
+                           entry.properties);
+            continue;
+        }
         appendDeltaEncoded(entry.deltas, entry.points);
-        DeltaKey key{entry.deltas};
-        groups[key].push_back(std::move(entry));
+        std::vector<std::int64_t> key = translationKey(entry.deltas);
+        key.push_back(static_cast<std::int64_t>(entry.width));
+        key.push_back(entry.bgnExt);
+        key.push_back(entry.endExt);
+        key.push_back(entry.round ? 1 : 0);
+        groups[DeltaKey{std::move(key)}].push_back(std::move(entry));
     }
     paths.clear();
 
     for (auto &entry : groups) {
-        auto &items = entry.second;
-        if (items.size() >= 2) {
-            bool sameWidth = true;
-            bool sameEnds = true;
-            bool sameProps = true;
-            for (std::size_t i = 1; i < items.size(); ++i) {
-                if (items[i].width != items[0].width) {
-                    sameWidth = false;
-                }
-                if (items[i].bgnExt != items[0].bgnExt || items[i].endExt != items[0].endExt ||
-                    items[i].round != items[0].round) {
-                    sameEnds = false;
-                }
-                if (!propertiesEqual(items[0].properties, items[i].properties)) {
-                    sameProps = false;
-                }
-            }
-            if (sameWidth && sameEnds && sameProps) {
+        std::map<std::string, std::vector<Entry>> byProps;
+        for (Entry &item : entry.second) {
+            byProps[propertyKey(item.properties)].push_back(std::move(item));
+        }
+        for (auto &propEntry : byProps) {
+            std::vector<Entry> &items = propEntry.second;
+            if (items.size() >= 2) {
                 PathRepeatSpec repeat;
                 repeat.width = items[0].width;
                 repeat.bgnExt = items[0].bgnExt;
                 repeat.endExt = items[0].endExt;
                 repeat.round = items[0].round;
                 repeat.vertexCount = static_cast<std::uint32_t>(items[0].points.size());
-                repeat.deltas = entry.first.deltas;
+                repeat.deltas = items[0].deltas;
                 repeat.properties = items[0].properties;
+                repeat.memberProperties = !items[0].properties.empty();
                 for (const Entry &item : items) {
                     repeat.originX.push_back(item.points[0].x);
                     repeat.originY.push_back(item.points[0].y);
@@ -501,16 +527,9 @@ void optimizePaths(std::vector<PendingPath> &paths, LayerBucket &bucket)
                 bucket.pathRepeats.push_back(std::move(repeat));
                 continue;
             }
-        }
-
-        for (Entry &item : items) {
-            bucket.pathWidths.push_back(item.width);
-            bucket.pathBgnExt.push_back(item.bgnExt);
-            bucket.pathEndExt.push_back(item.endExt);
-            bucket.pathRound.push_back(item.round ? 1 : 0);
-            bucket.pathVertexCounts.push_back(static_cast<std::uint32_t>(item.points.size()));
-            bucket.pathDeltas.insert(bucket.pathDeltas.end(), item.deltas.begin(), item.deltas.end());
-            appendShapeProperties(bucket, item.properties);
+            const Entry &item = items[0];
+            storeLoosePath(bucket, item.width, item.bgnExt, item.endExt, item.round, item.points, item.deltas,
+                           item.properties);
         }
     }
 }
@@ -855,6 +874,37 @@ void writePackedRectCoords(schema::CompactLayerShapes::Builder builder,
     }
 }
 
+template <typename SetPacked, typename InitList>
+void writeDeltaOrList(const std::vector<std::int64_t> &values, SetPacked setPacked, InitList initList)
+{
+    if (values.empty()) {
+        return;
+    }
+    const std::vector<std::uint8_t> packed = encodeDeltaPacked(values);
+    if (packed.size() < values.size() * sizeof(std::int64_t)) {
+        setPacked(capnp::Data::Reader(packed.data(), packed.size()));
+        return;
+    }
+    auto list = initList(static_cast<unsigned int>(values.size()));
+    for (std::size_t i = 0; i < values.size(); ++i) {
+        list.set(i, values[i]);
+    }
+}
+
+template <typename Packed, typename List>
+std::vector<std::int64_t> readDeltaOrList(Packed packed, List list)
+{
+    if (packed.size() > 0) {
+        return decodeDeltaPacked(reinterpret_cast<const std::uint8_t *>(packed.begin()), packed.size());
+    }
+    std::vector<std::int64_t> out;
+    out.reserve(list.size());
+    for (const auto value : list) {
+        out.push_back(value);
+    }
+    return out;
+}
+
 void writeLayerBucket(schema::CompactLayerShapes::Builder builder, const LayerBucket &bucket)
 {
     builder.setLayerId(bucket.layerId);
@@ -885,12 +935,12 @@ void writeLayerBucket(schema::CompactLayerShapes::Builder builder, const LayerBu
         gb.setWidth(spec.width);
         gb.setHeight(spec.height);
         gb.setMemberProperties(spec.memberProperties);
-        auto llx = gb.initLlx(spec.llx.size());
-        auto lly = gb.initLly(spec.lly.size());
-        for (std::size_t j = 0; j < spec.llx.size(); ++j) {
-            llx.set(j, spec.llx[j]);
-            lly.set(j, spec.lly[j]);
-        }
+        writeDeltaOrList(spec.llx,
+                         [&](capnp::Data::Reader data) { gb.setLlxPacked(data); },
+                         [&](unsigned int n) { return gb.initLlx(n); });
+        writeDeltaOrList(spec.lly,
+                         [&](capnp::Data::Reader data) { gb.setLlyPacked(data); },
+                         [&](unsigned int n) { return gb.initLly(n); });
     }
 
     auto polygonCounts = builder.initPolygonVertexCounts(bucket.polygonVertexCounts.size());
@@ -1106,8 +1156,8 @@ void readLayerBucket(schema::CompactLayerShapes::Reader reader, Emit &&emit,
     }
 
     for (const auto group : reader.getRectGroups()) {
-        const auto llxList = group.getLlx();
-        const auto llyList = group.getLly();
+        const std::vector<std::int64_t> llxList = readDeltaOrList(group.getLlxPacked(), group.getLlx());
+        const std::vector<std::int64_t> llyList = readDeltaOrList(group.getLlyPacked(), group.getLly());
         const std::size_t count = llxList.size();
         const bool perMember = group.getMemberProperties();
         if (count > 1 && llxList.size() == llyList.size() && hooks && hooks->rectGroup &&
@@ -1468,12 +1518,20 @@ void writeCompactBlock(schema::CompactBlock::Builder builder, const Block &block
             ib.setRowX(inst.rowX());
         }
         if (inst.offsets().size() > 1) {
-            auto ox = ib.initOffsetX(inst.offsets().size());
-            auto oy = ib.initOffsetY(inst.offsets().size());
-            for (std::size_t j = 0; j < inst.offsets().size(); ++j) {
-                ox.set(j, inst.offsets()[j].x);
-                oy.set(j, inst.offsets()[j].y);
+            std::vector<std::int64_t> xs;
+            std::vector<std::int64_t> ys;
+            xs.reserve(inst.offsets().size());
+            ys.reserve(inst.offsets().size());
+            for (const Point &point : inst.offsets()) {
+                xs.push_back(point.x);
+                ys.push_back(point.y);
             }
+            writeDeltaOrList(xs,
+                             [&](capnp::Data::Reader data) { ib.setOffsetXPacked(data); },
+                             [&](unsigned int n) { return ib.initOffsetX(n); });
+            writeDeltaOrList(ys,
+                             [&](capnp::Data::Reader data) { ib.setOffsetYPacked(data); },
+                             [&](unsigned int n) { return ib.initOffsetY(n); });
         }
         auto props = ib.initProperties(inst.properties().size());
         for (std::size_t pi = 0; pi < inst.properties().size(); ++pi) {
@@ -1524,8 +1582,8 @@ Block readCompactBlock(schema::CompactBlock::Reader reader)
             instance.setArray(inst.getColumns(), inst.getRows(), inst.getStepX(), inst.getStepY(),
                                inst.getColY(), inst.getRowX());
         }
-        const auto offsetX = inst.getOffsetX();
-        const auto offsetY = inst.getOffsetY();
+        const std::vector<std::int64_t> offsetX = readDeltaOrList(inst.getOffsetXPacked(), inst.getOffsetX());
+        const std::vector<std::int64_t> offsetY = readDeltaOrList(inst.getOffsetYPacked(), inst.getOffsetY());
         if (offsetX.size() > 1 && offsetX.size() == offsetY.size()) {
             std::vector<Point> offsets;
             offsets.reserve(offsetX.size());

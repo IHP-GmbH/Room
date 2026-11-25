@@ -158,7 +158,7 @@ struct Instance {
   class Pipeline;
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(afeec16de4ecde8b, 5, 5)
+    CAPNP_DECLARE_STRUCT_HEADER(afeec16de4ecde8b, 5, 7)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -893,6 +893,12 @@ public:
   inline bool hasOffsetY() const;
   inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Reader getOffsetY() const;
 
+  inline bool hasOffsetXPacked() const;
+  inline  ::capnp::Data::Reader getOffsetXPacked() const;
+
+  inline bool hasOffsetYPacked() const;
+  inline  ::capnp::Data::Reader getOffsetYPacked() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -975,6 +981,20 @@ public:
   inline  ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>::Builder initOffsetY(unsigned int size);
   inline void adoptOffsetY(::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>&& value);
   inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> disownOffsetY();
+
+  inline bool hasOffsetXPacked();
+  inline  ::capnp::Data::Builder getOffsetXPacked();
+  inline void setOffsetXPacked( ::capnp::Data::Reader value);
+  inline  ::capnp::Data::Builder initOffsetXPacked(unsigned int size);
+  inline void adoptOffsetXPacked(::capnp::Orphan< ::capnp::Data>&& value);
+  inline ::capnp::Orphan< ::capnp::Data> disownOffsetXPacked();
+
+  inline bool hasOffsetYPacked();
+  inline  ::capnp::Data::Builder getOffsetYPacked();
+  inline void setOffsetYPacked( ::capnp::Data::Reader value);
+  inline  ::capnp::Data::Builder initOffsetYPacked(unsigned int size);
+  inline void adoptOffsetYPacked(::capnp::Orphan< ::capnp::Data>&& value);
+  inline ::capnp::Orphan< ::capnp::Data> disownOffsetYPacked();
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -2306,6 +2326,74 @@ inline void Instance::Builder::adoptOffsetY(
 inline ::capnp::Orphan< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>> Instance::Builder::disownOffsetY() {
   return ::capnp::_::PointerHelpers< ::capnp::List< ::int64_t,  ::capnp::Kind::PRIMITIVE>>::disown(_builder.getPointerField(
       ::capnp::bounded<4>() * ::capnp::POINTERS));
+}
+
+inline bool Instance::Reader::hasOffsetXPacked() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
+}
+inline bool Instance::Builder::hasOffsetXPacked() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Data::Reader Instance::Reader::getOffsetXPacked() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_reader.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Data::Builder Instance::Builder::getOffsetXPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+inline void Instance::Builder::setOffsetXPacked( ::capnp::Data::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::set(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Data::Builder Instance::Builder::initOffsetXPacked(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::init(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS), size);
+}
+inline void Instance::Builder::adoptOffsetXPacked(
+    ::capnp::Orphan< ::capnp::Data>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::adopt(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Data> Instance::Builder::disownOffsetXPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::disown(_builder.getPointerField(
+      ::capnp::bounded<5>() * ::capnp::POINTERS));
+}
+
+inline bool Instance::Reader::hasOffsetYPacked() const {
+  return !_reader.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS).isNull();
+}
+inline bool Instance::Builder::hasOffsetYPacked() {
+  return !_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS).isNull();
+}
+inline  ::capnp::Data::Reader Instance::Reader::getOffsetYPacked() const {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_reader.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS));
+}
+inline  ::capnp::Data::Builder Instance::Builder::getOffsetYPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::get(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS));
+}
+inline void Instance::Builder::setOffsetYPacked( ::capnp::Data::Reader value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::set(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS), value);
+}
+inline  ::capnp::Data::Builder Instance::Builder::initOffsetYPacked(unsigned int size) {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::init(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS), size);
+}
+inline void Instance::Builder::adoptOffsetYPacked(
+    ::capnp::Orphan< ::capnp::Data>&& value) {
+  ::capnp::_::PointerHelpers< ::capnp::Data>::adopt(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS), kj::mv(value));
+}
+inline ::capnp::Orphan< ::capnp::Data> Instance::Builder::disownOffsetYPacked() {
+  return ::capnp::_::PointerHelpers< ::capnp::Data>::disown(_builder.getPointerField(
+      ::capnp::bounded<6>() * ::capnp::POINTERS));
 }
 
 inline bool Term::Reader::hasName() const {

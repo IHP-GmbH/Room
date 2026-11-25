@@ -71,4 +71,29 @@ std::vector<std::int64_t> decodeVarint64(const std::uint8_t *data, std::size_t s
     return out;
 }
 
+std::vector<std::uint8_t> encodeDeltaPacked(const std::vector<std::int64_t> &values)
+{
+    std::vector<std::int64_t> deltas;
+    deltas.reserve(values.size());
+    std::int64_t previous = 0;
+    for (const std::int64_t value : values) {
+        deltas.push_back(value - previous);
+        previous = value;
+    }
+    return encodeVarint64(deltas);
+}
+
+std::vector<std::int64_t> decodeDeltaPacked(const std::uint8_t *data, std::size_t size)
+{
+    const std::vector<std::int64_t> deltas = decodeVarint64(data, size);
+    std::vector<std::int64_t> out;
+    out.reserve(deltas.size());
+    std::int64_t absolute = 0;
+    for (const std::int64_t delta : deltas) {
+        absolute += delta;
+        out.push_back(absolute);
+    }
+    return out;
+}
+
 } // namespace room

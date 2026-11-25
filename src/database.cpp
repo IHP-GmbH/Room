@@ -43,11 +43,7 @@ void Database::saveToFile(const std::string &path, ViewType fileView, SaveOption
     }
 
     if (options.compressFile) {
-        kj::VectorOutputStream vectorStream;
-        capnp::writeMessage(vectorStream, message);
-        const kj::ArrayPtr<const kj::byte> bytes = vectorStream.getArray();
-        const std::vector<std::uint8_t> framed =
-            compressRoomPayload(bytes.begin(), bytes.size(), options.compressLevel);
+        const std::vector<std::uint8_t> framed = compressRoomMessage(message, options.compressLevel);
         if (!out.write(reinterpret_cast<const char *>(framed.data()),
                        static_cast<std::streamsize>(framed.size()))) {
             throw std::runtime_error("Failed to write compressed ROOM file: " + path);
