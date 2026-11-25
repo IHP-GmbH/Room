@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block (Python) | ROOM Python</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ROOM</a>
+    <nav>
+      <a href="index.html">C++</a>
+      <a href="python.html">Python</a>
+      <a href="python_example.html">Example</a>
+      <a href="python_classes.html">All Classes</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Getting Started</h3>
+      <ul>
+        <li><a href="python.html">Overview</a></li>
+        <li><a href="python_example.html">GDS import example</a></li>
+        <li><a href="python_example_qucs.html">Qucs import example</a></li>
+        <li><a href="python_example_xschem.html">Xschem import example</a></li>
+        <li><a href="python_classes.html">Class index</a></li>
+      </ul>
+      <h3>Types</h3>
+      <ul>
+        <li><a href="python_types.html#box">Box</a></li>
+        <li><a href="python_types.html#rect">Rect</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#layer">Layer</a></li>
+        <li><a href="python_types.html#fileinfo">FileInfo</a></li>
+        <li><a href="python_types.html#enums">Enums</a></li>
+      </ul>
+      <h3>ROOM</h3>
+      <ul>
+        <li><a href="python_database.html">Database</a></li>
+        <li><a href="python_lib.html">Lib</a></li>
+        <li><a href="python_cell.html#cell">Cell</a></li>
+        <li><a href="python_cell.html#cellcontent">CellContent</a></li>
+        <li><a href="python_block.html" class="active">Block</a></li>
+        <li><a href="python_shape.html">Shape</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#sniff">File summary / sniff</a></li>
+      </ul>
+      <h3>Utilities</h3>
+      <ul>
+        <li><a href="python_gds.html">GDS import/export</a></li>
+        <li><a href="python_qucs.html">Qucs import/export</a></li>
+        <li><a href="python_xschem.html">Xschem import/export</a></li>
+        <li><a href="python_oas.html">OASIS import/export</a></li>
+      </ul>
+    </aside>
+
+    <div class="content-with-toc">
+    <main class="content">
+      <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Block</p>
+
+      <h1 class="title">Block</h1>
+      <p class="brief">
+        Topology container: geometry, child placements, and (in C++) nets.
+        In Python there is no separate <code>Block</code> type &mdash; the same data is accessed on
+        <a href="python_cell.html#cellcontent"><code>CellContent</code></a>
+        (C++: <a href="block.html"><code>room::Block</code></a> via <code>content.block()</code>).
+        <a class="more" href="#details">More&hellip;</a>
+      </p>
+
+      <table class="props">
+        <tr><th>Import:</th><td><code>import room</code></td></tr>
+        <tr><th>Access:</th><td>via <code>layout = cell.layout()</code> &mdash; block API is on <code>layout</code></td></tr>
+        <tr><th>C++:</th><td><a href="block.html"><code>room::Block</code></a> (<code>content.block()</code>)</td></tr>
+      </table>
+
+      <h2 id="public-api">Public API (on CellContent)</h2>
+      <table class="memlist">
+        <tr><td><a href="#shapes"><code>shapes()</code></a></td><td>Geometric shapes (see <a href="python_shape.html">Shape</a>).</td></tr>
+        <tr><td><a href="#instances"><code>instances()</code></a></td><td>Child cell placements as <code>list[Instance]</code>.</td></tr>
+        <tr><td><a href="#bbox"><code>bbox()</code></a></td><td>Cached axis-aligned <a href="python_types.html#box">Box</a>.</td></tr>
+        <tr><td><a href="#add_rect"><code>add_rect(...)</code></a></td><td>Append a rectangle.</td></tr>
+        <tr><td><a href="#add_instance"><code>add_instance(...)</code></a></td><td>Append a placement.</td></tr>
+        <tr><td><code>nets()</code> / <code>recomputeBBox()</code></td><td><em>not yet exposed</em></td></tr>
+      </table>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>
+        A C++ <code>room::Block</code> holds shapes, <a href="instance.html">Instance</a> placements, and schematic
+        <a href="net.html">Net</a> connectivity for one cell view. On disk, blocks live inside
+        <code>CellContent.payload</code> (for example <code>payload.layout.block</code>).
+      </p>
+      <p>
+        In C++ you write <code>content.block().shapes()</code>. In Python the same operations are methods
+        of <a href="python_cell.html#cellcontent"><code>CellContent</code></a>:
+      </p>
+      <table class="members">
+        <tr><th>C++ (<code>content.block()</code>)</th><th>Python (<code>content</code>)</th></tr>
+        <tr><td><code>shapes()</code></td><td><code>shapes()</code></td></tr>
+        <tr><td><code>instances()</code></td><td><code>instances()</code></td></tr>
+        <tr><td><code>bbox()</code></td><td><code>bbox()</code></td></tr>
+        <tr><td><code>nets()</code></td><td><em>not yet exposed</em></td></tr>
+        <tr><td><code>recomputeBBox()</code></td><td><em>not yet exposed</em> (bbox refreshed on save/load)</td></tr>
+      </table>
+
+      <h2>Member documentation</h2>
+
+      <div class="fn-block" id="shapes">
+        <h3 class="fn-title">shapes() &rarr; list[Rect | dict]</h3>
+        <p class="fn-desc">
+          Geometric shapes in this block (C++ <code>Block::shapes()</code>).
+          Rectangles are returned as <a href="python_types.html#rect"><code>room.Rect</code></a>;
+          other kinds currently as <code>{"type": "...", "index": i}</code>.
+        </p>
+      </div>
+
+      <div class="fn-block" id="instances">
+        <h3 class="fn-title">instances() &rarr; list[Instance]</h3>
+        <p class="fn-desc">
+          Child cell placements (C++ <code>Block::instances()</code>, GDS SREF equivalents).
+          Each <a href="python_types.html#instance">Instance</a> has <code>cell_name</code>, <code>x</code>, <code>y</code>, <code>orient</code>, <code>mag</code>.
+        </p>
+      </div>
+
+      <div class="fn-block" id="bbox">
+        <h3 class="fn-title">bbox() &rarr; Box</h3>
+        <p class="fn-desc">
+          Cached axis-aligned bounding box (C++ <code>Block::bbox()</code>), in DBU.
+          Instance placements are not included in the bbox calculation.
+        </p>
+      </div>
+
+      <div class="fn-block" id="add_rect">
+        <h3 class="fn-title">add_rect(layer_id, llx, lly, urx, ury) &rarr; int</h3>
+        <p class="fn-desc">Appends a rectangle. <code>layer_id</code> indexes into <code>db.layers()</code>.</p>
+      </div>
+
+      <div class="fn-block" id="add_instance">
+        <h3 class="fn-title">add_instance(cell_name, x=0, y=0, orient=Orient.R0, mag=1.0) &rarr; int</h3>
+        <p class="fn-desc">Appends a child placement by master cell name.</p>
+      </div>
+
+      <h2>Example</h2>
+      <pre class="example"><code>layout = cell.ensure_content("layout")
+layout.add_rect(0, 0, 0, 500, 300)
+layout.add_instance("INV", x=2000, y=2000)
+
+print(len(layout.shapes()), len(layout.instances()), layout.bbox())</code></pre>
+    </main>
+
+    <aside class="page-toc">
+      <h3>On this page</h3>
+      <ul>
+        <li><a href="#public-api">Public API</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#shapes">shapes()</a></li>
+        <li><a href="#instances">instances()</a></li>
+        <li><a href="#bbox">bbox()</a></li>
+        <li><a href="#add_rect">add_rect()</a></li>
+        <li><a href="#add_instance">add_instance()</a></li>
+      </ul>
+    </aside>
+    </div>
+  </div>
+</body>
+</html>

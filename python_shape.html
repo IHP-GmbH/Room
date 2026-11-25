@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shape (Python) | ROOM Python</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="index.html">ROOM</a>
+    <nav>
+      <a href="index.html">C++</a>
+      <a href="python.html">Python</a>
+      <a href="python_example.html">Example</a>
+      <a href="python_classes.html">All Classes</a>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Getting Started</h3>
+      <ul>
+        <li><a href="python.html">Overview</a></li>
+        <li><a href="python_example.html">GDS import example</a></li>
+        <li><a href="python_example_qucs.html">Qucs import example</a></li>
+        <li><a href="python_example_xschem.html">Xschem import example</a></li>
+        <li><a href="python_classes.html">Class index</a></li>
+      </ul>
+      <h3>Types</h3>
+      <ul>
+        <li><a href="python_types.html#box">Box</a></li>
+        <li><a href="python_types.html#rect">Rect</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#layer">Layer</a></li>
+        <li><a href="python_types.html#fileinfo">FileInfo</a></li>
+        <li><a href="python_types.html#enums">Enums</a></li>
+      </ul>
+      <h3>ROOM</h3>
+      <ul>
+        <li><a href="python_database.html">Database</a></li>
+        <li><a href="python_lib.html">Lib</a></li>
+        <li><a href="python_cell.html#cell">Cell</a></li>
+        <li><a href="python_cell.html#cellcontent">CellContent</a></li>
+        <li><a href="python_block.html">Block</a></li>
+        <li><a href="python_shape.html" class="active">Shape</a></li>
+        <li><a href="python_types.html#instance">Instance</a></li>
+        <li><a href="python_types.html#sniff">File summary / sniff</a></li>
+      </ul>
+      <h3>Utilities</h3>
+      <ul>
+        <li><a href="python_gds.html">GDS import/export</a></li>
+        <li><a href="python_qucs.html">Qucs import/export</a></li>
+        <li><a href="python_xschem.html">Xschem import/export</a></li>
+        <li><a href="python_oas.html">OASIS import/export</a></li>
+      </ul>
+    </aside>
+
+    <div class="content-with-toc">
+    <main class="content">
+      <p class="doc-path"><a href="python.html">Python</a> &raquo; ROOM &raquo; Shape</p>
+
+      <h1 class="title">Shape</h1>
+      <p class="brief">
+        Geometry inside a block. C++ uses a tagged union <a href="shape.html"><code>room::Shape</code></a>;
+        Python currently surfaces rectangles as <a href="python_types.html#rect"><code>room.Rect</code></a>
+        and other kinds as lightweight dicts.
+        <a class="more" href="#details">More&hellip;</a>
+      </p>
+
+      <table class="props">
+        <tr><th>Import:</th><td><code>import room</code> &mdash; <code>room.Rect</code>, <code>room.ShapeType</code></td></tr>
+        <tr><th>Access:</th><td><code>content.shapes()</code> / <code>content.add_rect(...)</code></td></tr>
+        <tr><th>C++:</th><td><a href="shape.html"><code>room::Shape</code></a></td></tr>
+      </table>
+
+      <h2 id="public-api">Public API</h2>
+      <table class="memlist">
+        <tr><td><a href="#shapes-list"><code>content.shapes()</code></a></td><td><code>list[Rect | dict]</code></td></tr>
+        <tr><td><a href="#add_rect"><code>content.add_rect(layer_id, llx, lly, urx, ury)</code></a></td><td>Append rectangle; returns index.</td></tr>
+        <tr><td><a href="#rect"><code>room.Rect</code></a></td><td>Decoded rectangle payload.</td></tr>
+        <tr><td><a href="#shape-type"><code>room.ShapeType</code></a></td><td>RECT, POLYGON, PATH, TEXT, ARC.</td></tr>
+        <tr><td>polygon / path / text / arc accessors</td><td><em>partial</em> &mdash; returned as <code>{"type", "index"}</code></td></tr>
+      </table>
+
+      <h2 id="details">Detailed Description</h2>
+      <p>
+        In C++, <code>Shape</code> is a variant (rect, polygon, path, text, arc) with <code>type()</code> and
+        typed accessors. Each variant carries a <code>layerId</code> index into the library layer table
+        (not a raw GDS layer number).
+      </p>
+      <p>
+        The Python binding fully decodes rectangles. Other kinds are listed so you can see
+        the count and type; full polygon/path/text/arc decoding will follow the same pattern as <code>Rect</code>.
+      </p>
+
+      <h2>Member documentation</h2>
+
+      <div class="fn-block" id="shapes-list">
+        <h3 class="fn-title">content.shapes() &rarr; list[Rect | dict]</h3>
+        <p class="fn-desc">
+          Returns all shapes in the view block (C++ <code>block().shapes()</code>).
+          Each rectangle is a <code>room.Rect</code>; other entries look like
+          <code>{"type": "polygon", "index": 3}</code>.
+        </p>
+      </div>
+
+      <div class="fn-block" id="add_rect">
+        <h3 class="fn-title">content.add_rect(layer_id, llx, lly, urx, ury) &rarr; int</h3>
+        <p class="fn-desc">Appends a rectangle (C++ <code>Shape::RectData</code>). Coordinates are in DBU.</p>
+        <table class="fn-params">
+          <tr><th>Parameter</th><th>Description</th></tr>
+          <tr><td><code>layer_id</code></td><td>Index into <code>db.layers()</code>.</td></tr>
+          <tr><td><code>llx, lly, urx, ury</code></td><td>Lower-left / upper-right corners.</td></tr>
+        </table>
+      </div>
+
+      <div class="fn-block" id="rect">
+        <h3 class="fn-title">room.Rect</h3>
+        <p class="fn-desc">Frozen dataclass for a decoded rectangle.</p>
+        <table class="members">
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          <tr><td><code>layer_id</code></td><td>int</td><td>Index into <code>db.layers()</code>.</td></tr>
+          <tr><td><code>llx, lly, urx, ury</code></td><td>int</td><td>Box corners in DBU.</td></tr>
+        </table>
+      </div>
+
+      <div class="fn-block" id="shape-type">
+        <h3 class="fn-title">room.ShapeType</h3>
+        <p class="fn-desc">Discriminator enum mirroring C++ <code>Shape::Type</code>: RECT, POLYGON, PATH, TEXT, ARC.</p>
+      </div>
+
+      <h2>Example</h2>
+      <pre class="example"><code>for s in layout.shapes():
+    if isinstance(s, room.Rect):
+        print(s.layer_id, s.llx, s.lly, s.urx, s.ury)
+    else:
+        print(s["type"], s["index"])</code></pre>
+    </main>
+
+    <aside class="page-toc">
+      <h3>On this page</h3>
+      <ul>
+        <li><a href="#public-api">Public API</a></li>
+        <li><a href="#details">Detailed Description</a></li>
+        <li><a href="#shapes-list">shapes()</a></li>
+        <li><a href="#add_rect">add_rect()</a></li>
+        <li><a href="#rect">Rect</a></li>
+        <li><a href="#shape-type">ShapeType</a></li>
+      </ul>
+    </aside>
+    </div>
+  </div>
+</body>
+</html>
