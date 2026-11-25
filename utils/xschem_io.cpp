@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iomanip>
+#include <limits>
 #include <optional>
 #include <sstream>
 #include <unordered_map>
@@ -134,10 +135,12 @@ std::string normalizeSpiceDeviceValue(const std::string &raw)
 int countBraceDelta(const std::string &line)
 {
     int delta = 0;
-    for (char ch : line) {
-        if (ch == '{') {
+    for (std::size_t i = 0; i < line.size(); ++i) {
+        if (line[i] == '\\') {
+            ++i; // Escaped character, as in Xschem's load_ascii_string.
+        } else if (line[i] == '{') {
             ++delta;
-        } else if (ch == '}') {
+        } else if (line[i] == '}') {
             --delta;
         }
     }
@@ -155,7 +158,9 @@ bool extractBracedToken(const std::string &text, std::size_t &pos, std::string &
     const std::size_t start = pos;
     int depth = 0;
     for (; pos < text.size(); ++pos) {
-        if (text[pos] == '{') {
+        if (text[pos] == '\\') {
+            ++pos; // Escaped character, as in Xschem's load_ascii_string.
+        } else if (text[pos] == '{') {
             ++depth;
         } else if (text[pos] == '}') {
             --depth;
@@ -174,23 +179,23 @@ bool readDoubleToken(const std::string &text, std::size_t &pos, double &value)
     while (pos < text.size() && std::isspace(static_cast<unsigned char>(text[pos]))) {
         ++pos;
     }
-    const std::size_t start = pos;
-    while (pos < text.size() &&
-           (std::isdigit(static_cast<unsigned char>(text[pos])) || text[pos] == '-' || text[pos] == '+' ||
-            text[pos] == '.')) {
-        ++pos;
-    }
-    if (start == pos) {
+    // Same number syntax as Xschem's %lf reads, including exponents (2e1).
+    const char *start = text.c_str() + pos;
+    char *end = nullptr;
+    const double parsed = std::strtod(start, &end);
+    if (end == start || !std::isfinite(parsed)) {
         return false;
     }
-    value = std::stod(text.substr(start, pos - start));
+    pos += static_cast<std::size_t>(end - start);
+    value = parsed;
     return true;
 }
 
 bool readIntToken(const std::string &text, std::size_t &pos, int &value)
 {
     double tmp = 0.0;
-    if (!readDoubleToken(text, pos, tmp)) {
+    if (!readDoubleToken(text, pos, tmp) || tmp < std::numeric_limits<int>::min() ||
+        tmp > std::numeric_limits<int>::max()) {
         return false;
     }
     value = static_cast<int>(tmp);
@@ -201,6 +206,11 @@ bool readCoordToken(const std::string &text, std::size_t &pos, std::int64_t &val
 {
     double coord = 0.0;
     if (!readDoubleToken(text, pos, coord)) {
+        return false;
+    }
+    // Reject values whose database units do not fit in 64 bits.
+    const double scale = g_dbuPerEditorUnit > 0.0 ? g_dbuPerEditorUnit : 1.0;
+    if (std::fabs(coord * scale) >= 9.0e18) {
         return false;
     }
     value = editorUnitsToDbu(coord, g_dbuPerEditorUnit);
@@ -750,11 +760,15 @@ std::string readAttrValue(const std::string &body, std::size_t &pos)
         }
         return value;
     }
-    const std::size_t start = pos;
+    std::string value;
     while (pos < body.size() && !std::isspace(static_cast<unsigned char>(body[pos]))) {
+        if (body[pos] == '\\' && pos + 1 < body.size()) {
+            ++pos;
+        }
+        value.push_back(body[pos]);
         ++pos;
     }
-    return body.substr(start, pos - start);
+    return value;
 }
 
 bool attrValueNeedsQuotes(const std::string &value)
@@ -763,23 +777,23 @@ bool attrValueNeedsQuotes(const std::string &value)
         return true;
     }
     for (const char ch : value) {
-        if (std::isspace(static_cast<unsigned char>(ch)) || ch == '{' || ch == '}') {
+        if (std::isspace(static_cast<unsigned char>(ch)) || ch == '{' || ch == '}' || ch == '"' || ch == '\\') {
             return true;
         }
     }
     return false;
 }
 
+// Escapes what readAttrValue unescapes; Xschem drops values with bare braces.
 std::string quoteAttrValue(const std::string &value)
 {
     std::ostringstream oss;
     oss << '"';
     for (const char ch : value) {
-        if (ch == '"') {
-            oss << '\\' << '"';
-        } else {
-            oss << ch;
+        if (ch == '"' || ch == '\\' || ch == '{' || ch == '}') {
+            oss << '\\';
         }
+        oss << ch;
     }
     oss << '"';
     return oss.str();
