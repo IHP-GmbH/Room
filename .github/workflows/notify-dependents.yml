@@ -1,6 +1,6 @@
 name: Notify dependents
 
-# When ROOM main moves, rebuild Door / Qucs-S / Xschem / KLayout against the new tip.
+# When ROOM main moves, rebuild Door / Qucs-S / Xschem / KLayout / EMStudio against the new tip.
 # Dependents listen for repository_dispatch type "room-updated".
 on:
   push:
@@ -23,6 +23,7 @@ jobs:
           - adatsuk/Qucs-S-roomdb
           - adatsuk/XSchem-roomdb
           - adatsuk/KLayout-roomdb
+          - IHP-GmbH/EMStudio
     steps:
       - name: Dispatch room-updated to ${{ matrix.repo }}
         env:
