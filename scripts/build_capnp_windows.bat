@@ -16,6 +16,12 @@ if "!GIT_BRANCH!"=="" set "GIT_BRANCH=master"
 if "!REPO_DIR!"=="" set "REPO_DIR=!COMMONDB_ROOT!/third_party/capnproto"
 if "!INSTALL_DIR!"=="" set "INSTALL_DIR=!COMMONDB_ROOT!/third_party/capnp-install"
 
+rem Resolve to absolute paths before any cd — relative REPO_DIR after
+rem "cd REPO_DIR" would nest mkdir CAPNP_CPP_BUILD (…/capnproto/CommonDB/…).
+for %%I in ("!COMMONDB_ROOT!") do set "COMMONDB_ROOT=%%~fI"
+for %%I in ("!REPO_DIR!") do set "REPO_DIR=%%~fI"
+for %%I in ("!INSTALL_DIR!") do set "INSTALL_DIR=%%~fI"
+
 rem Use forward slashes only (\c++ is broken in batch %VAR%\suffix parsing).
 set "REPO_DIR=!REPO_DIR:\=/!"
 set "INSTALL_DIR=!INSTALL_DIR:\=/!"
